@@ -1,7 +1,23 @@
-import React from "react";
+import Badge from "../Components/Home/Badge";
+import Hero from "../Components/Home/Hero";
+import HowItWorks from "../Components/Home/HowItWorks";
+import Review from "../Components/Home/Review";
 
-const page = () => {
-    return <div>page</div>;
-};
-
-export default page;
+export default function Home() {
+  return (
+    <div className="space-y-0">
+      <section className="container mx-auto px-4 pt-20 pb-10">
+        <Hero />
+      </section>
+      <section className="bg-[#F1F5F9] py-10">
+        <Badge />
+      </section>
+      <section className="py-28">
+        <HowItWorks />
+      </section>
+      <section className="py-10">
+        <Review />
+      </section>
+    </div>
+  );
+}
