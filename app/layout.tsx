@@ -1,9 +1,11 @@
 import React from "react";
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Plus_Jakarta_Sans, Geist } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "@/redux/provider";
-import CustomCursor from "./Components/CustomCursor";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -21,10 +23,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${plusJakartaSans.variable} h-full antialiased`}>
+    <html lang="en" className={cn("h-full", "antialiased", plusJakartaSans.variable, "font-sans", geist.variable)}>
       <body className={`${plusJakartaSans.className} min-h-full flex flex-col`}>
         <ReduxProvider>
-          <CustomCursor />
           <main className="flex-1 flex flex-col">
             {children}
           </main>

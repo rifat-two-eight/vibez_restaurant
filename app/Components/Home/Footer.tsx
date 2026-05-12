@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 export default function Footer() {
   return (
@@ -7,7 +8,9 @@ export default function Footer() {
         <div className="grid grid-cols-1 gap-12 md:grid-cols-12 lg:gap-8">
           {/* Logo and Description */}
           <div className="md:col-span-4">
-            <Image src="/logo2.svg" alt="Logo" width={100} height={100} />
+            <Link href="/">
+              <Image src="/logo2.svg" alt="Logo" width={100} height={100} />
+            </Link>
             <p className="mt-4 max-w-[280px] text-sm leading-relaxed text-zinc-300">
               Connecting people with the best local food experiences while helping restaurants grow.
             </p>

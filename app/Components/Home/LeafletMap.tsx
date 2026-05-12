@@ -41,11 +41,11 @@ export default function LeafletMap({ center, zoom, markers }: LeafletMapProps) {
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      
+
       {markers.map((marker) => (
-        <Marker 
-          key={marker.name} 
-          position={marker.coords} 
+        <Marker
+          key={marker.name}
+          position={marker.coords}
           icon={customIcon}
         >
           <Popup>
@@ -56,7 +56,7 @@ export default function LeafletMap({ center, zoom, markers }: LeafletMapProps) {
           </Popup>
         </Marker>
       ))}
-      
+
       <ChangeView center={center} zoom={zoom} />
     </MapContainer>
   );

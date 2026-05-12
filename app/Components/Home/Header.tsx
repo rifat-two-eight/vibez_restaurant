@@ -54,6 +54,9 @@ export default function Header() {
 
         {/* Right Section: Desktop Button + Mobile Toggle */}
         <div className="flex items-center gap-4">
+          <Link href="/login" className="hidden sm:block text-sm font-bold text-[#151C27] hover:text-[#CF0738] transition-colors mr-2">
+            Login
+          </Link>
           <Link href="/partner" className="hidden sm:block">
             <button className="rounded-full bg-[#CF0738] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700">
               Become a Partner
