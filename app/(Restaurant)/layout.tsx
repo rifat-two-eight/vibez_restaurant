@@ -46,7 +46,7 @@ export default function RestaurantLayout({
                 className="fixed top-0 left-0 h-screen bg-white border-r border-zinc-100 z-50 flex flex-col w-80"
             >
                 {/* Brand Logo */}
-                <div className="h-20 flex items-center px-8 border-b border-zinc-50">
+                <div className="h-20 flex items-center px-8 border-b border-zinc-200">
                     <span className="font-bold text-xl text-[#013622]">
                         Restaurant Dashboard
                     </span>
@@ -63,8 +63,8 @@ export default function RestaurantLayout({
                                 key={item.name}
                                 href={item.href}
                                 className={`flex items-center gap-3 px-6 py-4 rounded-lg transition-all group ${isActive
-                                        ? "bg-[#013622] text-white shadow-lg shadow-[#013622]/20"
-                                        : "text-zinc-500 hover:bg-zinc-50 hover:text-[#013622]"
+                                    ? "bg-[#013622] text-white shadow-lg shadow-[#013622]/20"
+                                    : "text-zinc-500 hover:bg-zinc-50 hover:text-[#013622]"
                                     }`}
                             >
                                 <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'group-hover:text-[#013622]'}`} />
@@ -77,7 +77,7 @@ export default function RestaurantLayout({
                 </nav>
 
                 {/* Bottom Section */}
-                <div className="p-4 border-t border-zinc-50">
+                <div className="p-4 border-t border-zinc-200">
                     <button onClick={handleLogout} className="flex items-center gap-3 w-full px-6 py-4 rounded-xl text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-all group">
                         <LogOut className="w-5 h-5 shrink-0" />
                         <span className="font-semibold text-base">
