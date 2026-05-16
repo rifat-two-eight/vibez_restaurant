@@ -15,9 +15,9 @@ export default function LoginPage() {
         admin: {
             title: 'Admin Portal',
             subtitle: 'Manage the entire Vibez ecosystem',
-            color: '#CF0738',
-            hoverColor: '#b00630',
-            bgLight: 'bg-[#CF0738]/5'
+            color: '#1447E6',
+            hoverColor: '#0a35b8',
+            bgLight: 'bg-[#1447E6]/5'
         },
         owner: {
             title: 'Restaurant Owner',

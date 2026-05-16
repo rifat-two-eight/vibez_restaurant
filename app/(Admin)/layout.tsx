@@ -20,75 +20,79 @@ import {
 } from 'lucide-react';
 
 const menuItems = [
-    { name: 'Overview',           icon: LayoutDashboard, href: '/admin' },
-    { name: 'Users',              icon: Users,           href: '/admin/users' },
-    { name: 'Restaurants',        icon: UtensilsCrossed, href: '/admin/restaurants' },
-    { name: 'Deals',              icon: Tag,             href: '/admin/deals' },
-    { name: 'Bookings',           icon: CalendarCheck,   href: '/admin/bookings' },
-    { name: 'User Plans',         icon: CreditCard,      href: '/admin/user-plans' },
-    { name: 'Restaurant Pricing', icon: DollarSign,      href: '/admin/pricing' },
-    { name: 'Promo Codes',        icon: Ticket,          href: '/admin/promo-codes' },
-    { name: 'Referrals',          icon: GitBranch,       href: '/admin/referrals' },
-    { name: 'Reports',            icon: BarChart3,       href: '/admin/reports' },
-    { name: 'Platform Rules',     icon: ShieldAlert,     href: '/admin/platform-rules' },
-    { name: 'Settings',           icon: Settings,        href: '/admin/settings' },
+    { name: 'Overview', icon: LayoutDashboard, href: '/admin' },
+    { name: 'Users', icon: Users, href: '/admin/users' },
+    { name: 'Restaurants', icon: UtensilsCrossed, href: '/admin/restaurants' },
+    { name: 'Deals', icon: Tag, href: '/admin/deals' },
+    { name: 'User Plans', icon: CreditCard, href: '/admin/user-plans' },
+    { name: 'Referrals', icon: GitBranch, href: '/admin/referrals' },
+    { name: 'Settings', icon: Settings, href: '/admin/settings' },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
-    const router   = useRouter();
+    const router = useRouter();
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] flex">
-            {/* Fixed Sidebar — same size/design as owner, red color scheme */}
-            <aside className="fixed top-0 left-0 h-screen bg-white border-r border-zinc-100 z-50 flex flex-col w-80">
+        <div className="min-h-screen bg-[#0A0A0A] flex">
+            {/* Fixed Sidebar — premium dark design */}
+            <aside className="fixed top-0 left-0 h-screen bg-[#171717] border-r border-white/5 z-50 flex flex-col w-72">
                 {/* Brand */}
-                <div className="h-20 flex items-center px-8 border-b border-zinc-200">
-                    <span className="font-bold text-xl text-[#CF0738]">
-                        Admin Panel
-                    </span>
+                <div className="py-8 px-8 mb-4">
+                    <h1 className="font-bold text-xl text-white tracking-wider">
+                        ADMIN PANEL
+                    </h1>
                 </div>
 
                 {/* Nav Links */}
-                <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-                    {menuItems.map((item) => {
+                <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
+                    {[
+                        { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
+                        { name: 'Referral & Affiliate System', icon: GitBranch, href: '/admin/referrals' },
+                        { name: 'Restaurants', icon: UtensilsCrossed, href: '/admin/restaurants' },
+                        { name: 'Deals Management', icon: Tag, href: '/admin/deals' },
+                        { name: 'Subscription Management', icon: CreditCard, href: '/admin/user-plans' },
+                        { name: 'Users', icon: Users, href: '/admin/users' },
+                        { name: 'Settings', icon: Settings, href: '/admin/settings' },
+                    ].map((item) => {
                         const isActive = pathname === item.href;
-                        const Icon     = item.icon;
+                        const Icon = item.icon;
                         return (
                             <Link
                                 key={item.name}
                                 href={item.href}
-                                className={`flex items-center gap-3 px-6 py-4 rounded-lg transition-all group ${
-                                    isActive
-                                        ? 'bg-[#CF0738] text-white shadow-lg shadow-[#CF0738]/20'
-                                        : 'text-zinc-500 hover:bg-zinc-50 hover:text-[#CF0738]'
-                                }`}
+                                className={`flex items-center justify-between px-4 py-3 rounded-xl transition-all group ${isActive
+                                        ? 'bg-[#1447E6] text-white shadow-lg shadow-[#1447E6]/20'
+                                        : 'text-zinc-400 hover:text-white'
+                                    }`}
                             >
-                                <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : 'group-hover:text-[#CF0738]'}`} />
-                                <span className="font-semibold text-base">
-                                    {item.name}
-                                </span>
+                                <div className="flex items-center gap-3">
+                                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'group-hover:text-white'}`} />
+                                    <span className="font-medium text-[13px]">
+                                        {item.name}
+                                    </span>
+                                </div>
+                                {item.badge && (
+                                    <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
+                                )}
                             </Link>
                         );
                     })}
                 </nav>
 
                 {/* Logout */}
-                <div className="p-4 border-t border-zinc-200">
+                <div className="p-4">
                     <button
                         onClick={() => router.push('/login')}
-                        className="flex items-center gap-3 w-full px-6 py-4 rounded-xl text-zinc-400 hover:text-red-500 hover:bg-red-50 transition-all group"
+                        className="flex items-center justify-center w-full py-3.5 rounded-xl bg-[#CF0738] text-white font-bold text-sm hover:bg-[#b00630] transition-all shadow-lg shadow-[#CF0738]/20"
                     >
-                        <LogOut className="w-5 h-5 shrink-0" />
-                        <span className="font-semibold text-base">
-                            Logout
-                        </span>
+                        Logout
                     </button>
                 </div>
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 ml-80 min-h-screen">
+            <main className="flex-1 ml-72 min-h-screen">
                 <div className="p-8 md:p-12 w-full">
                     {children}
                 </div>

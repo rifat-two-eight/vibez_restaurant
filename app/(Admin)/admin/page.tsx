@@ -1,44 +1,289 @@
 'use client';
 
 import React from 'react';
+import { 
+    Line, 
+    LineChart, 
+    Bar, 
+    BarChart, 
+    XAxis, 
+    YAxis, 
+    CartesianGrid, 
+    Tooltip, 
+    ResponsiveContainer,
+    Area,
+    AreaChart
+} from 'recharts';
+import { 
+    Users, 
+    DollarSign, 
+    TrendingUp, 
+    Store, 
+    Tag, 
+    CalendarCheck,
+    ArrowUpRight
+} from 'lucide-react';
 
-type Stat = {
-    label: string;
-    value: string;
-    trend?: string;
-    trendColor?: string;
-};
+const revenueData = [
+    { month: 'Jan', revenue: 45000, referrals: 32000 },
+    { month: 'Feb', revenue: 52000, referrals: 38000 },
+    { month: 'Mar', revenue: 48000, referrals: 35000 },
+    { month: 'Apr', revenue: 61000, referrals: 42000 },
+    { month: 'May', revenue: 65000, referrals: 48000 },
+    { month: 'Jun', revenue: 58000, referrals: 40000 },
+];
 
-const stats: Stat[] = [
-    { label: 'Total Users',            value: '12,458', trend: '+12.5%', trendColor: 'text-emerald-500' },
-    { label: 'Active Subscriptions',   value: '8,234',  trend: '+8.2%',  trendColor: 'text-emerald-500' },
-    { label: 'Total Restaurants',      value: '456',    trend: '+15.3%', trendColor: 'text-emerald-500' },
-    { label: 'Active Deals',           value: '1,234',  trend: '+5.7%',  trendColor: 'text-emerald-500' },
-    { label: 'Total Bookings Today',   value: '347',    trend: '+23.1%', trendColor: 'text-emerald-500' },
-    { label: 'Revenue This Month',     value: '$45,678',trend: '+18.9%', trendColor: 'text-emerald-500' },
-    { label: 'Referral Earnings (Paid)', value: '$12,345', trend: '+10.2%', trendColor: 'text-emerald-500' },
-    { label: 'Pending Commissions',    value: '$3,456' },
+const bookingData = [
+    { day: 'Mon', bookings: 45 },
+    { day: 'Tue', bookings: 52 },
+    { day: 'Wed', bookings: 48 },
+    { day: 'Thu', bookings: 62 },
+    { day: 'Fri', bookings: 78 },
+    { day: 'Sat', bookings: 95 },
+    { day: 'Sun', bookings: 88 },
+];
+
+const recentSubscriptions = [
+    { user: 'Emma Rodriguez', plan: 'Monthly', referral: 'Referred', amount: '€29.99', status: 'Active' },
+    { user: 'Lucas Chen', plan: 'Annual', referral: 'Direct', amount: '€299.99', status: 'Active' },
+    { user: 'Sofia Martinez', plan: 'Monthly', referral: 'Referred', amount: '€29.99', status: 'Trial' },
+    { user: 'James Wilson', plan: 'Day Pass', referral: 'Referred', amount: '€9.99', status: 'Active' },
+    { user: 'Olivia Brown', plan: 'Annual', referral: 'Direct', amount: '€299.99', status: 'Active' },
 ];
 
 export default function AdminOverview() {
     return (
-        <div className="space-y-8">
+        <div className="space-y-8 pb-12">
+            {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold text-zinc-900">Super Admin Dashboard</h1>
+                <h1 className="text-2xl font-bold text-white tracking-tight">Dashboard Overview</h1>
+                <p className="text-zinc-500 text-sm mt-1">Monitor your restaurant marketplace performance</p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {stats.map((s) => (
-                    <div key={s.label} className="bg-white rounded-[10px] border border-zinc-100 p-5">
-                        <p className="text-xs text-zinc-400 font-medium mb-3">{s.label}</p>
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-2xl font-bold text-zinc-900">{s.value}</span>
-                            {s.trend && (
-                                <span className={`text-xs font-semibold ${s.trendColor}`}>{s.trend}</span>
-                            )}
+            {/* Stats Row 1 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 relative overflow-hidden">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-zinc-500 text-[13px] font-medium mb-1">Total Revenue</p>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">€71,240</h3>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <DollarSign className="w-5 h-5 text-zinc-400" />
                         </div>
                     </div>
-                ))}
+                    <div className="flex gap-4 text-[11px] font-medium">
+                        <span className="text-zinc-500">Monthly: <span className="text-zinc-300">€71K</span></span>
+                        <span className="text-zinc-500">Annual: <span className="text-zinc-300">€650K</span></span>
+                    </div>
+                    <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold text-[#10B981]">
+                        <TrendingUp className="w-3.5 h-3.5" />
+                        12.5%
+                    </div>
+                </div>
+
+                <div className="bg-[#171717] border border-white/5 rounded-2xl p-6">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-zinc-500 text-[13px] font-medium mb-1">Active Subscribers</p>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">2,847</h3>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <Users className="w-5 h-5 text-zinc-400" />
+                        </div>
+                    </div>
+                    <div className="flex gap-4 text-[11px] font-medium">
+                        <span className="text-zinc-500">Monthly: <span className="text-zinc-300">2,340</span></span>
+                        <span className="text-zinc-500">Trial: <span className="text-zinc-300">507</span></span>
+                    </div>
+                    <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold text-[#10B981]">
+                        <TrendingUp className="w-3.5 h-3.5" />
+                        8.2%
+                    </div>
+                </div>
+
+                <div className="bg-[#171717] border border-[#10B981]/20 rounded-2xl p-6">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-zinc-500 text-[13px] font-medium mb-1">Referral Revenue</p>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">€23,100</h3>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-[#10B981]/10 flex items-center justify-center">
+                            <ArrowUpRight className="w-5 h-5 text-[#10B981]" />
+                        </div>
+                    </div>
+                    <div className="flex gap-4 text-[11px] font-medium">
+                        <span className="text-zinc-500">Conversion: <span className="text-zinc-300">34.2%</span></span>
+                        <span className="text-zinc-500">Commission: <span className="text-zinc-300">€5.2K</span></span>
+                    </div>
+                    <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold text-[#10B981]">
+                        <TrendingUp className="w-3.5 h-3.5" />
+                        18.7%
+                    </div>
+                </div>
+            </div>
+
+            {/* Stats Row 2 */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-[#171717] border border-white/5 rounded-2xl p-6">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-zinc-500 text-[13px] font-medium mb-1">Active Restaurants</p>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">387</h3>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <Store className="w-5 h-5 text-zinc-400" />
+                        </div>
+                    </div>
+                    <div className="flex gap-4 text-[11px] font-medium">
+                        <span className="text-zinc-500">Pending: <span className="text-zinc-300">23</span></span>
+                        <span className="text-zinc-500">Suspended: <span className="text-zinc-300">5</span></span>
+                    </div>
+                </div>
+
+                <div className="bg-[#171717] border border-white/5 rounded-2xl p-6">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-zinc-500 text-[13px] font-medium mb-1">Active Deals</p>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">1,243</h3>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <Tag className="w-5 h-5 text-zinc-400" />
+                        </div>
+                    </div>
+                    <div className="flex gap-4 text-[11px] font-medium">
+                        <span className="text-zinc-500">Expiring today: <span className="text-zinc-300">12</span></span>
+                        <span className="text-zinc-500">Drafts: <span className="text-zinc-300">34</span></span>
+                    </div>
+                </div>
+
+                <div className="bg-[#171717] border border-white/5 rounded-2xl p-6">
+                    <div className="flex justify-between items-start mb-4">
+                        <div>
+                            <p className="text-zinc-500 text-[13px] font-medium mb-1">Total Bookings</p>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">8,432</h3>
+                        </div>
+                        <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                            <CalendarCheck className="w-5 h-5 text-zinc-400" />
+                        </div>
+                    </div>
+                    <div className="flex gap-4 text-[11px] font-medium">
+                        <span className="text-zinc-500">Today: <span className="text-zinc-300">156</span></span>
+                        <span className="text-zinc-500">Weekly: <span className="text-zinc-300">892</span></span>
+                    </div>
+                    <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold text-[#10B981]">
+                        <TrendingUp className="w-3.5 h-3.5" />
+                        5.3%
+                    </div>
+                </div>
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-[#171717] border border-white/5 rounded-2xl p-8">
+                    <h3 className="text-base font-bold text-white mb-8">Revenue Breakdown</h3>
+                    <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={revenueData}>
+                                <defs>
+                                    <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
+                                <XAxis 
+                                    dataKey="month" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fill: '#52525b', fontSize: 12 }}
+                                    dy={10}
+                                />
+                                <YAxis 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fill: '#52525b', fontSize: 12 }}
+                                />
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}
+                                />
+                                <Area type="monotone" dataKey="revenue" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                <div className="bg-[#171717] border border-white/5 rounded-2xl p-8">
+                    <h3 className="text-base font-bold text-white mb-8">Weekly Bookings</h3>
+                    <div className="h-[300px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={bookingData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
+                                <XAxis 
+                                    dataKey="day" 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fill: '#52525b', fontSize: 12 }}
+                                    dy={10}
+                                />
+                                <YAxis 
+                                    axisLine={false} 
+                                    tickLine={false} 
+                                    tick={{ fill: '#52525b', fontSize: 12 }}
+                                />
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}
+                                    cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                                />
+                                <Bar dataKey="bookings" fill="#10B981" radius={[6, 6, 0, 0]} barSize={32} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+
+            {/* Table Section */}
+            <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
+                <div className="p-8">
+                    <h3 className="text-base font-bold text-white">Recent Subscriptions</h3>
+                </div>
+                <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                        <thead>
+                            <tr className="border-b border-white/5">
+                                <th className="px-8 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">User</th>
+                                <th className="px-8 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Plan</th>
+                                <th className="px-8 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Referral</th>
+                                <th className="px-8 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Amount</th>
+                                <th className="px-8 py-4 text-xs font-medium text-zinc-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {recentSubscriptions.map((sub, i) => (
+                                <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
+                                    <td className="px-8 py-4 text-sm font-medium text-white">{sub.user}</td>
+                                    <td className="px-8 py-4 text-sm text-zinc-400">{sub.plan}</td>
+                                    <td className="px-8 py-4 text-sm text-zinc-400">
+                                        <span className="flex items-center gap-1.5">
+                                            {sub.referral === 'Referred' && <TrendingUp className="w-3.5 h-3.5 text-[#10B981]" />}
+                                            {sub.referral}
+                                        </span>
+                                    </td>
+                                    <td className="px-8 py-4 text-sm text-white font-medium">{sub.amount}</td>
+                                    <td className="px-8 py-4">
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                            sub.status === 'Active' 
+                                            ? 'bg-[#10B981]/10 text-[#10B981]' 
+                                            : 'bg-orange-500/10 text-orange-500'
+                                        }`}>
+                                            {sub.status}
+                                        </span>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
