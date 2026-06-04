@@ -114,7 +114,7 @@ export default function Review() {
     const doubled = [...reviews, ...reviews];
 
     return (
-        <section className="pb-16 md:pb-20 overflow-hidden">
+        <section className="overflow-hidden">
 
             {/* ── Mobile / Tablet: stacked layout ── */}
             <div className="block lg:hidden px-4 md:px-8 mb-8">
