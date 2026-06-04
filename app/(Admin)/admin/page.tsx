@@ -1,25 +1,25 @@
 'use client';
 
 import React from 'react';
-import { 
-    Line, 
-    LineChart, 
-    Bar, 
-    BarChart, 
-    XAxis, 
-    YAxis, 
-    CartesianGrid, 
-    Tooltip, 
+import {
+    Line,
+    LineChart,
+    Bar,
+    BarChart,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
     ResponsiveContainer,
     Area,
     AreaChart
 } from 'recharts';
-import { 
-    Users, 
-    DollarSign, 
-    TrendingUp, 
-    Store, 
-    Tag, 
+import {
+    Users,
+    DollarSign,
+    TrendingUp,
+    Store,
+    Tag,
     CalendarCheck,
     ArrowUpRight
 } from 'lucide-react';
@@ -187,24 +187,24 @@ export default function AdminOverview() {
                             <AreaChart data={revenueData}>
                                 <defs>
                                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
-                                <XAxis 
-                                    dataKey="month" 
-                                    axisLine={false} 
-                                    tickLine={false} 
+                                <XAxis
+                                    dataKey="month"
+                                    axisLine={false}
+                                    tickLine={false}
                                     tick={{ fill: '#52525b', fontSize: 12 }}
                                     dy={10}
                                 />
-                                <YAxis 
-                                    axisLine={false} 
-                                    tickLine={false} 
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
                                     tick={{ fill: '#52525b', fontSize: 12 }}
                                 />
-                                <Tooltip 
+                                <Tooltip
                                     contentStyle={{ backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}
                                 />
                                 <Area type="monotone" dataKey="revenue" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" />
@@ -219,19 +219,19 @@ export default function AdminOverview() {
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={bookingData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
-                                <XAxis 
-                                    dataKey="day" 
-                                    axisLine={false} 
-                                    tickLine={false} 
+                                <XAxis
+                                    dataKey="day"
+                                    axisLine={false}
+                                    tickLine={false}
                                     tick={{ fill: '#52525b', fontSize: 12 }}
                                     dy={10}
                                 />
-                                <YAxis 
-                                    axisLine={false} 
-                                    tickLine={false} 
+                                <YAxis
+                                    axisLine={false}
+                                    tickLine={false}
                                     tick={{ fill: '#52525b', fontSize: 12 }}
                                 />
-                                <Tooltip 
+                                <Tooltip
                                     contentStyle={{ backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}
                                     cursor={{ fill: 'rgba(255,255,255,0.02)' }}
                                 />
@@ -271,11 +271,10 @@ export default function AdminOverview() {
                                     </td>
                                     <td className="px-8 py-4 text-sm text-white font-medium">{sub.amount}</td>
                                     <td className="px-8 py-4">
-                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                            sub.status === 'Active' 
-                                            ? 'bg-[#10B981]/10 text-[#10B981]' 
-                                            : 'bg-orange-500/10 text-orange-500'
-                                        }`}>
+                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${sub.status === 'Active'
+                                                ? 'bg-[#10B981]/10 text-[#10B981]'
+                                                : 'bg-orange-500/10 text-orange-500'
+                                            }`}>
                                             {sub.status}
                                         </span>
                                     </td>

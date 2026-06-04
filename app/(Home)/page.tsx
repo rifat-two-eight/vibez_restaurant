@@ -3,7 +3,7 @@ import Hero from "../Components/Home/Hero";
 import HowItWorks from "../Components/Home/HowItWorks";
 import Review from "../Components/Home/Review";
 import Hungry from "../Components/Home/hungry";
-import MapSection from "../Components/Home/map";
+import MapSection from "../Components/Home/simple";
 import Taste from "../Components/Home/taste";
 
 export default function Home() {

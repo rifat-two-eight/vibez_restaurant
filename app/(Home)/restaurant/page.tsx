@@ -1,4 +1,4 @@
-import Map from "@/app/Components/Home/map";
+import Map from "@/app/Components/Home/simple";
 
 export default function Restaurant() {
     return (
