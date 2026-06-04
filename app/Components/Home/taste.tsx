@@ -8,12 +8,12 @@ export default function Taste() {
             {/* Header */}
             <div className="flex justify-between items-end mb-10">
                 <div>
-                    <h2 className="text-4xl font-black text-[#151C27] mb-2 tracking-tight">Tasting Notes</h2>
-                    <p className="text-[#36654D] font-semibold">Stories from the culinary world</p>
+                    <h2 className="text-4xl font-semibold text-[#151C27] mb-2 tracking-tight">Tasting Notes</h2>
+                    <p className="text-[#36654D]">Stories from the culinary world</p>
                 </div>
                 <Link
                     href="/blogs"
-                    className="flex items-center gap-2 text-[#36654D] hover:text-[#0D9733] font-bold transition-colors group"
+                    className="flex items-center gap-2 text-[#36654D] hover:text-[#0D9733] font-semibold transition-colors group"
                 >
                     Read all articles
                     <svg
@@ -30,7 +30,7 @@ export default function Taste() {
 
             {/* Asymmetrical Articles Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
-                
+
                 {/* CARD 1: Turquoise Solid Card (Row 1, span 3) */}
                 <div className="lg:col-span-3 bg-[#00C2C2] rounded-[20px] p-8 flex flex-col justify-between min-h-[380px] shadow-sm hover:shadow-md transition-shadow">
                     <div></div>
@@ -55,7 +55,7 @@ export default function Taste() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <h3 className="text-2xl font-extrabold text-[#151C27]">
+                        <h3 className="text-2xl font-bold text-[#151C27]">
                             Trending This Week
                         </h3>
                         <p className="text-zinc-600 text-[12px] leading-relaxed">
@@ -92,7 +92,7 @@ export default function Taste() {
                         />
                     </div>
                     <div className="space-y-2">
-                        <h3 className="text-2xl font-extrabold text-[#151C27]">
+                        <h3 className="text-2xl font-bold text-[#151C27]">
                             Street Food That Deserves the Hype
                         </h3>
                         <p className="text-zinc-500 text-[12px] leading-relaxed">
@@ -110,7 +110,7 @@ export default function Taste() {
                         className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                     <div className="absolute inset-0 bg-black/40"></div>
-                    
+
                     {/* Centered Content */}
                     <div className="relative z-10 space-y-3">
                         <h3 className="text-[32px] font-bold text-white leading-tight">
@@ -120,7 +120,7 @@ export default function Taste() {
                             Crispy buns, juicy patties, melted cheese, and secret sauces — here are the top burger spots everyone is talking about this week.
                         </p>
                     </div>
-                    
+
                     <div className="relative z-10 w-12 h-12 rounded-full border border-white/30 bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors cursor-pointer">
                         <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3" />

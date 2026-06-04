@@ -118,7 +118,7 @@ export default function Review() {
 
             {/* ── Mobile / Tablet: stacked layout ── */}
             <div className="block lg:hidden px-4 md:px-8 mb-8">
-                <h2 className="text-2xl md:text-3xl font-extrabold text-[#151C27] leading-tight mb-6">
+                <h2 className="text-2xl md:text-3xl font-semibold text-[#151C27] leading-tight mb-6">
                     Our User Review
                 </h2>
 
@@ -173,7 +173,7 @@ export default function Review() {
 
                 {/* ── LEFT PANEL — desktop only (1/4) ── */}
                 <div className="hidden lg:block w-1/4 shrink-0 pl-4 md:pl-10 lg:pl-12 pr-8">
-                    <h2 className="text-2xl md:text-3xl lg:text-[42px] font-extrabold text-[#151C27] leading-tight mb-7">
+                    <h2 className="text-2xl md:text-3xl lg:text-[42px] font-semibold text-[#151C27] leading-tight mb-7">
                         Our User Review
                     </h2>
 

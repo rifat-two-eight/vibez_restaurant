@@ -2,7 +2,7 @@ import Badge from "../Components/Home/Badge";
 import Hero from "../Components/Home/Hero";
 import HowItWorks from "../Components/Home/HowItWorks";
 import Review from "../Components/Home/Review";
-import Hungry from "../Components/Home/hungry";
+import Download from "../Components/Home/download";
 import MapSection from "../Components/Home/simple";
 import Taste from "../Components/Home/taste";
 
@@ -28,7 +28,7 @@ export default function Home() {
         <Taste />
       </section>
       <section className="py-10">
-        <Hungry />
+        <Download />
       </section>
     </div>
   );

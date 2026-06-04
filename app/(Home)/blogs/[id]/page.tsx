@@ -22,7 +22,7 @@ export default function BlogDetail() {
                             <span className="bg-white text-[#151C27] font-bold text-[10px] md:text-xs px-4 py-2 rounded-full uppercase tracking-widest mb-6 inline-block shadow-lg">
                                 Burgers
                             </span>
-                            <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight mb-4">
+                            <h1 className="text-3xl md:text-5xl font-semibold text-white leading-tight mb-4">
                                 The 5 best burger spots in Birmingham that you absolutely must try
                             </h1>
                             <div className="flex items-center gap-6 text-white/80 text-sm font-medium">
@@ -112,8 +112,8 @@ export default function BlogDetail() {
 
                     {/* Also Read Section */}
                     <div className="mt-32">
-                        <div className="flex justify-between items-center mb-12">
-                            <h2 className="text-4xl font-bold text-[#013622]">Also read</h2>
+                        <div className="flex justify-end items-center mb-12">
+                            {/* <h2 className="text-4xl font-bold text-[#013622]">Also read</h2> */}
                             <div className="flex gap-2">
                                 <button className="w-10 h-10 rounded-full bg-[#CF0738] text-white flex items-center justify-center shadow-lg">
                                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M15 19l-7-7 7-7" /></svg>

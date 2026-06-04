@@ -25,12 +25,12 @@ export default function FAQ() {
                 </div>
             </div>
 
-            <div className="pb-20">
+            {/* <div className="pb-20">
                 <h2 className="text-center font-bold text-4xl mb-12 text-[#151C27]">Our partners</h2>
                 <div className="bg-[#F1F5F9] py-10">
                     <Badge />
                 </div>
-            </div>
+            </div> */}
 
             {/* Questions Section */}
             <FAQAccordion />

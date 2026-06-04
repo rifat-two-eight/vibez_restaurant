@@ -33,7 +33,7 @@ export default function MapSection() {
         <section className="py-16 px-4">
             {/* Header */}
             <div className="text-center mb-16">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#151C27] mb-4">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-semibold text-[#151C27] mb-4">
                     Simple. Transparent. <span className="text-[#006A34]">Rewarding.</span>
                 </h2>
                 <p className="text-[#36654D] text-sm md:text-base">

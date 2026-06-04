@@ -22,8 +22,6 @@ export default function Footer() {
               <div>
                 <h3 className="text-sm font-bold text-white">Discovery</h3>
                 <ul className="mt-6 space-y-4 text-sm text-zinc-300">
-                  <li><a href="#" className="transition-colors hover:text-white">Germany</a></li>
-                  <li><a href="#" className="transition-colors hover:text-white">UK</a></li>
                   <li><a href="#" className="transition-colors hover:text-white">Restaurants</a></li>
                 </ul>
               </div>
@@ -41,10 +39,17 @@ export default function Footer() {
                 </ul>
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white">Legal</h3>
-                <ul className="mt-6 space-y-4 text-sm text-zinc-300">
-                  <li><a href="#" className="transition-colors hover:text-white">Legal</a></li>
-                  <li><a href="#" className="transition-colors hover:text-white">Privacy</a></li>
+                <h3 className="text-sm font-bold text-white">Follow Us</h3>
+                <ul className="mt-6 space-y-4 text-sm text-zinc-300 flex gap-4">
+                  <li><Link href="#">
+                    <Image src="/instagram.svg" alt="Instagram" width={24} height={24} />
+                  </Link></li>
+                  <li><Link href="#">
+                    <Image src="/facebook.svg" alt="Facebook" width={24} height={24} />
+                  </Link></li>
+                  <li><Link href="#">
+                    <Image src="/tiktok.svg" alt="X" width={24} height={24} />
+                  </Link></li>
                 </ul>
               </div>
             </div>
@@ -54,7 +59,7 @@ export default function Footer() {
         {/* Bottom Section */}
         <div className="mt-20 border-t-2 border-white/30 pt-10">
           <p className="text-center text-sm text-zinc-400">
-            © {new Date().getFullYear()} Vibez. Explore the best flavors.
+            © {new Date().getFullYear()} VIBEZ. All rights reserved.
           </p>
         </div>
       </div>

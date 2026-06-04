@@ -13,11 +13,9 @@ export default function Hero() {
                         Pay less.
                     </h2>
                 </div>
-                
+
                 <p className="text-start font-medium text-lg text-[#151C27] max-w-xl leading-relaxed">
-                    NeoTaste is your culinary companion. Explore the best 
-                    restaurants in your city and enjoy exclusive 2-for-1 deals or 
-                    significant discounts on your next meal.
+                    Vibez is a 2-for-1 restaurant deals app in Zurich. Get exclusive offers like free starters, desserts, and exclusiv deals by selected restaurants.
                 </p>
 
                 {/* Download Buttons */}
@@ -45,16 +43,16 @@ export default function Hero() {
             {/* Right Image */}
             <div className="w-full lg:w-1/2 flex justify-center lg:justify-end mt-12 lg:mt-6 mb-20 relative overflow-visible">
                 <div className="relative w-[300px] h-[300px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] flex items-center justify-center">
-                    
+
                     {/* Layer 1: Background & Custom Dashed Border (Lowest Z) */}
-                    <div 
+                    <div
                         className="absolute inset-0 z-0 rounded-full animate-[spin_40s_linear_infinite]"
                         style={{
                             backgroundImage: `url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='300' ry='300' stroke='%23000000' stroke-width='3' stroke-dasharray='1%2c 30' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e"), radial-gradient(circle, #FCF1F4 0%, white 100%)`,
                             backgroundOrigin: 'border-box',
                         }}
                     />
-                    
+
                     {/* Layer 2: Rotating Balls (Middle Z) */}
                     <div className="absolute inset-0 z-20 animate-[spin_15s_linear_infinite]">
                         {/* Ball 1 - Top */}
@@ -66,9 +64,9 @@ export default function Hero() {
                     {/* Layer 3: Image Container (Highest Z) */}
                     <div className="relative z-10 w-full h-full flex items-center justify-center p-8 sm:p-10">
                         <div className="relative w-full h-full">
-                            <Image 
-                                src="/hero2.png" 
-                                alt="NeoTaste App Preview" 
+                            <Image
+                                src="/hero2.png"
+                                alt="NeoTaste App Preview"
                                 fill
                                 className="object-contain drop-shadow-2xl"
                                 priority
