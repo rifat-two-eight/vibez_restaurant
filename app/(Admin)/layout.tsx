@@ -44,7 +44,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     </h1>
                 </div>
 
-                {/* Nav Links */}
+                
                 <nav className="flex-1 px-4 space-y-1 overflow-y-auto">
                     {[
                         { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
@@ -72,9 +72,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                                         {item.name}
                                     </span>
                                 </div>
-                                {item.badge && (
-                                    <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]" />
-                                )}
                             </Link>
                         );
                     })}
