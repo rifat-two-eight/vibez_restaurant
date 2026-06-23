@@ -3,11 +3,17 @@
 import React, { useState } from 'react';
 import Image from "next/image";
 import { useRouter } from 'next/navigation';
+import { useRegisterRestaurantMutation } from '@/redux/features/auth/authApi';
+import { useAppDispatch } from '@/redux/hooks';
+import { setUser } from '@/redux/features/auth/authSlice';
+import { toast } from "sonner";
 
 export default function Partner() {
     const router = useRouter();
-    const [openingDays, setOpeningDays] = useState<string[]>(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
-    const [priceRange, setPriceRange] = useState('$$');
+    const dispatch = useAppDispatch();
+    const [openingDays, setOpeningDays] = useState<string[]>(['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY']);
+    
+    const [registerRestaurant, { isLoading }] = useRegisterRestaurantMutation();
 
     const toggleDay = (day: string) => {
         setOpeningDays(prev =>
@@ -15,9 +21,72 @@ export default function Partner() {
         );
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        router.push('/success');
+        
+        const formData = new FormData(e.currentTarget);
+        
+        // Build the JSON body as required by the API
+        const payload = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            password: formData.get('password'),
+            phone: formData.get('phone'),
+            restaurantName: formData.get('restaurantName'),
+            restaurantDescription: formData.get('restaurantDescription'),
+            restaurantType: formData.get('restaurantType'),
+            cuisineType: formData.get('cuisineType'),
+            restaurantWebsite: formData.get('restaurantWebsite'),
+            restaurantAddress: {
+                street: formData.get('street'),
+                city: formData.get('city'),
+                state: formData.get('state') || "NY", // fallback if not provided in form
+                zipCode: formData.get('zipCode') || "10001",
+                country: formData.get('country') || "USA"
+            },
+            restaurantOpenHours: openingDays.map(day => ({
+                day,
+                isOpen: true,
+                openTime: "09:00",
+                closeTime: "22:00",
+                slots: [
+                    {
+                        type: formData.get('serviceType')?.toString().toUpperCase() || "LUNCH",
+                        openTime: "12:00",
+                        closeTime: "15:00"
+                    }
+                ]
+            }))
+        };
+
+        const submissionData = new FormData();
+        submissionData.append('body', JSON.stringify(payload));
+        
+        const profileImage = formData.get('profileImage') as File;
+        const restaurantImage = formData.get('restaurantImage') as File;
+        
+        if (profileImage && profileImage.size > 0) {
+            submissionData.append('profileImage', profileImage);
+        }
+        if (restaurantImage && restaurantImage.size > 0) {
+            submissionData.append('restaurantImage', restaurantImage);
+        }
+
+        try {
+            const response = await registerRestaurant(payload).unwrap();
+            toast.success("Restaurant application submitted successfully!");
+            
+            if (response.data?.user && response.data?.accessToken) {
+                dispatch(setUser({
+                    user: response.data.user,
+                    token: response.data.accessToken
+                }));
+            }
+            router.push('/dashboard');
+        } catch (error) {
+            console.error("Registration failed:", error);
+            toast.error("Registration failed. Please try again.");
+        }
     };
 
     return (
@@ -61,12 +130,16 @@ export default function Partner() {
                         <section className="space-y-6">
                             <h2 className="text-lg font-bold text-[#005C2C] tracking-wide border-b pb-2 uppercase">Restaurant Information</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <FormInput label="Restaurant Name" placeholder="e.g. The Emerald Kitchen" />
-                                <FormInput label="Owner / Manager Name" placeholder="Full Name" />
-                                <FormInput label="Email Address" placeholder="contact@restaurant.com" type="email" />
-                                <FormInput label="Phone Number" placeholder="+1 (555) 000-0000" />
-                                <FormInput label="Password" placeholder="Create a Password" type="password" />
-                                <FormInput label="Confirm Password" placeholder="Confirm Password" type="password" />
+                                <FormInput label="Restaurant Name" name="restaurantName" placeholder="e.g. The Emerald Kitchen" required />
+                                <FormInput label="Owner / Manager Name" name="name" placeholder="Full Name" required />
+                                <FormInput label="Email Address" name="email" placeholder="contact@restaurant.com" type="email" required />
+                                <FormInput label="Phone Number" name="phone" placeholder="+1 (555) 000-0000" required />
+                                <FormInput label="Password" name="password" placeholder="Create a Password" type="password" required />
+                                <FormInput label="Confirm Password" name="confirmPassword" placeholder="Confirm Password" type="password" required />
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Profile Image</label>
+                                    <input type="file" name="profileImage" accept="image/*" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all" />
+                                </div>
                             </div>
                         </section>
 
@@ -75,23 +148,47 @@ export default function Partner() {
                             <h2 className="text-lg font-bold text-[#005C2C] tracking-wide border-b pb-2 uppercase">Business Details</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="md:col-span-2">
-                                    <FormInput label="Restaurant Address" placeholder="Street Address" />
+                                    <FormInput label="Restaurant Address" name="street" placeholder="Street Address" required />
                                 </div>
-                                <FormInput label="City" placeholder="City" />
+                                <FormInput label="City" name="city" placeholder="City" required />
                                 <div className="space-y-2">
                                     <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Type of Restaurant</label>
-                                    <select className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all appearance-none cursor-pointer">
-                                        <option>Restaurant</option>
-                                        <option>Cafe</option>
-                                        <option>Bar</option>
-                                        <option>Bistro</option>
+                                    <select name="restaurantType" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all appearance-none cursor-pointer">
+                                        <option value="RESTAURANT">Restaurant</option>
+                                        <option value="CAFE">Cafe</option>
+                                        <option value="NIGHT_CLUB">Night Club</option>
+                                        <option value="STREET_FOOD">Street Food</option>
+                                        <option value="BAKERY">Bakery</option>
+                                        <option value="FINE_DINING">Fine Dining</option>
                                     </select>
                                 </div>
                                 <div className="md:col-span-2">
-                                    <FormInput label="Cuisine Type" placeholder="e.g. Italian, Chinese, Mixed" />
+                                    <div className="space-y-2">
+                                        <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Cuisine Type</label>
+                                        <select name="cuisineType" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all appearance-none cursor-pointer">
+                                            <option value="ITALIAN">Italian</option>
+                                            <option value="CHINESE">Chinese</option>
+                                            <option value="JAPANESE">Japanese</option>
+                                            <option value="INDIAN">Indian</option>
+                                            <option value="THAI">Thai</option>
+                                            <option value="FAST_FOOD">Fast Food</option>
+                                            <option value="BBQ">BBQ</option>
+                                            <option value="SEAFOOD">Seafood</option>
+                                            <option value="VEGAN">Vegan</option>
+                                            <option value="DESSERTS">Desserts</option>
+                                            <option value="COFFEE_BAKERY">Coffee Bakery</option>
+                                            <option value="LOCAL_FOOD">Local Food</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Restaurant Image</label>
+                                    <input type="file" name="restaurantImage" accept="image/*" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all" />
                                 </div>
                             </div>
                         </section>
+
+
 
                         {/* Operational Details */}
                         <section className="space-y-6">
@@ -99,49 +196,37 @@ export default function Partner() {
                             <div className="space-y-4">
                                 <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight block">Opening Days</label>
                                 <div className="flex flex-wrap gap-2">
-                                    {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => (
+                                    {[
+                                        { label: 'Mon', value: 'MONDAY' },
+                                        { label: 'Tue', value: 'TUESDAY' },
+                                        { label: 'Wed', value: 'WEDNESDAY' },
+                                        { label: 'Thu', value: 'THURSDAY' },
+                                        { label: 'Fri', value: 'FRIDAY' },
+                                        { label: 'Sat', value: 'SATURDAY' },
+                                        { label: 'Sun', value: 'SUNDAY' }
+                                    ].map(day => (
                                         <button
-                                            key={day}
+                                            key={day.value}
                                             type="button"
-                                            onClick={() => toggleDay(day)}
-                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${openingDays.includes(day)
+                                            onClick={() => toggleDay(day.value)}
+                                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${openingDays.includes(day.value)
                                                 ? "bg-[#CF0738] text-white shadow-md"
                                                 : "bg-zinc-100 text-zinc-400 hover:bg-zinc-200"
                                                 }`}
                                         >
-                                            {day}
+                                            {day.label}
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
+                                <div className="space-y-2 md:col-span-2">
                                     <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Service Type</label>
-                                    <select className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all cursor-pointer">
-                                        <option>Lunch</option>
-                                        <option>Dinner</option>
-                                        <option>Breakfast</option>
-                                        <option>All Day</option>
+                                    <select name="serviceType" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all cursor-pointer">
+                                        <option value="LUNCH">Lunch</option>
+                                        <option value="DINNER">Dinner</option>
                                     </select>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight block">Average Price Range</label>
-                                    <div className="flex gap-2">
-                                        {['$', '$$', '$$$', '$$$$'].map(range => (
-                                            <button
-                                                key={range}
-                                                type="button"
-                                                onClick={() => setPriceRange(range)}
-                                                className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all ${priceRange === range
-                                                    ? "bg-[#CF0738] text-white shadow-md"
-                                                    : "bg-red-50 text-[#CF0738] hover:bg-red-100"
-                                                    }`}
-                                            >
-                                                {range}
-                                            </button>
-                                        ))}
-                                    </div>
                                 </div>
                             </div>
                         </section>
@@ -153,19 +238,20 @@ export default function Partner() {
                                 <div className="space-y-2">
                                     <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Short Description</label>
                                     <textarea
+                                        name="restaurantDescription"
                                         rows={4}
                                         className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all resize-none"
                                         placeholder="Tell us about your restaurant's story and specialty..."
                                     />
                                 </div>
-                                <FormInput label="Website / Social Media Link" placeholder="https://..." />
+                                <FormInput label="Website / Social Media Link" name="restaurantWebsite" placeholder="https://..." />
                             </div>
                         </section>
 
                         {/* Terms and Submit */}
                         <div className="space-y-8 pt-6">
                             <div className="flex items-center gap-3">
-                                <input type="checkbox" className="w-5 h-5 rounded-md border-zinc-300 text-[#CF0738] focus:ring-[#CF0738] cursor-pointer" id="terms" />
+                                <input type="checkbox" className="w-5 h-5 rounded-md border-zinc-300 text-[#CF0738] focus:ring-[#CF0738] cursor-pointer" id="terms" required />
                                 <label htmlFor="terms" className="text-sm text-zinc-600">
                                     I agree to the <a href="/terms" className="text-[#013622] underline font-medium">Terms & Conditions</a> and <a href="/policy" className="text-[#013622] underline font-medium">Privacy Policy</a>
                                 </label>
@@ -173,9 +259,10 @@ export default function Partner() {
 
                             <button
                                 type="submit"
-                                className="w-full bg-[#CF0738] text-white font-bold py-4 rounded-xl shadow-xl hover:bg-red-700 transition-all transform active:scale-[0.98]"
+                                disabled={isLoading}
+                                className="w-full bg-[#CF0738] text-white font-bold py-4 rounded-xl shadow-xl hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-[0.98]"
                             >
-                                Submit Partnership Request
+                                {isLoading ? "Submitting..." : "Submit Partnership Request"}
                             </button>
 
                             <p className="text-center text-[10px] font-bold text-zinc-400 tracking-[0.2em] uppercase">
@@ -189,13 +276,15 @@ export default function Partner() {
     );
 }
 
-function FormInput({ label, placeholder, type = "text" }: { label: string; placeholder: string; type?: string }) {
+function FormInput({ label, name, placeholder, type = "text", required = false }: { label: string; name: string; placeholder: string; type?: string; required?: boolean }) {
     return (
         <div className="space-y-2">
             <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">{label}</label>
             <input
                 type={type}
+                name={name}
                 placeholder={placeholder}
+                required={required}
                 className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all"
             />
         </div>

@@ -4,10 +4,17 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
+import { useAppSelector, useAppDispatch } from '@/redux/hooks';
+import { currentUser, logOut } from '@/redux/features/auth/authSlice';
+import { LogOut } from 'lucide-react';
 
 export default function Header() {
   const pathname = usePathname();
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(currentUser);
+  
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const navLinks = [
     { name: 'Home', href: '/' },
@@ -54,14 +61,50 @@ export default function Header() {
 
         {/* Right Section: Desktop Button + Mobile Toggle */}
         <div className="flex items-center gap-4">
-          <Link href="/login" className="hidden sm:block text-sm font-bold text-[#151C27] hover:text-[#CF0738] transition-colors mr-2">
-            Login
-          </Link>
-          <Link href="/partner" className="hidden sm:block">
-            <button className="rounded-full bg-[#CF0738] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700">
-              Become a Partner
-            </button>
-          </Link>
+          {user ? (
+            <div className="relative">
+              <button 
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="flex items-center justify-center w-10 h-10 rounded-full bg-zinc-100 border border-zinc-200 overflow-hidden hover:ring-2 hover:ring-[#CF0738] transition-all"
+              >
+                {user.profileImage ? (
+                  <Image src={user.profileImage} alt={user.name} width={40} height={40} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-zinc-600 font-bold text-lg">{user.name?.charAt(0).toUpperCase()}</span>
+                )}
+              </button>
+
+              {isProfileMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-zinc-100 py-2 z-50 animate-in fade-in slide-in-from-top-2">
+                  <div className="px-4 py-2 border-b border-zinc-100 mb-2">
+                    <p className="text-sm font-bold text-zinc-900 truncate">{user.name}</p>
+                    <p className="text-xs text-zinc-500 truncate">{user.email}</p>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      dispatch(logOut());
+                      setIsProfileMenuOpen(false);
+                    }}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link href="/login" className="hidden sm:block text-sm font-bold text-[#151C27] hover:text-[#CF0738] transition-colors mr-2">
+                Login
+              </Link>
+              <Link href="/partner" className="hidden sm:block">
+                <button className="rounded-full bg-[#CF0738] px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-red-700">
+                  Become a Partner
+                </button>
+              </Link>
+            </>
+          )}
 
           {/* Hamburger Menu Toggle */}
           <button 
@@ -100,13 +143,26 @@ export default function Header() {
                 {link.name}
               </Link>
             ))}
-            <Link 
-              href="/partner" 
-              onClick={() => setIsMenuOpen(false)}
-              className="sm:hidden block w-full text-center bg-[#CF0738] text-white font-bold py-3 rounded-lg"
-            >
-              Become a Partner
-            </Link>
+            {user ? (
+              <button 
+                onClick={() => {
+                  dispatch(logOut());
+                  setIsMenuOpen(false);
+                }}
+                className="sm:hidden w-full flex items-center justify-center gap-2 text-red-600 font-bold py-3 rounded-lg hover:bg-red-50"
+              >
+                <LogOut className="w-5 h-5" />
+                Logout
+              </button>
+            ) : (
+              <Link 
+                href="/partner" 
+                onClick={() => setIsMenuOpen(false)}
+                className="sm:hidden block w-full text-center bg-[#CF0738] text-white font-bold py-3 rounded-lg"
+              >
+                Become a Partner
+              </Link>
+            )}
           </nav>
         </div>
       )}

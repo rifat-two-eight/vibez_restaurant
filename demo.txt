@@ -1,0 +1,114 @@
+{
+    "success": true,
+    "message": "My deals retrieved successfully",
+    "data": [
+        {
+            "twoForOne": {
+                "appliesTo": "MAIN_COURSE"
+            },
+            "_id": "6a3aec0d9a6ea1f8f6427f36",
+            "restaurantId": {
+                "_id": "6a39cc57030cac4021dd65f3",
+                "restaurantName": "Sultan's Dine",
+                "restaurantDescription": "Fine Dining Experience",
+                "restaurantImage": "/uploads/restaurant-images/restaurant-758121-9239.webp"
+            },
+            "createdBy": "6a39cc57030cac4021dd65f2",
+            "dealType": "TWO_FOR_ONE",
+            "title": "2 for 1 MAIN COURSE",
+            "description": "Exclusive offer generated from dashboard.",
+            "day": "FRIDAY",
+            "mealTime": "DINNER",
+            "maxClaimsPerDay": 50,
+            "isActive": true,
+            "isDeleted": false,
+            "createdAt": "2026-06-23T20:26:53.352Z",
+            "updatedAt": "2026-06-23T20:26:53.352Z",
+            "start": "17:00",
+            "end": "22:00"
+        },
+        {
+            "twoForOne": {
+                "appliesTo": "MAIN_COURSE"
+            },
+            "_id": "6a3aeb8b9a6ea1f8f6427f33",
+            "restaurantId": {
+                "_id": "6a39cc57030cac4021dd65f3",
+                "restaurantName": "Sultan's Dine",
+                "restaurantDescription": "Fine Dining Experience",
+                "restaurantImage": "/uploads/restaurant-images/restaurant-758121-9239.webp"
+            },
+            "createdBy": "6a39cc57030cac4021dd65f2",
+            "dealType": "TWO_FOR_ONE",
+            "title": "2 for 1 MAIN COURSE",
+            "description": "Exclusive offer generated from dashboard.",
+            "day": "FRIDAY",
+            "mealTime": "DINNER",
+            "maxClaimsPerDay": 50,
+            "isActive": true,
+            "isDeleted": false,
+            "createdAt": "2026-06-23T20:24:43.497Z",
+            "updatedAt": "2026-06-23T20:24:43.497Z",
+            "start": "17:00",
+            "end": "22:00"
+        },
+        {
+            "twoForOne": {
+                "appliesTo": "MAIN_COURSE"
+            },
+            "_id": "6a3ae0e7c6b62e60b91bfb33",
+            "restaurantId": {
+                "_id": "6a39cc57030cac4021dd65f3",
+                "restaurantName": "Sultan's Dine",
+                "restaurantDescription": "Fine Dining Experience",
+                "restaurantImage": "/uploads/restaurant-images/restaurant-758121-9239.webp"
+            },
+            "createdBy": "6a39cc57030cac4021dd65f2",
+            "dealType": "TWO_FOR_ONE",
+            "title": "2 for 1 Pizza Night",
+            "description": "Buy one premium pizza, get one free on Friday dinner!",
+            "day": "FRIDAY",
+            "mealTime": "DINNER",
+            "start": "18:00",
+            "end": "22:00",
+            "maxClaimsPerDay": 50,
+            "isActive": true,
+            "isDeleted": false,
+            "createdAt": "2026-06-23T19:39:19.717Z",
+            "updatedAt": "2026-06-23T19:39:19.717Z"
+        },
+        {
+            "twoForOne": {
+                "appliesTo": "MAIN_COURSE"
+            },
+            "_id": "6a3ac2d722dfb9e257d04eaf",
+            "restaurantId": {
+                "_id": "6a39cc57030cac4021dd65f3",
+                "restaurantName": "Sultan's Dine",
+                "restaurantDescription": "Fine Dining Experience",
+                "restaurantImage": "/uploads/restaurant-images/restaurant-758121-9239.webp"
+            },
+            "createdBy": "6a39cc57030cac4021dd65f2",
+            "dealType": "TWO_FOR_ONE",
+            "title": "2 for 1 Pizza Night",
+            "description": "Buy one premium pizza, get one free on Friday dinner!",
+            "day": "FRIDAY",
+            "mealTime": "DINNER",
+            "start": "18:00",
+            "end": "22:00",
+            "maxClaimsPerDay": 50,
+            "isActive": true,
+            "isDeleted": false,
+            "createdAt": "2026-06-23T17:31:03.516Z",
+            "updatedAt": "2026-06-23T17:31:03.516Z"
+        }
+    ],
+    "meta": {
+        "page": 1,
+        "limit": 10,
+        "total": 4,
+        "totalPages": 1,
+        "hasNext": false,
+        "hasPrev": false
+    }
+}

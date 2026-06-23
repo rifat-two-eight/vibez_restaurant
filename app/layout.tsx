@@ -4,6 +4,7 @@ import { Plus_Jakarta_Sans, Geist } from "next/font/google";
 import "./globals.css";
 import { ReduxProvider } from "@/redux/provider";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/sonner";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -29,6 +30,7 @@ export default function RootLayout({
           <main className="flex-1 flex flex-col">
             {children}
           </main>
+          <Toaster position="top-right" />
         </ReduxProvider>
       </body>
     </html>
