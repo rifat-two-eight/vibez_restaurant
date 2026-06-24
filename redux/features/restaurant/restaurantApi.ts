@@ -7,10 +7,10 @@ export const restaurantApi = baseApi.injectEndpoints({
             providesTags: ['Restaurant'],
         }),
         updateMyRestaurant: builder.mutation({
-            query: (formData: FormData) => ({
+            query: (data: any) => ({
                 url: '/restaurants/my/restaurant',
                 method: 'PATCH',
-                body: formData,
+                body: data,
             }),
             invalidatesTags: ['Restaurant'],
         }),
