@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useAppDispatch, useAppSelector } from '@/redux/hooks';
+import { logOut, currentToken } from '@/redux/features/auth/authSlice';
 import {
     LayoutDashboard,
     Tag,
@@ -24,10 +26,31 @@ export default function RestaurantLayout({
 }) {
     const pathname = usePathname();
     const router = useRouter();
+    const dispatch = useAppDispatch();
+    const token = useAppSelector(currentToken);
+    const [isChecking, setIsChecking] = useState(true);
+
+    React.useEffect(() => {
+        const localToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
+        if (!token && !localToken) {
+            router.push('/login');
+        } else {
+            setIsChecking(false);
+        }
+    }, [token, router]);
 
     const handleLogout = () => {
+        dispatch(logOut());
         router.push('/login');
     };
+
+    if (isChecking) {
+        return (
+            <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+                <div className="w-8 h-8 border-4 border-[#013622] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        );
+    }
 
     const menuItems = [
         { name: 'Overview', icon: LayoutDashboard, href: '/dashboard' },

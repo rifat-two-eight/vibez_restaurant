@@ -1,79 +1,56 @@
-data
-: 
-err
-: 
-code
-: 
-"LIMIT_FILE_SIZE"
-field
-: 
-"short"
-message
-: 
-"File too large"
-name
-: 
-"MulterError"
-storageErrors
-: 
-[]
-[[Prototype]]
-: 
-Object
-errorSources
-: 
-[{…}]
-message
-: 
-"File too large"
-stack
-: 
-"MulterError: File too large\n    at abortWithCode (C:\\Users\\appon\\Projects\\New Project\\VIBEZ\\vibez_backend\\node_modules\\multer\\lib\\make-middleware.js:101:22)\n    at FileStream.<anonymous> (C:\\Users\\appon\\Projects\\New Project\\VIBEZ\\vibez_backend\\node_modules\\multer\\lib\\make-middleware.js:211:11)\n    at FileStream.emit (node:events:508:28)\n    at SBMH.ssCb [as _cb] (C:\\Users\\appon\\Projects\\New Project\\VIBEZ\\vibez_backend\\node_modules\\busboy\\lib\\types\\multipart.js:479:32)\n    at feed (C:\\Users\\appon\\Projects\\New Project\\VIBEZ\\vibez_backend\\node_modules\\streamsearch\\lib\\sbmh.js:248:10)\n    at SBMH.push (C:\\Users\\appon\\Projects\\New Project\\VIBEZ\\vibez_backend\\node_modules\\streamsearch\\lib\\sbmh.js:104:16)\n    at Multipart._write (C:\\Users\\appon\\Projects\\New Project\\VIBEZ\\vibez_backend\\node_modules\\busboy\\lib\\types\\multipart.js:567:19)\n    at writeOrBuffer (node:internal/streams/writable:570:12)\n    at _write (node:internal/streams/writable:499:10)\n    at Multipart.Writable.write (node:internal/streams/writable:508:10)"
-success
-: 
-false
-[[Prototype]]
-: 
-Object
-constructor
-: 
-ƒ Object()
-hasOwnProperty
-: 
-ƒ hasOwnProperty()
-isPrototypeOf
-: 
-ƒ isPrototypeOf()
-propertyIsEnumerable
-: 
-ƒ propertyIsEnumerable()
-toLocaleString
-: 
-ƒ toLocaleString()
-toString
-: 
-ƒ toString()
-valueOf
-: 
-ƒ valueOf()
-__defineGetter__
-: 
-ƒ __defineGetter__()
-__defineSetter__
-: 
-ƒ __defineSetter__()
-__lookupGetter__
-: 
-ƒ __lookupGetter__()
-__lookupSetter__
-: 
-ƒ __lookupSetter__()
-__proto__
-: 
-(...)
-get __proto__
-: 
-ƒ __proto__()
-set __proto__
-: 
-ƒ __proto__()
+1. Create Coupon
+Creates a coupon both on Stripe and saves the details locally in the database.
+URL: /coupons
+Method: POST
+Request Body Fields
+couponId (string, required): The stripe coupon ID (which acts as the code, e.g. "SUMMER50").
+name (string, optional): A descriptive name for the coupon.
+percentOff (number, optional): Percentage discount (e.g. 15 for 15% off).
+amountOff (number, optional): Flat discount amount in cents/currency units (e.g. 500 for CHF 5.00 off).
+currency (string, optional): Defaults to "chf". Required if amountOff is provided.
+duration (string, required): How long the discount applies. Allowed values: "once", "repeating", "forever".
+durationInMonths (number, optional): If duration is "repeating", this specifies how many months it repeats.
+isDefault (boolean, optional): If true, this becomes the default coupon automatically applied to users who sign up via referral. It marks any other default coupon as false.
+isActive (boolean, optional): Defaults to true.
+maxRedemptions (number, optional): Maximum number of times this coupon can be redeemed.
+Sample Request
+json{  "couponId": "WELCOME25",  "name": "25% Welcome Discount",  "percentOff": 25,  "duration": "once",  "isDefault": true}
+
+Sample Response (201 Created / 200 OK)
+json{  "success": true,  "statusCode": 200,  "message": "Coupon created successfully",  "data": {    "_id": "6a3c6df677d2af1f008891ac",    "couponId": "WELCOME25",    "name": "25% Welcome Discount",    "percentOff": 25,    "currency": "chf",    "duration": "once",    "isDefault": true,    "isActive": true,    "timesRedeemed": 0,    "createdAt": "2026-06-25T00:35:00.000Z",    "updatedAt": "2026-06-25T00:35:00.000Z"  }}\
+
+2. Get All Coupons
+Retrieves a list of all coupons saved in the local database, sorted by creation date (newest first).
+URL: /coupons
+Method: GET
+Sample Response (200 OK)
+json{  "success": true,  "statusCode": 200,  "message": "Coupons retrieved successfully",  "data": [    {      "_id": "6a3c6df677d2af1f008891ac",      "couponId": "WELCOME25",      "name": "25% Welcome Discount",      "percentOff": 25,      "duration": "once",      "isDefault": true,      "isActive": true,      "timesRedeemed": 0    }  ]}
+
+3. Get Coupon by ID
+Retrieves details of a single coupon using either its database _id or Stripe couponId.
+URL: /coupons/:id
+Method: GET
+Path Parameters:
+id (string, required): The database _id or the Stripe couponId (e.g. "WELCOME25").
+Sample Response (200 OK)
+json{  "success": true,  "statusCode": 200,  "message": "Coupon retrieved successfully",  "data": {    "_id": "6a3c6df677d2af1f008891ac",    "couponId": "WELCOME25",    "name": "25% Welcome Discount",    "percentOff": 25,    "duration": "once",    "isDefault": true,    "isActive": true,    "timesRedeemed": 0  }}
+
+4. Update Coupon
+Updates local database fields of a coupon. Note that Stripe only allows updating a coupon's metadata (e.g., description name); core fields (like discount amount) cannot be changed after creation.
+URL: /coupons/:id
+Method: PATCH
+Path Parameters:
+id (string, required): The database _id of the coupon.
+Sample Request
+json{  "name": "Updated Welcome Discount Name",  "isDefault": false}
+
+json{  "success": true,  "statusCode": 200,  "message": "Coupon updated successfully",  "data": {    "_id": "6a3c6df677d2af1f008891ac",    "couponId": "WELCOME25",    "name": "Updated Welcome Discount Name",    "percentOff": 25,    "duration": "once",    "isDefault": false,    "isActive": true,    "timesRedeemed": 0  }}
+
+5. Delete Coupon
+Deletes the coupon from Stripe's platform and removes it from the local database.
+URL: /coupons/:id
+Method: DELETE
+Path Parameters:
+id (string, required): The database _id of the coupon.
+Sample Response (200 OK)
+json{  "success": true,  "statusCode": 200,  "message": "Coupon deleted successfully",  "data": {    "message": "Coupon deleted successfully"  }}

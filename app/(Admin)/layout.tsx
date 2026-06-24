@@ -51,6 +51,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         { name: 'Referral & Affiliate System', icon: GitBranch, href: '/admin/referrals' },
                         { name: 'Restaurants', icon: UtensilsCrossed, href: '/admin/restaurants' },
                         { name: 'Deals Management', icon: Tag, href: '/admin/deals' },
+                        { name: 'Coupons Management', icon: Ticket, href: '/admin/coupons' },
                         { name: 'Subscription Management', icon: CreditCard, href: '/admin/user-plans' },
                         { name: 'Users', icon: Users, href: '/admin/users' },
                         { name: 'Settings', icon: Settings, href: '/admin/settings' },

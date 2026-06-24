@@ -1,160 +1,287 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Building2, MapPin, Utensils, ShieldCheck, Save, Users } from 'lucide-react';
-
-const PERMISSIONS = [
-    'Verify customer bookings',
-    'Handle walk-in customers',
-    'View daily reports',
-    'Modify deals',
-];
+import React, { useState, useRef, useEffect } from 'react';
+import { UploadCloud, Save, Loader2, Building, ShieldCheck } from 'lucide-react';
+import { toast } from "sonner";
+import { useGetMyRestaurantQuery, useUpdateMyRestaurantMutation } from '@/redux/features/restaurant/restaurantApi';
+import { useToggleAllStaffLoginMutation } from '@/redux/features/staff/staffApi';
 
 export default function SettingsPage() {
-    const [form, setForm] = useState({
-        name: 'The Gourmet Bistro',
-        address: '123 Main Street, Downtown',
-        cuisine: '',
-    });
-    const [staffLogin, setStaffLogin] = useState(true);
-    const [saved, setSaved] = useState(false);
+    const { data: response, isLoading: isLoadingRestaurant } = useGetMyRestaurantQuery({});
+    const [updateRestaurant, { isLoading: isUpdating }] = useUpdateMyRestaurantMutation();
+    const [toggleAllStaff, { isLoading: isToggling }] = useToggleAllStaffLoginMutation();
 
-    const handleSave = (e: React.FormEvent) => {
-        e.preventDefault();
-        setSaved(true);
-        setTimeout(() => setSaved(false), 3000);
+    const restaurant = response?.data;
+    
+    // Manage local globalStaffLogin state visually.
+    const [globalStaffLogin, setGlobalStaffLogin] = useState(true);
+
+    const [form, setForm] = useState({
+        restaurantName: '',
+        restaurantDescription: '',
+        street: '',
+        city: '',
+        state: '',
+        zipCode: '',
+        country: '',
+    });
+    
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace('/api/v1', '') || 'http://10.10.26.171:5055';
+
+    useEffect(() => {
+        if (restaurant) {
+            setForm({
+                restaurantName: restaurant.restaurantName || '',
+                restaurantDescription: restaurant.restaurantDescription || '',
+                street: restaurant.restaurantAddress?.street || '',
+                city: restaurant.restaurantAddress?.city || '',
+                state: restaurant.restaurantAddress?.state || '',
+                zipCode: restaurant.restaurantAddress?.zipCode || '',
+                country: restaurant.restaurantAddress?.country || '',
+            });
+            if (restaurant.restaurantImage) {
+                setImagePreview(`${baseUrl}${restaurant.restaurantImage}`);
+            }
+        }
+    }, [restaurant, baseUrl]);
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
+        }
     };
 
+    const handleToggleAllStaff = async (checked: boolean) => {
+        try {
+            await toggleAllStaff({ enable: checked }).unwrap();
+            setGlobalStaffLogin(checked);
+            toast.success(`Global staff login ${checked ? 'enabled' : 'disabled'} successfully.`);
+        } catch (error) {
+            console.error("Failed to toggle staff:", error);
+            toast.error("Failed to update global staff login.");
+        }
+    };
+
+    const handleSaveRestaurant = async (e: React.FormEvent) => {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        formData.append('restaurantName', form.restaurantName);
+        formData.append('restaurantDescription', form.restaurantDescription);
+        
+        // Try appending address as a nested object string, standard for multer backends parsing JSON strings.
+        formData.append('restaurantAddress', JSON.stringify({
+            street: form.street,
+            city: form.city,
+            state: form.state,
+            zipCode: form.zipCode,
+            country: form.country,
+        }));
+
+        if (imageFile) {
+            formData.append('restaurantImage', imageFile);
+        }
+
+        try {
+            await updateRestaurant(formData).unwrap();
+            toast.success("Restaurant profile updated successfully!");
+        } catch (error: any) {
+            console.error("Update failed:", error);
+            const errorMessage = error?.data?.message || "Failed to update restaurant profile.";
+            toast.error(errorMessage);
+        }
+    };
+
+    if (isLoadingRestaurant) {
+        return (
+            <div className="flex justify-center items-center h-[60vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-[#013622]" />
+            </div>
+        );
+    }
+
     return (
-        <form onSubmit={handleSave} className="space-y-8">
-            {/* Header */}
-            <div className="flex items-start justify-between">
-                <div>
-                    <h1 className="text-2xl font-bold text-zinc-900">Restaurant Settings</h1>
-                    <p className="text-zinc-500 text-sm mt-1">Manage your restaurant information and access controls</p>
-                </div>
-                <button
-                    type="submit"
-                    className="flex items-center gap-2 bg-[#013622] text-white px-5 py-3 rounded-[10px] font-semibold text-sm hover:bg-[#012a1a] transition-colors shadow-lg shadow-[#013622]/20"
-                >
-                    <Save className="w-4 h-4" />
-                    Save Settings
-                </button>
+        <div className="space-y-8 max-w-5xl pb-12">
+            <div>
+                <h1 className="text-2xl font-bold text-zinc-900">Settings</h1>
+                <p className="text-zinc-500 text-sm mt-1">Manage your restaurant profile and global configurations.</p>
             </div>
 
-            {saved && (
-                <p className="text-sm text-emerald-600 font-semibold">✓ Settings saved successfully.</p>
-            )}
-
-            {/* Business Information */}
-            <div className="bg-white rounded-[10px] border border-zinc-100 p-6 space-y-6">
-                <div className="flex items-center gap-2">
-                    <div className="p-2 bg-zinc-100 rounded-[8px]">
-                        <Building2 className="w-4 h-4 text-zinc-500" />
-                    </div>
-                    <h2 className="text-base font-bold text-zinc-900">Business Information</h2>
-                </div>
-
-                <div className="space-y-5">
-                    {/* Restaurant Name */}
-                    <div className="space-y-1.5">
-                        <label className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700">
-                            <Building2 className="w-3.5 h-3.5 text-zinc-400" />
-                            Restaurant Name
-                        </label>
-                        <input
-                            type="text"
-                            value={form.name}
-                            onChange={e => setForm({ ...form, name: e.target.value })}
-                            placeholder="The Gourmet Bistro"
-                            className="w-full border border-zinc-200 rounded-[10px] px-4 py-3 text-sm text-zinc-700 focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622] bg-zinc-50"
-                        />
-                    </div>
-
-                    {/* Address */}
-                    <div className="space-y-1.5">
-                        <label className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700">
-                            <MapPin className="w-3.5 h-3.5 text-zinc-400" />
-                            Address
-                        </label>
-                        <input
-                            type="text"
-                            value={form.address}
-                            onChange={e => setForm({ ...form, address: e.target.value })}
-                            placeholder="123 Main Street, Downtown"
-                            className="w-full border border-zinc-200 rounded-[10px] px-4 py-3 text-sm text-zinc-700 focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622] bg-zinc-50"
-                        />
-                    </div>
-
-                    {/* Cuisine Type */}
-                    <div className="space-y-1.5">
-                        <label className="flex items-center gap-1.5 text-sm font-semibold text-zinc-700">
-                            <Utensils className="w-3.5 h-3.5 text-zinc-400" />
-                            Cuisine Type
-                        </label>
-                        <input
-                            type="text"
-                            value={form.cuisine}
-                            onChange={e => setForm({ ...form, cuisine: e.target.value })}
-                            placeholder="e.g. Italian, Fusion, Mediterranean"
-                            className="w-full border border-zinc-200 rounded-[10px] px-4 py-3 text-sm text-zinc-700 focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622] bg-zinc-50"
-                        />
-                    </div>
-                </div>
-            </div>
-
-            {/* Access Control */}
-            <div className="bg-white rounded-[10px] border border-zinc-100 p-6 space-y-5">
-                <div className="flex items-center gap-2">
-                    <div className="p-2 bg-zinc-100 rounded-[8px]">
-                        <ShieldCheck className="w-4 h-4 text-zinc-500" />
-                    </div>
-                    <h2 className="text-base font-bold text-zinc-900">Access Control</h2>
-                </div>
-
-                {/* Toggle Row */}
-                <div className="flex items-center justify-between p-4 rounded-[10px] border border-zinc-100 bg-zinc-50">
-                    <div className="flex items-start gap-3">
-                        <Users className="w-5 h-5 text-zinc-400 mt-0.5 shrink-0" />
-                        <div>
-                            <p className="text-sm font-semibold text-zinc-900">Enable Staff Login</p>
-                            <p className="text-xs text-zinc-400 mt-0.5">Allow staff members to log in and access their dashboard</p>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                {/* Left Column: Toggles & Quick Settings */}
+                <div className="space-y-6">
+                    <div className="bg-white rounded-[10px] border border-zinc-100 p-6 shadow-sm">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="p-2 bg-[#013622]/10 rounded-lg text-[#013622]">
+                                <ShieldCheck className="w-5 h-5" />
+                            </div>
+                            <h2 className="text-lg font-bold text-zinc-900">Security & Access</h2>
+                        </div>
+                        
+                        <div className="flex items-center justify-between py-4 border-t border-zinc-100">
+                            <div className="pr-4">
+                                <h3 className="text-sm font-semibold text-zinc-900">Global Staff Login</h3>
+                                <p className="text-xs text-zinc-500 mt-1">Enable or disable portal access for all staff members at once.</p>
+                            </div>
+                            <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                                <input 
+                                    type="checkbox" 
+                                    className="sr-only peer" 
+                                    checked={globalStaffLogin}
+                                    onChange={(e) => handleToggleAllStaff(e.target.checked)}
+                                    disabled={isToggling}
+                                />
+                                <div className="w-11 h-6 bg-zinc-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#013622]"></div>
+                            </label>
                         </div>
                     </div>
-                    {/* Toggle Switch */}
-                    <button
-                        type="button"
-                        onClick={() => setStaffLogin(!staffLogin)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                            staffLogin ? 'bg-[#013622]' : 'bg-zinc-300'
-                        }`}
-                    >
-                        <span
-                            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
-                                staffLogin ? 'translate-x-6' : 'translate-x-1'
-                            }`}
-                        />
-                    </button>
                 </div>
 
-                {/* Permissions Panel */}
-                {staffLogin && (
-                    <div className="rounded-[10px] border border-blue-100 bg-blue-50 p-5 space-y-3">
-                        <div>
-                            <p className="text-sm font-bold text-blue-800">Manage Staff Permissions</p>
-                            <p className="text-xs text-blue-600 mt-0.5">Control what staff members can do on their dashboard</p>
+                {/* Right Column: Profile Form */}
+                <div className="lg:col-span-2">
+                    <form onSubmit={handleSaveRestaurant} className="bg-white rounded-[10px] border border-zinc-100 p-8 shadow-sm space-y-8">
+                        <div className="flex items-center gap-3 border-b border-zinc-100 pb-4">
+                            <div className="p-2 bg-[#013622]/10 rounded-lg text-[#013622]">
+                                <Building className="w-5 h-5" />
+                            </div>
+                            <h2 className="text-lg font-bold text-zinc-900">Restaurant Profile</h2>
                         </div>
-                        <ul className="space-y-2 pl-2">
-                            {PERMISSIONS.map(p => (
-                                <li key={p} className="flex items-center gap-2 text-sm text-blue-700">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0" />
-                                    {p}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
+
+                        {/* Image Upload */}
+                        <div>
+                            <label className="block text-sm font-semibold text-zinc-700 mb-3">Restaurant Banner / Image</label>
+                            <div className="flex items-start gap-6">
+                                <div 
+                                    className="w-40 h-40 rounded-2xl border-2 border-dashed border-zinc-200 overflow-hidden bg-zinc-50 flex flex-col items-center justify-center relative cursor-pointer hover:bg-zinc-100 transition-colors shrink-0"
+                                    onClick={() => fileInputRef.current?.click()}
+                                >
+                                    {imagePreview ? (
+                                        <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <>
+                                            <UploadCloud className="w-8 h-8 text-zinc-400 mb-2" />
+                                            <span className="text-xs text-zinc-500 font-medium text-center px-4">Click to upload</span>
+                                        </>
+                                    )}
+                                </div>
+                                <div className="flex-1 space-y-2 pt-2">
+                                    <p className="text-sm text-zinc-600">Upload a high-quality image of your restaurant's interior or signature dish.</p>
+                                    <p className="text-xs text-zinc-400">Recommended size: 800x800px. Max size: 5MB.</p>
+                                    {imagePreview && (
+                                        <button 
+                                            type="button" 
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="text-sm text-[#013622] font-semibold hover:underline mt-2 inline-block"
+                                        >
+                                            Change Image
+                                        </button>
+                                    )}
+                                </div>
+                                <input 
+                                    type="file" 
+                                    ref={fileInputRef} 
+                                    onChange={handleImageChange} 
+                                    accept="image/*" 
+                                    className="hidden" 
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-5">
+                            <div>
+                                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Restaurant Name</label>
+                                <input
+                                    required
+                                    value={form.restaurantName}
+                                    onChange={e => setForm({ ...form, restaurantName: e.target.value })}
+                                    className="w-full border border-zinc-200 rounded-[10px] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622]"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Description</label>
+                                <textarea
+                                    rows={4}
+                                    required
+                                    value={form.restaurantDescription}
+                                    onChange={e => setForm({ ...form, restaurantDescription: e.target.value })}
+                                    className="w-full border border-zinc-200 rounded-[10px] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622] resize-none"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="space-y-5">
+                            <h3 className="text-base font-bold text-zinc-900 border-b border-zinc-100 pb-2">Location</h3>
+                            <div>
+                                <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Street Address</label>
+                                <input
+                                    required
+                                    value={form.street}
+                                    onChange={e => setForm({ ...form, street: e.target.value })}
+                                    className="w-full border border-zinc-200 rounded-[10px] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622]"
+                                />
+                            </div>
+                            <div className="grid grid-cols-2 gap-5">
+                                <div>
+                                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">City</label>
+                                    <input
+                                        required
+                                        value={form.city}
+                                        onChange={e => setForm({ ...form, city: e.target.value })}
+                                        className="w-full border border-zinc-200 rounded-[10px] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">State</label>
+                                    <input
+                                        required
+                                        value={form.state}
+                                        onChange={e => setForm({ ...form, state: e.target.value })}
+                                        className="w-full border border-zinc-200 rounded-[10px] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622]"
+                                    />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-5">
+                                <div>
+                                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">ZIP Code</label>
+                                    <input
+                                        required
+                                        value={form.zipCode}
+                                        onChange={e => setForm({ ...form, zipCode: e.target.value })}
+                                        className="w-full border border-zinc-200 rounded-[10px] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622]"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-semibold text-zinc-700 mb-1.5">Country</label>
+                                    <input
+                                        required
+                                        value={form.country}
+                                        onChange={e => setForm({ ...form, country: e.target.value })}
+                                        className="w-full border border-zinc-200 rounded-[10px] px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622]"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end pt-4 border-t border-zinc-100">
+                            <button
+                                type="submit"
+                                disabled={isUpdating}
+                                className="flex items-center gap-2 bg-[#013622] text-white px-8 py-3 rounded-[10px] font-semibold hover:bg-[#012a1a] transition-all shadow-lg shadow-[#013622]/20 disabled:opacity-50"
+                            >
+                                {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                                Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        </form>
+        </div>
     );
 }

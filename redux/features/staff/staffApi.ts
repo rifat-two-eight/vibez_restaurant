@@ -22,6 +22,14 @@ export const staffApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['User'],
         }),
+        toggleAllStaffLogin: builder.mutation({
+            query: ({ enable }) => ({
+                url: `/users/staff/toggle-all-login`,
+                method: 'PATCH',
+                body: { enable },
+            }),
+            invalidatesTags: ['User'],
+        }),
         updateStaff: builder.mutation({
             query: ({ id, ...data }) => ({
                 url: `/users/staff/${id}`,
@@ -40,4 +48,4 @@ export const staffApi = baseApi.injectEndpoints({
     }),
 });
 
-export const { useCreateStaffMutation, useGetStaffQuery, useToggleStaffStatusMutation, useUpdateStaffMutation, useUpdateStaffPasswordMutation } = staffApi;
+export const { useCreateStaffMutation, useGetStaffQuery, useToggleStaffStatusMutation, useToggleAllStaffLoginMutation, useUpdateStaffMutation, useUpdateStaffPasswordMutation } = staffApi;

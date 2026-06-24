@@ -14,15 +14,33 @@ export default function LoginPage() {
     const dispatch = useAppDispatch();
     const [login, { isLoading }] = useLoginMutation();
 
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [rememberMe, setRememberMe] = useState(false);
+
+    React.useEffect(() => {
+        const savedEmail = localStorage.getItem('vibez_saved_email');
+        const savedPassword = localStorage.getItem('vibez_saved_password');
+        if (savedEmail && savedPassword) {
+            setEmail(savedEmail);
+            setPassword(savedPassword);
+            setRememberMe(true);
+        }
+    }, []);
+
     const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        
-        const formData = new FormData(e.currentTarget);
-        const email = formData.get('email');
-        const password = formData.get('password');
 
         try {
             const response = await login({ email, password }).unwrap();
+            
+            if (rememberMe) {
+                localStorage.setItem('vibez_saved_email', email);
+                localStorage.setItem('vibez_saved_password', password);
+            } else {
+                localStorage.removeItem('vibez_saved_email');
+                localStorage.removeItem('vibez_saved_password');
+            }
             
             if (response?.data?.user && response?.data?.accessToken) {
                 dispatch(setUser({
@@ -91,6 +109,8 @@ export default function LoginPage() {
                             <input 
                                 type="email" 
                                 name="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="Email Address" 
                                 required
                                 className="w-full bg-white border border-zinc-200 rounded-2xl py-4 px-6 text-sm focus:outline-none focus:ring-2 transition-all"
@@ -101,6 +121,8 @@ export default function LoginPage() {
                             <input 
                                 type="password" 
                                 name="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 placeholder="Password" 
                                 required
                                 className="w-full bg-white border border-zinc-200 rounded-2xl py-4 px-6 text-sm focus:outline-none focus:ring-2 transition-all"
@@ -110,7 +132,12 @@ export default function LoginPage() {
                         
                         <div className="flex justify-between items-center text-xs font-medium px-2">
                             <label className="flex items-center gap-2 cursor-pointer text-zinc-500">
-                                <input type="checkbox" className="rounded-md border-zinc-200 text-[#013622]" />
+                                <input 
+                                    type="checkbox" 
+                                    checked={rememberMe}
+                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                    className="rounded-md border-zinc-200 text-[#013622]" 
+                                />
                                 Remember me
                             </label>
                             <a href="#" className="text-zinc-400 hover:text-zinc-600">Forgot Password?</a>

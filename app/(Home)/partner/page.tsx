@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Image from "next/image";
+import Script from "next/script";
 import { useRouter } from 'next/navigation';
 import { useRegisterRestaurantMutation } from '@/redux/features/auth/authApi';
 import { useAppDispatch } from '@/redux/hooks';
@@ -12,8 +13,72 @@ export default function Partner() {
     const router = useRouter();
     const dispatch = useAppDispatch();
     const [openingDays, setOpeningDays] = useState<string[]>(['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY']);
-    
+
+    const autocompleteInputRef = useRef<HTMLInputElement>(null);
+    const autocompleteInstance = useRef<any>(null);
+    const [restaurantName, setRestaurantName] = useState('');
+    const [street, setStreet] = useState('');
+    const [city, setCity] = useState('');
+    const [state, setState] = useState('');
+    const [zipCode, setZipCode] = useState('');
+    const [country, setCountry] = useState('');
+    const [restaurantDescription, setRestaurantDescription] = useState('');
+
     const [registerRestaurant, { isLoading }] = useRegisterRestaurantMutation();
+
+    const initAutocomplete = () => {
+        if ((window as any).google && autocompleteInputRef.current && !autocompleteInstance.current) {
+            const autocomplete = new (window as any).google.maps.places.Autocomplete(autocompleteInputRef.current, {
+                types: ['establishment']
+            });
+            
+            autocompleteInstance.current = autocomplete;
+
+            autocomplete.addListener('place_changed', () => {
+                const place = autocomplete.getPlace();
+
+                if (place.name) {
+                    setRestaurantName(place.name);
+                }
+
+                let streetNumber = '';
+                let route = '';
+                let locality = '';
+                let stateName = '';
+                let zip = '';
+                let countryName = '';
+
+                place.address_components?.forEach((component: { types: any; long_name: string; short_name: string; }) => {
+                    const types = component.types;
+                    if (types.includes('street_number')) streetNumber = component.long_name;
+                    if (types.includes('route')) route = component.long_name;
+                    if (types.includes('locality')) locality = component.long_name;
+                    if (types.includes('postal_town') && !locality) locality = component.long_name;
+                    if (types.includes('administrative_area_level_1')) stateName = component.short_name;
+                    if (types.includes('postal_code')) zip = component.long_name;
+                    if (types.includes('country')) countryName = component.long_name;
+                });
+
+                setStreet(`${streetNumber} ${route}`.trim() || place.name || '');
+                if (locality) setCity(locality);
+                if (stateName) setState(stateName);
+                if (zip) setZipCode(zip);
+                if (countryName) setCountry(countryName);
+
+                if (place.editorial_summary && place.editorial_summary.overview) {
+                    setRestaurantDescription(place.editorial_summary.overview);
+                } else if (place.name && locality) {
+                    // Fallback description if google doesn't provide one
+                    setRestaurantDescription(`Welcome to ${place.name}, a premier dining destination located in the heart of ${locality}.`);
+                }
+            });
+        }
+    };
+
+    React.useEffect(() => {
+        // Try initializing in case the script is already loaded
+        initAutocomplete();
+    });
 
     const toggleDay = (day: string) => {
         setOpeningDays(prev =>
@@ -23,9 +88,9 @@ export default function Partner() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        
+
         const formData = new FormData(e.currentTarget);
-        
+
         // Build the JSON body as required by the API
         const payload = {
             name: formData.get('name'),
@@ -61,10 +126,10 @@ export default function Partner() {
 
         const submissionData = new FormData();
         submissionData.append('body', JSON.stringify(payload));
-        
+
         const profileImage = formData.get('profileImage') as File;
         const restaurantImage = formData.get('restaurantImage') as File;
-        
+
         if (profileImage && profileImage.size > 0) {
             submissionData.append('profileImage', profileImage);
         }
@@ -75,7 +140,7 @@ export default function Partner() {
         try {
             const response = await registerRestaurant(payload).unwrap();
             toast.success("Restaurant application submitted successfully!");
-            
+
             if (response.data?.user && response.data?.accessToken) {
                 dispatch(setUser({
                     user: response.data.user,
@@ -91,6 +156,11 @@ export default function Partner() {
 
     return (
         <div className="container mx-auto px-4 py-20">
+            <Script
+                src={`https://maps.googleapis.com/maps/api/js?key=AIzaSyDJXC1_hT7bYHo1qQU56OOAQTjz4FPq0Ks&libraries=places`}
+                strategy="afterInteractive"
+                onLoad={initAutocomplete}
+            />
             {/* Header Image */}
             <div className="relative max-w-6xl mx-auto rounded-[12px] overflow-hidden group mb-12 shadow-2xl">
                 <Image
@@ -128,9 +198,8 @@ export default function Partner() {
 
                         {/* Restaurant Information */}
                         <section className="space-y-6">
-                            <h2 className="text-lg font-bold text-[#005C2C] tracking-wide border-b pb-2 uppercase">Restaurant Information</h2>
+                            <h2 className="text-lg font-bold text-[#005C2C] tracking-wide border-b pb-2 uppercase">Owner Information</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <FormInput label="Restaurant Name" name="restaurantName" placeholder="e.g. The Emerald Kitchen" required />
                                 <FormInput label="Owner / Manager Name" name="name" placeholder="Full Name" required />
                                 <FormInput label="Email Address" name="email" placeholder="contact@restaurant.com" type="email" required />
                                 <FormInput label="Phone Number" name="phone" placeholder="+1 (555) 000-0000" required />
@@ -145,12 +214,72 @@ export default function Partner() {
 
                         {/* Business Details */}
                         <section className="space-y-6">
-                            <h2 className="text-lg font-bold text-[#005C2C] tracking-wide border-b pb-2 uppercase">Business Details</h2>
+                            <h2 className="text-lg font-bold text-[#005C2C] tracking-wide border-b pb-2 uppercase">Restaurant/Business Details</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="md:col-span-2">
-                                    <FormInput label="Restaurant Address" name="street" placeholder="Street Address" required />
+                                    <FormInput
+                                        label="Restaurant Name"
+                                        name="restaurantName"
+                                        placeholder="Start typing to search for your restaurant..."
+                                        required
+                                        value={restaurantName}
+                                        onChange={(e) => setRestaurantName(e.target.value)}
+                                        inputRef={autocompleteInputRef}
+                                    />
                                 </div>
-                                <FormInput label="City" name="city" placeholder="City" required />
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Short Description</label>
+                                    <textarea
+                                        name="restaurantDescription"
+                                        rows={4}
+                                        value={restaurantDescription}
+                                        onChange={(e) => setRestaurantDescription(e.target.value)}
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all resize-none"
+                                        placeholder="Tell us about your restaurant's story and specialty..."
+                                    />
+                                </div>
+                                <div className="md:col-span-2">
+                                    <FormInput
+                                        label="Restaurant Address"
+                                        name="street"
+                                        placeholder="Street Address"
+                                        required
+                                        value={street}
+                                        onChange={(e) => setStreet(e.target.value)}
+                                    />
+                                </div>
+                                <FormInput
+                                    label="City"
+                                    name="city"
+                                    placeholder="City"
+                                    required
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                />
+                                <FormInput
+                                    label="State/Province"
+                                    name="state"
+                                    placeholder="State"
+                                    required
+                                    value={state}
+                                    onChange={(e) => setState(e.target.value)}
+                                />
+                                <FormInput
+                                    label="ZIP/Postal Code"
+                                    name="zipCode"
+                                    placeholder="ZIP Code"
+                                    required
+                                    value={zipCode}
+                                    onChange={(e) => setZipCode(e.target.value)}
+                                />
+                                <FormInput
+                                    label="Country"
+                                    name="country"
+                                    placeholder="Country"
+                                    required
+                                    value={country}
+                                    onChange={(e) => setCountry(e.target.value)}
+                                />
                                 <div className="space-y-2">
                                     <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Type of Restaurant</label>
                                     <select name="restaurantType" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all appearance-none cursor-pointer">
@@ -235,15 +364,6 @@ export default function Partner() {
                         <section className="space-y-6">
                             <h2 className="text-lg font-bold text-[#005C2C] tracking-wide border-b pb-2 uppercase">Additional Info</h2>
                             <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Short Description</label>
-                                    <textarea
-                                        name="restaurantDescription"
-                                        rows={4}
-                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all resize-none"
-                                        placeholder="Tell us about your restaurant's story and specialty..."
-                                    />
-                                </div>
                                 <FormInput label="Website / Social Media Link" name="restaurantWebsite" placeholder="https://..." />
                             </div>
                         </section>
@@ -276,7 +396,7 @@ export default function Partner() {
     );
 }
 
-function FormInput({ label, name, placeholder, type = "text", required = false }: { label: string; name: string; placeholder: string; type?: string; required?: boolean }) {
+function FormInput({ label, name, placeholder, type = "text", required = false, value, onChange, inputRef }: { label: string; name: string; placeholder: string; type?: string; required?: boolean; value?: string; onChange?: (e: any) => void; inputRef?: any }) {
     return (
         <div className="space-y-2">
             <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">{label}</label>
@@ -285,6 +405,9 @@ function FormInput({ label, name, placeholder, type = "text", required = false }
                 name={name}
                 placeholder={placeholder}
                 required={required}
+                value={value}
+                onChange={onChange}
+                ref={inputRef}
                 className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all"
             />
         </div>
