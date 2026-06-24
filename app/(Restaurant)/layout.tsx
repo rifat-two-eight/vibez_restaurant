@@ -13,7 +13,8 @@ import {
     BarChart3,
     Settings,
     ChevronLeft,
-    LogOut
+    LogOut,
+    Video
 } from 'lucide-react';
 
 export default function RestaurantLayout({
@@ -34,6 +35,7 @@ export default function RestaurantLayout({
         { name: 'Staff', icon: Users, href: '/dashboard/staff' },
         { name: 'Bookings', icon: CalendarCheck, href: '/dashboard/bookings' },
         { name: 'Schedule', icon: CalendarDays, href: '/dashboard/schedule' },
+        { name: 'Video', icon: Video, href: '/dashboard/video' },
         { name: 'Performance', icon: TrendingUp, href: '/dashboard/performance' },
         { name: 'Analytics', icon: BarChart3, href: '/dashboard/analytics' },
         { name: 'Settings', icon: Settings, href: '/dashboard/settings' },
