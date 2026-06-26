@@ -1,56 +1,12 @@
-1. Create Coupon
-Creates a coupon both on Stripe and saves the details locally in the database.
-URL: /coupons
-Method: POST
-Request Body Fields
-couponId (string, required): The stripe coupon ID (which acts as the code, e.g. "SUMMER50").
-name (string, optional): A descriptive name for the coupon.
-percentOff (number, optional): Percentage discount (e.g. 15 for 15% off).
-amountOff (number, optional): Flat discount amount in cents/currency units (e.g. 500 for CHF 5.00 off).
-currency (string, optional): Defaults to "chf". Required if amountOff is provided.
-duration (string, required): How long the discount applies. Allowed values: "once", "repeating", "forever".
-durationInMonths (number, optional): If duration is "repeating", this specifies how many months it repeats.
-isDefault (boolean, optional): If true, this becomes the default coupon automatically applied to users who sign up via referral. It marks any other default coupon as false.
-isActive (boolean, optional): Defaults to true.
-maxRedemptions (number, optional): Maximum number of times this coupon can be redeemed.
-Sample Request
-json{  "couponId": "WELCOME25",  "name": "25% Welcome Discount",  "percentOff": 25,  "duration": "once",  "isDefault": true}
+1. Get Owner Reservation Stats
+Endpoint: GET /api/reservations/owner-stats
+Response (200 OK):
+Plain Text
+json{  "success": true,  "statusCode": 200,  "message": "Owner reservation statistics retrieved successfully",  "data": {    "totalBookingsToday": 23,    "upcomingGuests": 8,    "completedBookings": 14  }}
 
-Sample Response (201 Created / 200 OK)
-json{  "success": true,  "statusCode": 200,  "message": "Coupon created successfully",  "data": {    "_id": "6a3c6df677d2af1f008891ac",    "couponId": "WELCOME25",    "name": "25% Welcome Discount",    "percentOff": 25,    "currency": "chf",    "duration": "once",    "isDefault": true,    "isActive": true,    "timesRedeemed": 0,    "createdAt": "2026-06-25T00:35:00.000Z",    "updatedAt": "2026-06-25T00:35:00.000Z"  }}\
 
-2. Get All Coupons
-Retrieves a list of all coupons saved in the local database, sorted by creation date (newest first).
-URL: /coupons
-Method: GET
-Sample Response (200 OK)
-json{  "success": true,  "statusCode": 200,  "message": "Coupons retrieved successfully",  "data": [    {      "_id": "6a3c6df677d2af1f008891ac",      "couponId": "WELCOME25",      "name": "25% Welcome Discount",      "percentOff": 25,      "duration": "once",      "isDefault": true,      "isActive": true,      "timesRedeemed": 0    }  ]}
-
-3. Get Coupon by ID
-Retrieves details of a single coupon using either its database _id or Stripe couponId.
-URL: /coupons/:id
-Method: GET
-Path Parameters:
-id (string, required): The database _id or the Stripe couponId (e.g. "WELCOME25").
-Sample Response (200 OK)
-json{  "success": true,  "statusCode": 200,  "message": "Coupon retrieved successfully",  "data": {    "_id": "6a3c6df677d2af1f008891ac",    "couponId": "WELCOME25",    "name": "25% Welcome Discount",    "percentOff": 25,    "duration": "once",    "isDefault": true,    "isActive": true,    "timesRedeemed": 0  }}
-
-4. Update Coupon
-Updates local database fields of a coupon. Note that Stripe only allows updating a coupon's metadata (e.g., description name); core fields (like discount amount) cannot be changed after creation.
-URL: /coupons/:id
-Method: PATCH
-Path Parameters:
-id (string, required): The database _id of the coupon.
-Sample Request
-json{  "name": "Updated Welcome Discount Name",  "isDefault": false}
-
-json{  "success": true,  "statusCode": 200,  "message": "Coupon updated successfully",  "data": {    "_id": "6a3c6df677d2af1f008891ac",    "couponId": "WELCOME25",    "name": "Updated Welcome Discount Name",    "percentOff": 25,    "duration": "once",    "isDefault": false,    "isActive": true,    "timesRedeemed": 0  }}
-
-5. Delete Coupon
-Deletes the coupon from Stripe's platform and removes it from the local database.
-URL: /coupons/:id
-Method: DELETE
-Path Parameters:
-id (string, required): The database _id of the coupon.
-Sample Response (200 OK)
-json{  "success": true,  "statusCode": 200,  "message": "Coupon deleted successfully",  "data": {    "message": "Coupon deleted successfully"  }}
+📋 2. Get All Reservations (with Page, Limit & Status)
+Endpoint: GET /api/reservations?page=1&limit=10&status=UPCOMING
+Response (200 OK):
+Plain Text
+json{  "success": true,  "statusCode": 200,  "message": "Reservations retrieved successfully",  "data": [    {      "_id": "6a3c2b1dd815983cc5c9d853",      "restaurantId": {        "_id": "6a39cc57030cac4021dd65f3",        "restaurantName": "The Grand Bistro",        "restaurantImage": "/uploads/restaurant-images/restaurant-300809-5288.webp",        "restaurantAddress": {          "street": "123 Gourmet Blvd",          "city": "San Francisco",          "state": "CA",          "zipCode": "94103",          "country": "USA"        },        "restaurantType": "RESTAURANT",        "cuisineType": "ITALIAN"      },      "userId": {        "_id": "6a39a3c1c8a185924e5785d8",        "name": "Jane Doe",        "email": "jane@example.com",        "phone": "45454556",        "profileImage": "/uploads/profile-images/profile-245399-4888.webp"      },      "dealId": {        "_id": "6a3aec0d9a6ea1f8f6427f36",        "title": "2 for 1 MAIN COURSE",        "dealType": "TWO_FOR_ONE"      },      "partySize": 5,      "reservationDate": "2026-06-26T00:00:00.000Z",      "reservationTime": "20:00",      "specialRequests": "Window table preferred.",      "status": "UPCOMING",      "createdAt": "2026-06-24T19:08:13.291Z",      "updatedAt": "2026-06-25T23:46:52.729Z"    }  ],  "meta": {    "page": 1,    "limit": 10,    "total": 1,    "totalPages": 1,    "hasNext": false,    "hasPrev": false  }}

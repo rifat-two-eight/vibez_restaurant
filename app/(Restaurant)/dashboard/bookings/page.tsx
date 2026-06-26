@@ -1,60 +1,61 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, Users, CheckCircle, Activity } from 'lucide-react';
+import { Calendar, Users, CheckCircle, Activity, Loader2 } from 'lucide-react';
+import { 
+    useGetOwnerReservationStatsQuery, 
+    useGetReservationsQuery 
+} from '@/redux/features/reservations/reservationApi';
 
-type QueueStatus = 'Seated' | 'Waiting' | 'Confirmed';
 type BookingTab = 'Upcoming' | 'Completed' | 'Cancelled';
 
-type QueueItem = {
-    id: number;
-    name: string;
-    deal: string;
-    time: string;
-    status: QueueStatus;
+const queueStatusStyle: Record<string, string> = {
+    ARRIVED: 'bg-emerald-50 text-emerald-700',
+    UPCOMING: 'bg-amber-50 text-amber-700',
+    COMPLETED: 'bg-blue-50 text-blue-700',
+    CANCELLED: 'bg-zinc-50 text-zinc-700',
+    EXPIRED: 'bg-red-50 text-red-700',
 };
 
-type Booking = {
-    id: number;
-    name: string;
-    deal: string;
-    time: string;
-    guests: number;
-    tab: BookingTab;
+const formatStatus = (status: string) => {
+    if (!status) return 'Unknown';
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 };
-
-const queueStatusStyle: Record<QueueStatus, string> = {
-    Seated:    'bg-emerald-50 text-emerald-700',
-    Waiting:   'bg-amber-50 text-amber-700',
-    Confirmed: 'bg-blue-50 text-blue-700',
-};
-
-const liveQueue: QueueItem[] = [
-    { id: 1, name: 'Sarah Johnson', deal: '2-for-1 Dinner',   time: '6:45 PM', status: 'Seated' },
-    { id: 2, name: 'Mike Chen',     deal: 'Free Drink Offer', time: '7:00 PM', status: 'Waiting' },
-    { id: 3, name: 'Emily Davis',   deal: '2-for-1 Dinner',   time: '7:15 PM', status: 'Confirmed' },
-    { id: 4, name: 'David Wilson',  deal: 'Weekend Special',  time: '7:30 PM', status: 'Confirmed' },
-];
-
-const allBookings: Booking[] = [
-    { id: 1, name: 'Alex Thompson', deal: '2-for-1 Dinner',   time: '8:00 PM', guests: 2, tab: 'Upcoming' },
-    { id: 2, name: 'Lisa Martinez', deal: 'Free Drink Offer', time: '8:30 PM', guests: 4, tab: 'Upcoming' },
-    { id: 3, name: 'James Brown',   deal: '2-for-1 Dinner',   time: '9:00 PM', guests: 2, tab: 'Upcoming' },
-    { id: 4, name: 'Anna Lee',      deal: 'Weekend Special',  time: '5:00 PM', guests: 3, tab: 'Completed' },
-    { id: 5, name: 'Tom Harris',    deal: '2-for-1 Dinner',   time: '5:30 PM', guests: 2, tab: 'Completed' },
-    { id: 6, name: 'Sara White',    deal: 'Free Drink Offer', time: '6:00 PM', guests: 1, tab: 'Cancelled' },
-];
 
 export default function BookingsPage() {
     const [activeTab, setActiveTab] = useState<BookingTab>('Upcoming');
 
-    const filtered = allBookings.filter(b => b.tab === activeTab);
+    const { data: statsRes, isLoading: isStatsLoading } = useGetOwnerReservationStatsQuery({});
+    // We fetch UPCOMING status for the Live Deal Queue
+    const { data: liveRes, isLoading: isLiveLoading } = useGetReservationsQuery({ status: 'UPCOMING', limit: 50 });
+    // We fetch the active tab's status for the Bookings list
+    const { data: tabRes, isLoading: isTabLoading } = useGetReservationsQuery({ 
+        status: activeTab.toUpperCase(), 
+        limit: 100 // Temporarily fetching a large chunk to avoid manual pagination UI implementation
+    });
+
+    const statsData = statsRes?.data || {
+        totalBookingsToday: 0,
+        upcomingGuests: 0,
+        completedBookings: 0
+    };
+
+    const liveQueue = liveRes?.data || [];
+    const filteredBookings = tabRes?.data || [];
 
     const stats = [
-        { label: 'Total Bookings Today', value: '23', icon: Calendar, iconBg: 'bg-blue-50',    iconColor: 'text-blue-600' },
-        { label: 'Upcoming Guests',      value: '8',  icon: Users,    iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
-        { label: 'Completed Bookings',   value: '14', icon: CheckCircle, iconBg: 'bg-purple-50', iconColor: 'text-purple-600' },
+        { label: 'Total Bookings Today', value: statsData.totalBookingsToday, icon: Calendar, iconBg: 'bg-blue-50',    iconColor: 'text-blue-600' },
+        { label: 'Upcoming Guests',      value: statsData.upcomingGuests,     icon: Users,    iconBg: 'bg-emerald-50', iconColor: 'text-emerald-600' },
+        { label: 'Completed Bookings',   value: statsData.completedBookings,  icon: CheckCircle, iconBg: 'bg-purple-50', iconColor: 'text-purple-600' },
     ];
+
+    if (isStatsLoading) {
+        return (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="w-8 h-8 animate-spin text-[#013622]" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8">
@@ -90,30 +91,40 @@ export default function BookingsPage() {
                     </div>
                     <div>
                         <h2 className="text-sm font-bold text-zinc-900">Live Deal Queue</h2>
-                        <p className="text-xs text-zinc-400">Customers currently at your restaurant</p>
+                        <p className="text-xs text-zinc-400">Upcoming customers arriving soon</p>
                     </div>
                 </div>
 
                 <div className="divide-y divide-zinc-50">
-                    {liveQueue.map((item) => (
-                        <div key={item.id} className="flex items-center justify-between px-6 py-4 hover:bg-zinc-50 transition-colors">
-                            <div className="flex items-center gap-4">
-                                <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center">
-                                    <Users className="w-4 h-4 text-zinc-400" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-zinc-900">{item.name}</p>
-                                    <p className="text-xs text-zinc-400">{item.deal}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <span className="text-sm text-zinc-500">{item.time}</span>
-                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${queueStatusStyle[item.status]}`}>
-                                    {item.status}
-                                </span>
-                            </div>
+                    {isLiveLoading ? (
+                        <div className="py-8 flex justify-center">
+                            <Loader2 className="w-5 h-5 animate-spin text-zinc-400" />
                         </div>
-                    ))}
+                    ) : liveQueue.length === 0 ? (
+                        <div className="py-8 text-center text-zinc-400 text-sm">
+                            No upcoming customers in the queue.
+                        </div>
+                    ) : (
+                        liveQueue.map((item: any) => (
+                            <div key={item._id} className="flex flex-col md:flex-row md:items-center justify-between px-6 py-4 hover:bg-zinc-50 transition-colors gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center shrink-0">
+                                        <Users className="w-4 h-4 text-zinc-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-zinc-900">{item.userId?.name || 'Unknown Customer'}</p>
+                                        <p className="text-xs text-zinc-400">{item.dealId?.title || 'No Deal'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-4">
+                                    <span className="text-sm text-zinc-500 font-medium">{item.reservationTime}</span>
+                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${queueStatusStyle[item.status] || queueStatusStyle.ARRIVED}`}>
+                                        {formatStatus(item.status)}
+                                    </span>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
 
@@ -140,29 +151,33 @@ export default function BookingsPage() {
 
                 {/* Booking List */}
                 <div className="divide-y divide-zinc-50">
-                    {filtered.map((booking) => (
-                        <div key={booking.id} className="flex items-center justify-between px-6 py-4 hover:bg-zinc-50 transition-colors">
-                            <div className="flex items-center gap-4">
-                                <div className="w-8 h-8 rounded-[10px] bg-zinc-100 flex items-center justify-center">
-                                    <Calendar className="w-4 h-4 text-zinc-400" />
-                                </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-zinc-900">{booking.name}</p>
-                                    <p className="text-xs text-zinc-400">{booking.deal}</p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-6 text-sm text-zinc-500">
-                                <span>{booking.time}</span>
-                                <span className="text-zinc-300">•</span>
-                                <span>{booking.guests} guests</span>
-                            </div>
+                    {isTabLoading ? (
+                        <div className="py-16 flex justify-center">
+                            <Loader2 className="w-6 h-6 animate-spin text-zinc-400" />
                         </div>
-                    ))}
-
-                    {filtered.length === 0 && (
+                    ) : filteredBookings.length === 0 ? (
                         <div className="py-16 text-center text-zinc-400 text-sm">
                             No {activeTab.toLowerCase()} bookings found.
                         </div>
+                    ) : (
+                        filteredBookings.map((booking: any) => (
+                            <div key={booking._id} className="flex flex-col md:flex-row md:items-center justify-between px-6 py-4 hover:bg-zinc-50 transition-colors gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="w-8 h-8 rounded-[10px] bg-zinc-100 flex items-center justify-center shrink-0">
+                                        <Calendar className="w-4 h-4 text-zinc-400" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-zinc-900">{booking.userId?.name || 'Unknown'}</p>
+                                        <p className="text-xs text-zinc-400">{booking.dealId?.title || 'N/A'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-6 text-sm text-zinc-500">
+                                    <span className="font-medium text-zinc-700">{booking.reservationTime}</span>
+                                    <span className="text-zinc-300">•</span>
+                                    <span className="font-medium">{booking.partySize} guests</span>
+                                </div>
+                            </div>
+                        ))
                     )}
                 </div>
             </div>

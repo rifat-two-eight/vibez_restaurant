@@ -1,52 +1,77 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
-import { Calendar, Users, CheckCircle, Clock, LogOut } from 'lucide-react';
+import { Calendar, Users, CheckCircle, Clock, LogOut, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useDispatch } from 'react-redux';
+import { logOut } from '@/redux/features/auth/authSlice';
+import { 
+    useGetReservationStatsQuery, 
+    useGetReservationsQuery, 
+    useUpdateReservationStatusMutation 
+} from '@/redux/features/reservations/reservationApi';
 
-type BookingStatus = 'Upcoming' | 'Arrived' | 'Completed';
-
-type Booking = {
-    id: number;
-    customer: string;
-    deal: string;
-    time: string;
-    guests: number;
-    status: BookingStatus;
-};
-
-const initialBookings: Booking[] = [
-    { id: 1, customer: 'John Doe',    deal: '2-for-1 Dinner',     time: '5:00 PM',  guests: 4, status: 'Upcoming' },
-    { id: 2, customer: 'Sarah Khan',  deal: '20% Lunch Discount', time: '6:30 PM',  guests: 2, status: 'Upcoming' },
-    { id: 3, customer: 'Ahmed Ali',   deal: 'Free Dessert Offer',  time: '8:00 PM',  guests: 3, status: 'Upcoming' },
-    { id: 4, customer: 'Maria Garcia',deal: '20% Lunch Deal',      time: '12:30 PM', guests: 2, status: 'Arrived' },
-    { id: 5, customer: 'Li Wei',      deal: 'Free Drink Offer',    time: '7:30 PM',  guests: 3, status: 'Completed' },
-];
-
-const statusStyle: Record<BookingStatus, string> = {
+const statusStyle: Record<string, string> = {
     Upcoming:  'bg-amber-50 text-amber-700',
     Arrived:   'bg-blue-50 text-blue-700',
     Completed: 'bg-emerald-50 text-emerald-700',
+    Expired:   'bg-red-50 text-red-700',
+    Cancelled: 'bg-zinc-50 text-zinc-700',
+};
+
+const formatStatus = (status: string) => {
+    if (!status) return 'Upcoming';
+    return status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 };
 
 export default function StaffPanel() {
     const router = useRouter();
-    const [bookings, setBookings] = useState<Booking[]>(initialBookings);
+    const dispatch = useDispatch();
 
-    const upcomingQueue = bookings.filter(b => b.status === 'Upcoming');
-    const totalGuests   = bookings.reduce((s, b) => s + b.guests, 0);
-    const servedToday   = bookings.filter(b => b.status === 'Completed').length;
-    const pending       = bookings.filter(b => b.status === 'Upcoming').length;
+    const { data: statsRes, isLoading: isStatsLoading } = useGetReservationStatsQuery({});
+    const { data: reservationsRes, isLoading: isReservationsLoading } = useGetReservationsQuery({});
+    const [updateStatus, { isLoading: isUpdating }] = useUpdateReservationStatusMutation();
 
-    const confirmArrival  = (id: number) => setBookings(bs => bs.map(b => b.id === id ? { ...b, status: 'Arrived' } : b));
-    const completeService = (id: number) => setBookings(bs => bs.map(b => b.id === id ? { ...b, status: 'Completed' } : b));
+    const statsData = statsRes?.data || {
+        totalBookingsToday: 0,
+        totalGuestsExpected: 0,
+        guestsServedToday: 0,
+        pendingArrivals: 0
+    };
+
+    const bookings = reservationsRes?.data || [];
+    const liveQueue = bookings.filter((b: any) => b.status === 'UPCOMING' || b.status === 'ARRIVED');
+
+    const handleUpdateStatus = async (id: string, newStatus: string) => {
+        try {
+            await updateStatus({ id, status: newStatus }).unwrap();
+            toast.success(`Reservation marked as ${formatStatus(newStatus)}`);
+        } catch (error: any) {
+            console.error("Failed to update status:", error);
+            toast.error(error?.data?.message || "Failed to update reservation status");
+        }
+    };
+
+    const handleLogout = () => {
+        dispatch(logOut());
+        router.push('/login');
+    };
 
     const stats = [
-        { label: 'Total Bookings Today',   value: bookings.length,  icon: Calendar },
-        { label: 'Total Guests Expected',  value: totalGuests,       icon: Users },
-        { label: 'Guests Served Today',    value: servedToday,       icon: CheckCircle },
-        { label: 'Pending Arrivals',       value: pending,           icon: Clock },
+        { label: 'Total Bookings Today',   value: statsData.totalBookingsToday,  icon: Calendar },
+        { label: 'Total Guests Expected',  value: statsData.totalGuestsExpected, icon: Users },
+        { label: 'Guests Served Today',    value: statsData.guestsServedToday,   icon: CheckCircle },
+        { label: 'Pending Arrivals',       value: statsData.pendingArrivals,     icon: Clock },
     ];
+
+    if (isStatsLoading || isReservationsLoading) {
+        return (
+            <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-zinc-400" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
@@ -57,7 +82,7 @@ export default function StaffPanel() {
                     <p className="text-xs text-zinc-400 mt-0.5">Verify bookings, count guests, and serve deals</p>
                 </div>
                 <button
-                    onClick={() => router.push('/login')}
+                    onClick={handleLogout}
                     className="flex items-center gap-2 px-4 py-2 rounded-[10px] text-sm font-semibold text-zinc-500 hover:text-red-500 hover:bg-red-50 border border-zinc-200 transition-all"
                 >
                     <LogOut className="w-4 h-4" />
@@ -89,31 +114,46 @@ export default function StaffPanel() {
                         <p className="text-xs text-zinc-400 mt-0.5">See upcoming guests and prepare service</p>
                     </div>
                     <div className="divide-y divide-zinc-50 p-4 space-y-4">
-                        {upcomingQueue.length === 0 && (
-                            <p className="py-8 text-center text-zinc-400 text-sm">No upcoming bookings in queue.</p>
+                        {liveQueue.length === 0 && (
+                            <p className="py-8 text-center text-zinc-400 text-sm">No live bookings in queue.</p>
                         )}
-                        {upcomingQueue.map(b => (
-                            <div key={b.id} className="bg-amber-50/40 border border-amber-100 rounded-[10px] p-4">
+                        {liveQueue.map((b: any) => (
+                            <div key={b._id} className="bg-amber-50/40 border border-amber-100 rounded-[10px] p-4">
                                 <div className="flex items-start justify-between mb-2">
-                                    <p className="text-base font-bold text-zinc-900">{b.time}</p>
-                                    <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700">Upcoming</span>
+                                    <p className="text-base font-bold text-zinc-900">{b.reservationTime}</p>
+                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+                                        b.status === 'ARRIVED' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                                    }`}>
+                                        {formatStatus(b.status)}
+                                    </span>
                                 </div>
-                                <p className="text-xs text-zinc-500">Deal: <span className="font-semibold text-zinc-700">{b.deal}</span></p>
-                                <p className="text-xs text-zinc-500">Booking Name: <span className="font-semibold text-zinc-700">{b.customer}</span></p>
-                                <p className="text-xs text-zinc-500 mb-4">Guests Expected: <span className="font-semibold text-zinc-700">{b.guests}</span></p>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => confirmArrival(b.id)}
-                                        className="py-2.5 rounded-[10px] bg-[#2B7FFF] text-white text-xs font-bold hover:bg-[#1a6ee8] transition-colors"
-                                    >
-                                        Confirm Arrival
-                                    </button>
-                                    <button
-                                        onClick={() => completeService(b.id)}
-                                        className="py-2.5 rounded-[10px] bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors"
-                                    >
-                                        Complete Service
-                                    </button>
+                                <p className="text-xs text-zinc-500">Deal: <span className="font-semibold text-zinc-700">{b.dealId?.title || 'N/A'}</span></p>
+                                <p className="text-xs text-zinc-500">Booking Name: <span className="font-semibold text-zinc-700">{b.userId?.name || 'Unknown'}</span></p>
+                                <p className="text-xs text-zinc-500 mb-4">Guests Expected: <span className="font-semibold text-zinc-700">{b.partySize}</span></p>
+                                
+                                {b.specialRequests && (
+                                    <p className="text-xs text-amber-700 bg-amber-100/50 p-2 rounded mb-4"><span className="font-semibold">Note:</span> {b.specialRequests}</p>
+                                )}
+
+                                <div className={b.status === 'UPCOMING' ? 'grid grid-cols-2 gap-3' : 'grid grid-cols-1 gap-3'}>
+                                    {b.status === 'UPCOMING' && (
+                                        <button
+                                            onClick={() => handleUpdateStatus(b._id, 'ARRIVED')}
+                                            disabled={isUpdating}
+                                            className="py-2.5 rounded-[10px] bg-[#2B7FFF] text-white text-xs font-bold hover:bg-[#1a6ee8] transition-colors disabled:opacity-50"
+                                        >
+                                            Confirm Arrival
+                                        </button>
+                                    )}
+                                    {(b.status === 'UPCOMING' || b.status === 'ARRIVED') && (
+                                        <button
+                                            onClick={() => handleUpdateStatus(b._id, 'COMPLETED')}
+                                            disabled={isUpdating}
+                                            className="py-2.5 rounded-[10px] bg-emerald-500 text-white text-xs font-bold hover:bg-emerald-600 transition-colors disabled:opacity-50"
+                                        >
+                                            Complete Service
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -136,19 +176,22 @@ export default function StaffPanel() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-zinc-50">
-                            {bookings.map(b => (
-                                <tr key={b.id} className="hover:bg-zinc-50 transition-colors">
-                                    <td className="px-6 py-3 font-medium text-zinc-800">{b.customer}</td>
-                                    <td className="px-6 py-3 text-zinc-500">{b.deal}</td>
-                                    <td className="px-6 py-3 text-zinc-500">{b.time}</td>
-                                    <td className="px-6 py-3 text-zinc-500">{b.guests} Guests</td>
-                                    <td className="px-6 py-3">
-                                        <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${statusStyle[b.status]}`}>
-                                            {b.status}
-                                        </span>
-                                    </td>
-                                </tr>
-                            ))}
+                            {bookings.map((b: any) => {
+                                const statusStr = formatStatus(b.status);
+                                return (
+                                    <tr key={b._id} className="hover:bg-zinc-50 transition-colors">
+                                        <td className="px-6 py-3 font-medium text-zinc-800">{b.userId?.name || 'Unknown'}</td>
+                                        <td className="px-6 py-3 text-zinc-500">{b.dealId?.title || 'N/A'}</td>
+                                        <td className="px-6 py-3 text-zinc-500">{b.reservationTime}</td>
+                                        <td className="px-6 py-3 text-zinc-500">{b.partySize} Guests</td>
+                                        <td className="px-6 py-3">
+                                            <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${statusStyle[statusStr] || statusStyle.Upcoming}`}>
+                                                {statusStr}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>
