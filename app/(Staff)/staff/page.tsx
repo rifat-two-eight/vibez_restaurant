@@ -6,17 +6,17 @@ import { Calendar, Users, CheckCircle, Clock, LogOut, Loader2 } from 'lucide-rea
 import { toast } from 'sonner';
 import { useDispatch } from 'react-redux';
 import { logOut } from '@/redux/features/auth/authSlice';
-import { 
-    useGetReservationStatsQuery, 
-    useGetReservationsQuery, 
-    useUpdateReservationStatusMutation 
+import {
+    useGetReservationStatsQuery,
+    useGetReservationsQuery,
+    useUpdateReservationStatusMutation
 } from '@/redux/features/reservations/reservationApi';
 
 const statusStyle: Record<string, string> = {
-    Upcoming:  'bg-amber-50 text-amber-700',
-    Arrived:   'bg-blue-50 text-blue-700',
+    Upcoming: 'bg-amber-50 text-amber-700',
+    Arrived: 'bg-blue-50 text-blue-700',
     Completed: 'bg-emerald-50 text-emerald-700',
-    Expired:   'bg-red-50 text-red-700',
+    Expired: 'bg-red-50 text-red-700',
     Cancelled: 'bg-zinc-50 text-zinc-700',
 };
 
@@ -59,10 +59,10 @@ export default function StaffPanel() {
     };
 
     const stats = [
-        { label: 'Total Bookings Today',   value: statsData.totalBookingsToday,  icon: Calendar },
-        { label: 'Total Guests Expected',  value: statsData.totalGuestsExpected, icon: Users },
-        { label: 'Guests Served Today',    value: statsData.guestsServedToday,   icon: CheckCircle },
-        { label: 'Pending Arrivals',       value: statsData.pendingArrivals,     icon: Clock },
+        { label: 'Total Bookings Today', value: statsData.totalBookingsToday, icon: Calendar },
+        { label: 'Total Guests Expected', value: statsData.totalGuestsExpected, icon: Users },
+        { label: 'Guests Served Today', value: statsData.guestsServedToday, icon: CheckCircle },
+        { label: 'Pending Arrivals', value: statsData.pendingArrivals, icon: Clock },
     ];
 
     if (isStatsLoading || isReservationsLoading) {
@@ -107,7 +107,6 @@ export default function StaffPanel() {
                     })}
                 </div>
 
-                {/* Live Deal Queue */}
                 <div className="bg-white rounded-[10px] border border-zinc-100 overflow-hidden">
                     <div className="px-6 py-4 border-b border-zinc-100">
                         <h2 className="text-base font-bold text-zinc-900">Live Deal Queue</h2>
@@ -121,16 +120,15 @@ export default function StaffPanel() {
                             <div key={b._id} className="bg-amber-50/40 border border-amber-100 rounded-[10px] p-4">
                                 <div className="flex items-start justify-between mb-2">
                                     <p className="text-base font-bold text-zinc-900">{b.reservationTime}</p>
-                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                                        b.status === 'ARRIVED' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
-                                    }`}>
+                                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${b.status === 'ARRIVED' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
+                                        }`}>
                                         {formatStatus(b.status)}
                                     </span>
                                 </div>
                                 <p className="text-xs text-zinc-500">Deal: <span className="font-semibold text-zinc-700">{b.dealId?.title || 'N/A'}</span></p>
                                 <p className="text-xs text-zinc-500">Booking Name: <span className="font-semibold text-zinc-700">{b.userId?.name || 'Unknown'}</span></p>
                                 <p className="text-xs text-zinc-500 mb-4">Guests Expected: <span className="font-semibold text-zinc-700">{b.partySize}</span></p>
-                                
+
                                 {b.specialRequests && (
                                     <p className="text-xs text-amber-700 bg-amber-100/50 p-2 rounded mb-4"><span className="font-semibold">Note:</span> {b.specialRequests}</p>
                                 )}
