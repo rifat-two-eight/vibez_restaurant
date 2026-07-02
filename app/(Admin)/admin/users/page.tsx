@@ -184,7 +184,7 @@ export default function UserManagement() {
                                     <td className="px-8 py-5 text-sm text-zinc-400 text-center">{user.activeSubscriptionFromHimTotal ?? user.subs ?? 0}</td>
                                     <td className="px-8 py-5 text-sm font-bold text-white">{typeof user.balance === 'number' ? `€${user.balance}` : (user.earnings || '€0')}</td>
                                     <td className="px-8 py-5 text-sm font-bold text-[#10B981]">{user.commissionPercentage ?? user.percentage ?? (user.commission ? parseInt(user.commission) : 0)}%</td>
-                                    <td className="px-8 py-5 text-sm text-zinc-500 font-medium">{user.plan || 'N/A'}</td>
+                                    <td className="px-8 py-5 text-sm text-zinc-500 font-medium capitalize">{user.subscriptionPlanId?.duration?.toLowerCase().replace('_', ' ') || user.plan || 'N/A'}</td>
                                     <td className="px-8 py-5">
                                         <div className="flex items-center justify-end gap-3 text-zinc-500">
                                             <button
