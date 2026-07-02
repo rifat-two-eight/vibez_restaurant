@@ -1,13 +1,13 @@
 'use client';
 
 import React from 'react';
-import { 
-    Tag, 
-    TrendingUp, 
-    Clock, 
-    Eye, 
-    ShieldAlert, 
-    Search, 
+import {
+    Tag,
+    TrendingUp,
+    Clock,
+    Eye,
+    ShieldAlert,
+    Search,
     Filter,
     MoreHorizontal,
     ArrowUpRight
@@ -127,11 +127,10 @@ export default function DealsManagement() {
                                     <td className="px-8 py-5 text-sm text-zinc-400 text-center">{deal.views}</td>
                                     <td className="px-8 py-5 text-sm text-zinc-500 text-center">{deal.expiry}</td>
                                     <td className="px-8 py-5">
-                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
-                                            deal.status === 'Active' 
-                                            ? 'bg-[#10B981]/10 text-[#10B981]' 
-                                            : 'bg-orange-500/10 text-orange-500'
-                                        }`}>
+                                        <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${deal.status === 'Active'
+                                                ? 'bg-[#10B981]/10 text-[#10B981]'
+                                                : 'bg-orange-500/10 text-orange-500'
+                                            }`}>
                                             {deal.status}
                                         </span>
                                     </td>
@@ -153,7 +152,7 @@ export default function DealsManagement() {
             </div>
 
             {/* Peak Booking Times */}
-            <div className="space-y-6">
+            {/* <div className="space-y-6">
                 <h3 className="text-base font-bold text-white px-2">Peak Booking Times</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                     {peakTimes.map((item, idx) => (
@@ -166,7 +165,7 @@ export default function DealsManagement() {
                         </div>
                     ))}
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 }

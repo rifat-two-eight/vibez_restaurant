@@ -23,6 +23,8 @@ import {
     CalendarCheck,
     ArrowUpRight
 } from 'lucide-react';
+import { useGetAdminDashboardStatsQuery, useGetRevenueBreakdownQuery, useGetAllUserSubscriptionsQuery } from '../../../redux/features/dashboard/dashboardApi';
+import { useGetWeeklyBookingsQuery } from '../../../redux/features/reservations/reservationApi';
 
 const revenueData = [
     { month: 'Jan', revenue: 45000, referrals: 32000 },
@@ -52,6 +54,35 @@ const recentSubscriptions = [
 ];
 
 export default function AdminOverview() {
+    const { data: statsData, isLoading: isStatsLoading } = useGetAdminDashboardStatsQuery(undefined);
+    const { data: weeklyBookingsData, isLoading: isWeeklyBookingsLoading } = useGetWeeklyBookingsQuery(undefined);
+    const { data: revenueBreakdownData, isLoading: isRevenueBreakdownLoading } = useGetRevenueBreakdownQuery(undefined);
+    const { data: allSubscriptionsData, isLoading: isSubscriptionsLoading } = useGetAllUserSubscriptionsQuery(undefined);
+    
+    if (isStatsLoading || isWeeklyBookingsLoading || isRevenueBreakdownLoading || isSubscriptionsLoading) {
+        return (
+            <div className="flex h-[400px] items-center justify-center">
+                <p className="text-zinc-400 animate-pulse">Loading dashboard...</p>
+            </div>
+        );
+    }
+    
+    const stats = statsData?.data;
+    const formattedBookingData = weeklyBookingsData?.data?.currentWeek?.map((item: any) => ({
+        day: item.day,
+        bookings: item.count
+    })) || bookingData;
+
+    const formattedRevenueData = revenueBreakdownData?.data || revenueData;
+
+    const formattedSubscriptions = allSubscriptionsData?.data?.map((sub: any) => ({
+        user: sub.userId?.name || 'Unknown',
+        plan: sub.subscriptionPlanId?.name || 'Unknown',
+        referral: sub.commissionUser ? 'Referred' : 'Direct',
+        amount: `€${sub.subscriptionPlanId?.price || 0}`,
+        status: sub.status === 'ACTIVE' ? 'Active' : sub.status === 'TRIAL' ? 'Trial' : sub.status,
+    })) || recentSubscriptions;
+
     return (
         <div className="space-y-8 pb-12">
             {/* Header */}
@@ -66,19 +97,19 @@ export default function AdminOverview() {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-zinc-500 text-[13px] font-medium mb-1">Total Revenue</p>
-                            <h3 className="text-3xl font-bold text-white tracking-tight">€71,240</h3>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">€{stats?.revenue?.totalRevenue || '0'}</h3>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                             <DollarSign className="w-5 h-5 text-zinc-400" />
                         </div>
                     </div>
                     <div className="flex gap-4 text-[11px] font-medium">
-                        <span className="text-zinc-500">Monthly: <span className="text-zinc-300">€71K</span></span>
-                        <span className="text-zinc-500">Annual: <span className="text-zinc-300">€650K</span></span>
+                        <span className="text-zinc-500">Monthly: <span className="text-zinc-300">€{stats?.revenue?.monthlyRevenue || '0'}</span></span>
+                        <span className="text-zinc-500">Annual: <span className="text-zinc-300">€{stats?.revenue?.annualRevenue || '0'}</span></span>
                     </div>
                     <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold text-[#10B981]">
                         <TrendingUp className="w-3.5 h-3.5" />
-                        12.5%
+                        {stats?.revenue?.growthPercentage || '0'}%
                     </div>
                 </div>
 
@@ -86,19 +117,19 @@ export default function AdminOverview() {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-zinc-500 text-[13px] font-medium mb-1">Active Subscribers</p>
-                            <h3 className="text-3xl font-bold text-white tracking-tight">2,847</h3>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">{stats?.subscribers?.totalActiveSubscribers || '0'}</h3>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                             <Users className="w-5 h-5 text-zinc-400" />
                         </div>
                     </div>
                     <div className="flex gap-4 text-[11px] font-medium">
-                        <span className="text-zinc-500">Monthly: <span className="text-zinc-300">2,340</span></span>
-                        <span className="text-zinc-500">Trial: <span className="text-zinc-300">507</span></span>
+                        <span className="text-zinc-500">Monthly: <span className="text-zinc-300">{stats?.subscribers?.activeMonthlySubscribers || '0'}</span></span>
+                        <span className="text-zinc-500">Trial: <span className="text-zinc-300">{stats?.subscribers?.activeTrialSubscribers || '0'}</span></span>
                     </div>
                     <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold text-[#10B981]">
                         <TrendingUp className="w-3.5 h-3.5" />
-                        8.2%
+                        {stats?.subscribers?.growthPercentage || '0'}%
                     </div>
                 </div>
 
@@ -106,19 +137,18 @@ export default function AdminOverview() {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-zinc-500 text-[13px] font-medium mb-1">Referral Revenue</p>
-                            <h3 className="text-3xl font-bold text-white tracking-tight">€23,100</h3>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">€{stats?.referralRevenue?.totalReferralRevenue || '0'}</h3>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-[#10B981]/10 flex items-center justify-center">
                             <ArrowUpRight className="w-5 h-5 text-[#10B981]" />
                         </div>
                     </div>
                     <div className="flex gap-4 text-[11px] font-medium">
-                        <span className="text-zinc-500">Conversion: <span className="text-zinc-300">34.2%</span></span>
-                        <span className="text-zinc-500">Commission: <span className="text-zinc-300">€5.2K</span></span>
+                        <span className="text-zinc-500">Commission: <span className="text-zinc-300">€{stats?.referralRevenue?.totalCommissionPaid || '0'}</span></span>
                     </div>
                     <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold text-[#10B981]">
                         <TrendingUp className="w-3.5 h-3.5" />
-                        18.7%
+                        {stats?.referralRevenue?.growthPercentage || '0'}%
                     </div>
                 </div>
             </div>
@@ -129,15 +159,15 @@ export default function AdminOverview() {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-zinc-500 text-[13px] font-medium mb-1">Active Restaurants</p>
-                            <h3 className="text-3xl font-bold text-white tracking-tight">387</h3>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">{stats?.restaurants?.activeRestaurants || '0'}</h3>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                             <Store className="w-5 h-5 text-zinc-400" />
                         </div>
                     </div>
                     <div className="flex gap-4 text-[11px] font-medium">
-                        <span className="text-zinc-500">Pending: <span className="text-zinc-300">23</span></span>
-                        <span className="text-zinc-500">Suspended: <span className="text-zinc-300">5</span></span>
+                        <span className="text-zinc-500">Pending: <span className="text-zinc-300">{stats?.restaurants?.pendingRestaurants || '0'}</span></span>
+                        <span className="text-zinc-500">Suspended: <span className="text-zinc-300">{stats?.restaurants?.suspendedRestaurants || '0'}</span></span>
                     </div>
                 </div>
 
@@ -145,15 +175,15 @@ export default function AdminOverview() {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-zinc-500 text-[13px] font-medium mb-1">Active Deals</p>
-                            <h3 className="text-3xl font-bold text-white tracking-tight">1,243</h3>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">{stats?.deals?.activeDeals || '0'}</h3>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                             <Tag className="w-5 h-5 text-zinc-400" />
                         </div>
                     </div>
                     <div className="flex gap-4 text-[11px] font-medium">
-                        <span className="text-zinc-500">Expiring today: <span className="text-zinc-300">12</span></span>
-                        <span className="text-zinc-500">Drafts: <span className="text-zinc-300">34</span></span>
+                        <span className="text-zinc-500">Expiring today: <span className="text-zinc-300">{stats?.deals?.expiringToday || '0'}</span></span>
+                        <span className="text-zinc-500">Drafts: <span className="text-zinc-300">{stats?.deals?.draftDeals || '0'}</span></span>
                     </div>
                 </div>
 
@@ -161,19 +191,19 @@ export default function AdminOverview() {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-zinc-500 text-[13px] font-medium mb-1">Total Bookings</p>
-                            <h3 className="text-3xl font-bold text-white tracking-tight">8,432</h3>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">{stats?.bookings?.totalBookings || '0'}</h3>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                             <CalendarCheck className="w-5 h-5 text-zinc-400" />
                         </div>
                     </div>
                     <div className="flex gap-4 text-[11px] font-medium">
-                        <span className="text-zinc-500">Today: <span className="text-zinc-300">156</span></span>
-                        <span className="text-zinc-500">Weekly: <span className="text-zinc-300">892</span></span>
+                        <span className="text-zinc-500">Today: <span className="text-zinc-300">{stats?.bookings?.todayBookings || '0'}</span></span>
+                        <span className="text-zinc-500">Weekly: <span className="text-zinc-300">{stats?.bookings?.weeklyBookings || '0'}</span></span>
                     </div>
                     <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold text-[#10B981]">
                         <TrendingUp className="w-3.5 h-3.5" />
-                        5.3%
+                        {stats?.bookings?.growthPercentage || '0'}%
                     </div>
                 </div>
             </div>
@@ -184,7 +214,7 @@ export default function AdminOverview() {
                     <h3 className="text-base font-bold text-white mb-8">Revenue Breakdown</h3>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={revenueData}>
+                            <AreaChart data={formattedRevenueData}>
                                 <defs>
                                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
@@ -217,7 +247,7 @@ export default function AdminOverview() {
                     <h3 className="text-base font-bold text-white mb-8">Weekly Bookings</h3>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={bookingData}>
+                            <BarChart data={formattedBookingData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
                                 <XAxis
                                     dataKey="day"
@@ -259,7 +289,7 @@ export default function AdminOverview() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
-                            {recentSubscriptions.map((sub, i) => (
+                            {formattedSubscriptions.map((sub: any, i: number) => (
                                 <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
                                     <td className="px-8 py-4 text-sm font-medium text-white">{sub.user}</td>
                                     <td className="px-8 py-4 text-sm text-zinc-400">{sub.plan}</td>

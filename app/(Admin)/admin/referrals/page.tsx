@@ -31,6 +31,15 @@ import {
     Wallet,
     Award
 } from 'lucide-react';
+import { 
+    useGetAffiliateDashboardStatsQuery,
+    useGetRevenueBreakdownQuery,
+    useGetMonthlyCommissionGraphQuery,
+    useGetAllWithdrawalsQuery,
+    useApproveWithdrawalMutation,
+    useRejectWithdrawalMutation
+} from '../../../../redux/features/dashboard/dashboardApi';
+import { toast } from 'sonner';
 
 const growthData = [
     { month: 'Jan', newUsers: 150, conversions: 120 },
@@ -42,22 +51,72 @@ const growthData = [
 ];
 
 const commissionData = [
-    { month: 'Jan', revenue: 4200 },
-    { month: 'Feb', revenue: 5100 },
-    { month: 'Mar', revenue: 4800 },
-    { month: 'Apr', revenue: 6200 },
-    { month: 'May', revenue: 7500 },
-    { month: 'Jun', revenue: 8900 },
+    { month: 'Jan', commissionRevenue: 4200 },
+    { month: 'Feb', commissionRevenue: 5100 },
+    { month: 'Mar', commissionRevenue: 4800 },
+    { month: 'Apr', commissionRevenue: 6200 },
+    { month: 'May', commissionRevenue: 7500 },
+    { month: 'Jun', commissionRevenue: 8900 },
 ];
 
 const pendingPayouts = [
-    { affiliate: 'Sarah Johnson', amount: '€320', source: 'Monthly Subscriptions', subId: '#SUB-1647', dueDate: '2026-05-20', status: 'Pending' },
-    { affiliate: 'Michael Chen', amount: '€280', source: 'Annual Subscriptions', subId: '#SUB-1845', dueDate: '2026-05-22', status: 'Pending' },
-    { affiliate: 'Emma Wilson', amount: '€185', source: 'Monthly Subscriptions', subId: '#SUB-1843', dueDate: '2026-05-25', status: 'Approved' },
+    { id: '1', affiliate: 'Sarah Johnson', amount: '€320', source: 'Monthly Subscriptions', subId: '#SUB-1647', dueDate: '2026-05-20', status: 'Pending' },
+    { id: '2', affiliate: 'Michael Chen', amount: '€280', source: 'Annual Subscriptions', subId: '#SUB-1845', dueDate: '2026-05-22', status: 'Pending' },
+    { id: '3', affiliate: 'Emma Wilson', amount: '€185', source: 'Monthly Subscriptions', subId: '#SUB-1843', dueDate: '2026-05-25', status: 'Approved' },
 ];
 
 export default function ReferralsPage() {
-    const [commissionPercent, setCommissionPercent] = useState(10);
+    const { data: affiliateStatsData, isLoading: isStatsLoading } = useGetAffiliateDashboardStatsQuery(undefined);
+    const { data: revenueBreakdownData, isLoading: isRevenueLoading } = useGetRevenueBreakdownQuery(undefined);
+    const { data: commissionGraphData, isLoading: isCommissionLoading } = useGetMonthlyCommissionGraphQuery(undefined);
+    const { data: withdrawalsData, isLoading: isWithdrawalsLoading } = useGetAllWithdrawalsQuery(undefined);
+    const [approveWithdrawal] = useApproveWithdrawalMutation();
+    const [rejectWithdrawal] = useRejectWithdrawalMutation();
+
+    if (isStatsLoading || isRevenueLoading || isCommissionLoading || isWithdrawalsLoading) {
+        return (
+            <div className="flex h-[400px] items-center justify-center">
+                <p className="text-zinc-400 animate-pulse">Loading referrals...</p>
+            </div>
+        );
+    }
+
+    const handleApprove = async (id: string) => {
+        if (!id || id.length < 5) return; // mock check
+        try {
+            await approveWithdrawal(id).unwrap();
+            toast.success('Withdrawal approved successfully');
+        } catch (error: any) {
+            console.error('Failed to approve withdrawal', error);
+            const errorMessage = error?.data?.message || 'Failed to approve withdrawal';
+            toast.error(errorMessage);
+        }
+    };
+
+    const handleReject = async (id: string) => {
+        if (!id || id.length < 5) return; // mock check
+        try {
+            await rejectWithdrawal(id).unwrap();
+            toast.success('Withdrawal rejected successfully');
+        } catch (error: any) {
+            console.error('Failed to reject withdrawal', error);
+            const errorMessage = error?.data?.message || 'Failed to reject withdrawal';
+            toast.error(errorMessage);
+        }
+    };
+    
+    const stats = affiliateStatsData?.data;
+    const dynamicGrowthData = revenueBreakdownData?.data || growthData;
+    const dynamicCommissionData = commissionGraphData?.data || commissionData;
+    const dynamicPayouts = withdrawalsData?.data?.map((w: any) => ({
+        id: w._id,
+        affiliate: w.userId?.name || 'Unknown',
+        amount: `€${w.amount}`,
+        source: w.paymentMethod,
+        subId: `#W-${w._id.substring(w._id.length - 4).toUpperCase()}`,
+        dueDate: w.createdAt?.split('T')[0],
+        status: w.status
+    })) || pendingPayouts;
 
     return (
         <div className="space-y-8 pb-12">
@@ -74,44 +133,44 @@ export default function ReferralsPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-[#171717] border border-[#10B981]/20 rounded-2xl p-6 relative">
                     <p className="text-zinc-500 text-[12px] font-medium mb-1">Total Referral Revenue</p>
-                    <h3 className="text-2xl font-bold text-white mb-4">€89,400</h3>
-                    <p className="text-[10px] text-zinc-500">This month: <span className="text-zinc-300">€23,100</span></p>
+                    <h3 className="text-2xl font-bold text-white mb-4">€{stats?.referralRevenue?.totalReferralRevenue || 0}</h3>
+                    <p className="text-[10px] text-zinc-500">This month: <span className="text-zinc-300">€{stats?.referralRevenue?.thisMonthReferralRevenue || 0}</span></p>
                     <div className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-[#10B981]/10 flex items-center justify-center">
                         <TrendingUp className="w-5 h-5 text-[#10B981]" />
                     </div>
                     <div className="mt-4 text-[10px] font-bold text-[#10B981] flex items-center gap-1">
-                        <ArrowUpRight className="w-3 h-3" /> 18.7%
+                        <ArrowUpRight className="w-3 h-3" /> {stats?.referralRevenue?.growthPercentage || 0}%
                     </div>
                 </div>
 
                 <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 relative">
                     <p className="text-zinc-500 text-[12px] font-medium mb-1">Total Affiliates</p>
-                    <h3 className="text-2xl font-bold text-white mb-4">347</h3>
-                    <p className="text-[10px] text-zinc-500">Normal: 298 | Influencers: 49</p>
+                    <h3 className="text-2xl font-bold text-white mb-4">{stats?.affiliates?.totalAffiliates || 0}</h3>
+                    <p className="text-[10px] text-zinc-500">Normal: {stats?.affiliates?.normalAffiliates || 0} | Influencers: {stats?.affiliates?.influencerAffiliates || 0}</p>
                     <div className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                         <Users className="w-5 h-5 text-zinc-400" />
                     </div>
                     <div className="mt-4 text-[10px] font-bold text-[#10B981] flex items-center gap-1">
-                        <ArrowUpRight className="w-3 h-3" /> 12.3%
+                        <ArrowUpRight className="w-3 h-3" /> {stats?.affiliates?.growthPercentage || 0}%
                     </div>
                 </div>
 
                 <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 relative">
                     <p className="text-zinc-500 text-[12px] font-medium mb-1">Active Referral Subscriptions</p>
-                    <h3 className="text-2xl font-bold text-white mb-4">1,847</h3>
+                    <h3 className="text-2xl font-bold text-white mb-4">{stats?.activeReferralSubscriptions?.totalActiveReferralSubscriptions || 0}</h3>
                     <p className="text-[10px] text-zinc-500">Generating commissions</p>
                     <div className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                         <CreditCard className="w-5 h-5 text-zinc-400" />
                     </div>
                     <div className="mt-4 text-[10px] font-bold text-[#10B981] flex items-center gap-1">
-                        <ArrowUpRight className="w-3 h-3" /> 15.2%
+                        <ArrowUpRight className="w-3 h-3" /> {stats?.activeReferralSubscriptions?.growthPercentage || 0}%
                     </div>
                 </div>
 
                 <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 relative">
                     <p className="text-zinc-500 text-[12px] font-medium mb-1">Total Commission Paid</p>
-                    <h3 className="text-2xl font-bold text-white mb-4">€34,200</h3>
-                    <p className="text-[10px] text-zinc-500">Pending: <span className="text-zinc-300">€5,280</span></p>
+                    <h3 className="text-2xl font-bold text-white mb-4">€{stats?.commissions?.totalCommissionPaid || 0}</h3>
+                    <p className="text-[10px] text-zinc-500">Pending: <span className="text-zinc-300">€{stats?.commissions?.pendingCommission || 0}</span></p>
                     <div className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                         <DollarSign className="w-5 h-5 text-zinc-400" />
                     </div>
@@ -124,21 +183,22 @@ export default function ReferralsPage() {
                     <h3 className="text-base font-bold text-white mb-8">Monthly Referral Growth</h3>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={growthData}>
+                            <LineChart data={dynamicGrowthData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
                                 <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#52525b', fontSize: 12}} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#52525b', fontSize: 12}} />
-                                <Tooltip contentStyle={{backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px'}} />
-                                <Line type="monotone" dataKey="conversions" stroke="#10B981" strokeWidth={3} dot={{r: 4, fill: '#10B981', strokeWidth: 2, stroke: '#171717'}} activeDot={{r: 6, strokeWidth: 0}} />
+                                <Tooltip 
+                                    contentStyle={{backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px'}} 
+                                    itemStyle={{ color: '#e4e4e7' }}
+                                    labelStyle={{ color: '#a1a1aa' }}
+                                />
+                                <Line type="monotone" dataKey={revenueBreakdownData ? "referrals" : "conversions"} stroke="#10B981" strokeWidth={3} dot={{r: 4, fill: '#10B981', strokeWidth: 2, stroke: '#171717'}} activeDot={{r: 6, strokeWidth: 0}} />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
                     <div className="flex justify-center gap-6 mt-6">
-                        <div className="flex items-center gap-2 text-[11px] text-zinc-400">
-                            <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" /> newUsers
-                        </div>
                         <div className="flex items-center gap-2 text-[11px] text-[#10B981]">
-                            <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" /> conversions
+                            <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" /> referrals
                         </div>
                     </div>
                 </div>
@@ -150,7 +210,7 @@ export default function ReferralsPage() {
                     </div>
                     <div className="h-[300px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={commissionData}>
+                            <AreaChart data={dynamicCommissionData}>
                                 <defs>
                                     <linearGradient id="colorComm" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
@@ -160,77 +220,19 @@ export default function ReferralsPage() {
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
                                 <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#52525b', fontSize: 12}} dy={10} />
                                 <YAxis axisLine={false} tickLine={false} tick={{fill: '#52525b', fontSize: 12}} />
-                                <Tooltip contentStyle={{backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px'}} />
-                                <Area type="monotone" dataKey="revenue" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorComm)" />
+                                <Tooltip 
+                                    contentStyle={{backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px'}} 
+                                    itemStyle={{ color: '#e4e4e7' }}
+                                    labelStyle={{ color: '#a1a1aa' }}
+                                />
+                                <Area type="monotone" dataKey="commissionRevenue" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorComm)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
             </div>
 
-            {/* Global Referral Settings */}
-            <div className="bg-[#171717] border border-white/5 rounded-2xl p-8">
-                <div className="flex items-center gap-2 mb-8">
-                    <Settings2 className="w-5 h-5 text-zinc-400" />
-                    <h3 className="text-base font-bold text-white">Global Referral Settings</h3>
-                </div>
-                
-                <div className="space-y-10">
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <label className="text-sm font-medium text-zinc-400">Default Commission Percentage</label>
-                            <span className="text-sm font-bold text-white">{commissionPercent}%</span>
-                        </div>
-                        <input 
-                            type="range" 
-                            min="0" 
-                            max="50" 
-                            value={commissionPercent}
-                            onChange={(e) => setCommissionPercent(parseInt(e.target.value))}
-                            className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#10B981]" 
-                        />
-                    </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-3">
-                            <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Default Commission Duration</label>
-                            <input type="text" placeholder="e.g. 12 Months" className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#10B981]/50 transition-all" />
-                        </div>
-                        <div className="space-y-3">
-                            <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Maximum Total Commission</label>
-                            <input type="text" placeholder="e.g. €1000" className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#10B981]/50 transition-all" />
-                        </div>
-                    </div>
-
-                    <div className="space-y-6 pt-4">
-                        <div className="flex items-center justify-between group">
-                            <div className="space-y-1">
-                                <p className="text-sm font-bold text-white">Qualification Rule</p>
-                                <p className="text-xs text-zinc-500">Commission starts only after first successful payment</p>
-                            </div>
-                            <button className="w-12 h-6 bg-[#10B981] rounded-full relative transition-all">
-                                <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" />
-                            </button>
-                        </div>
-
-                        <div className="space-y-4 pt-4 border-t border-white/5">
-                            <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Commission Stop Rules</p>
-                            {[
-                                "Stop after payout limit reached",
-                                "Stop after duration ends",
-                                "Stop if subscription cancelled"
-                            ].map((rule, idx) => (
-                                <div key={idx} className="flex items-center justify-between">
-                                    <p className="text-sm font-medium text-zinc-400">{rule}</p>
-                                    <button className="w-12 h-6 bg-[#10B981] rounded-full relative transition-all">
-                                        <div className="absolute right-1 top-1 w-4 h-4 bg-white rounded-full" />
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             {/* Pending Payouts */}
             <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
@@ -251,7 +253,7 @@ export default function ReferralsPage() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
-                            {pendingPayouts.map((p, i) => (
+                            {dynamicPayouts.map((p: any, i: number) => (
                                 <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
                                     <td className="px-8 py-5">
                                         <p className="text-sm font-bold text-white group-hover:text-[#10B981] transition-colors cursor-pointer">{p.affiliate}</p>
@@ -262,24 +264,39 @@ export default function ReferralsPage() {
                                     <td className="px-8 py-5 text-sm text-zinc-500">{p.dueDate}</td>
                                     <td className="px-8 py-5">
                                         <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
-                                            p.status === 'Pending' 
+                                            p.status === 'PENDING' || p.status === 'Pending'
                                             ? 'bg-orange-500/10 text-orange-500' 
+                                            : p.status === 'REJECTED' || p.status === 'Rejected'
+                                            ? 'bg-red-500/10 text-red-500'
                                             : 'bg-[#10B981]/10 text-[#10B981]'
                                         }`}>
-                                            <div className={`w-1 h-1 rounded-full ${p.status === 'Pending' ? 'bg-orange-500' : 'bg-[#10B981]'}`} />
+                                            <div className={`w-1 h-1 rounded-full ${p.status === 'PENDING' || p.status === 'Pending' ? 'bg-orange-500' : p.status === 'REJECTED' || p.status === 'Rejected' ? 'bg-red-500' : 'bg-[#10B981]'}`} />
                                             {p.status}
                                         </span>
                                     </td>
                                     <td className="px-8 py-5">
                                         <div className="flex items-center gap-2">
-                                            <button className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                                                p.status === 'Approved'
-                                                ? 'bg-[#10B981]/10 text-[#10B981] cursor-default'
+                                            <button 
+                                                onClick={() => handleApprove(p.id)}
+                                                disabled={p.status !== 'PENDING' && p.status !== 'Pending'}
+                                                className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                                                p.status !== 'PENDING' && p.status !== 'Pending'
+                                                ? 'bg-[#10B981]/10 text-[#10B981] cursor-not-allowed opacity-50'
                                                 : 'bg-[#10B981] text-white hover:bg-[#0da673]'
                                             }`}>
-                                                {p.status === 'Approved' ? 'Approved' : 'Approve'}
+                                                {p.status === 'APPROVED' || p.status === 'Approved' ? 'Approved' : 'Approve'}
                                             </button>
-                                            <button className="px-4 py-1.5 rounded-lg bg-zinc-800 text-zinc-400 text-[10px] font-bold uppercase tracking-wider hover:bg-zinc-700 transition-all">Hold</button>
+                                            <button 
+                                                onClick={() => handleReject(p.id)}
+                                                disabled={p.status !== 'PENDING' && p.status !== 'Pending'}
+                                                className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
+                                                    p.status !== 'PENDING' && p.status !== 'Pending'
+                                                    ? 'bg-red-500/10 text-red-500 cursor-not-allowed opacity-50'
+                                                    : 'bg-zinc-800 text-zinc-400 hover:bg-red-500/20 hover:text-red-500'
+                                                }`}
+                                            >
+                                                {p.status === 'REJECTED' || p.status === 'Rejected' ? 'Rejected' : 'Reject'}
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>

@@ -10,6 +10,10 @@ export const reservationApi = baseApi.injectEndpoints({
             query: () => '/reservations/owner-stats',
             providesTags: ['Reservation'],
         }),
+        getWeeklyBookings: builder.query({
+            query: () => '/reservations/weekly-bookings',
+            providesTags: ['Reservation'],
+        }),
         getReservations: builder.query({
             query: (params) => {
                 const queryParams = new URLSearchParams();
@@ -39,6 +43,7 @@ export const reservationApi = baseApi.injectEndpoints({
 export const {
     useGetReservationStatsQuery,
     useGetOwnerReservationStatsQuery,
+    useGetWeeklyBookingsQuery,
     useGetReservationsQuery,
     useUpdateReservationStatusMutation
 } = reservationApi;

@@ -1,20 +1,26 @@
 'use client';
 
-import React from 'react';
-import { 
-    Users, 
-    UserCheck, 
-    Award, 
-    Crown, 
-    Search, 
+import React, { useState, useEffect } from 'react';
+import {
+    Users,
+    UserCheck,
+    Award,
+    Crown,
+    Search,
     Filter,
     Edit3,
     Eye,
     Ban,
+    CheckCircle,
     ChevronLeft,
     ChevronRight,
-    MoreHorizontal
+    MoreHorizontal,
+    X,
+    Loader2
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useGetUserStatsQuery, useGetAllUsersQuery, useToggleUserStatusMutation, useUpdateUserMutation } from '../../../../redux/features/dashboard/dashboardApi';
 
 const userData = [
     { name: 'Sarah Johnson', email: 'sarah.j@email.com', type: 'Influencer', code: 'SARAH2024', referrals: 142, subs: 98, earnings: '€4,260', commission: '15%', plan: 'Annual' },
@@ -30,6 +36,46 @@ const userData = [
 ];
 
 export default function UserManagement() {
+    const router = useRouter();
+    const [page, setPage] = useState(1);
+    const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [editingUser, setEditingUser] = useState<any>(null);
+
+    useEffect(() => {
+        const timer = setTimeout(() => setDebouncedSearch(search), 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    const { data: userStatsRes, isLoading: isStatsLoading } = useGetUserStatsQuery(undefined);
+    const { data: usersRes, isLoading: isUsersLoading } = useGetAllUsersQuery({
+        page,
+        limit: 10,
+        search: debouncedSearch,
+    });
+    const [toggleUserStatus] = useToggleUserStatusMutation();
+
+    const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+        try {
+            await toggleUserStatus(id).unwrap();
+            toast.success(`User successfully ${currentStatus ? 'banned' : 'unbanned'}`);
+        } catch (error: any) {
+            toast.error(error?.data?.message || 'Failed to toggle user status');
+        }
+    };
+
+    if (isStatsLoading || isUsersLoading) {
+        return (
+            <div className="flex h-[400px] items-center justify-center">
+                <p className="text-zinc-400 animate-pulse">Loading users...</p>
+            </div>
+        );
+    }
+
+    const stats = userStatsRes?.data || { totalUser: 10, regularCustomer: 5, influencer: 5, premiumUser: 4 };
+    const dynamicUsers = usersRes?.data || userData;
+    const meta = usersRes?.meta || { page: 1, limit: 10, total: dynamicUsers.length, totalPages: 1, hasNext: false, hasPrev: false };
+
     return (
         <div className="space-y-8 pb-12">
             {/* Header */}
@@ -42,7 +88,7 @@ export default function UserManagement() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 relative">
                     <p className="text-zinc-500 text-[12px] font-medium mb-1">Total Users</p>
-                    <h3 className="text-3xl font-bold text-white mb-2">10</h3>
+                    <h3 className="text-3xl font-bold text-white mb-2">{stats.totalUser}</h3>
                     <p className="text-[11px] text-[#10B981] font-bold uppercase tracking-wider">All registered users</p>
                     <div className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                         <Users className="w-5 h-5 text-zinc-400" />
@@ -51,7 +97,7 @@ export default function UserManagement() {
 
                 <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 relative">
                     <p className="text-zinc-500 text-[12px] font-medium mb-1">Regular Customers</p>
-                    <h3 className="text-3xl font-bold text-white mb-2">5</h3>
+                    <h3 className="text-3xl font-bold text-white mb-2">{stats.regularCustomer}</h3>
                     <p className="text-[11px] text-zinc-500 font-medium">Standard users</p>
                     <div className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                         <UserCheck className="w-5 h-5 text-zinc-400" />
@@ -60,7 +106,7 @@ export default function UserManagement() {
 
                 <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 relative">
                     <p className="text-zinc-500 text-[12px] font-medium mb-1">Influencers</p>
-                    <h3 className="text-3xl font-bold text-white mb-2">5</h3>
+                    <h3 className="text-3xl font-bold text-white mb-2">{stats.influencer}</h3>
                     <p className="text-[11px] text-[#10B981] font-bold">With custom commissions</p>
                     <div className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                         <Award className="w-5 h-5 text-[#10B981]" />
@@ -69,7 +115,7 @@ export default function UserManagement() {
 
                 <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 relative">
                     <p className="text-zinc-500 text-[12px] font-medium mb-1">Premium Users</p>
-                    <h3 className="text-3xl font-bold text-white mb-2">4</h3>
+                    <h3 className="text-3xl font-bold text-white mb-2">{stats.premiumUser}</h3>
                     <p className="text-[11px] text-zinc-500 font-medium">Annual subscribers</p>
                     <div className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                         <Crown className="w-5 h-5 text-zinc-400" />
@@ -84,11 +130,17 @@ export default function UserManagement() {
                     <div className="flex gap-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                            <input type="text" placeholder="Search users..." className="bg-white/5 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-[12px] text-white focus:outline-none focus:border-[#10B981]/50 w-64" />
+                            <input
+                                type="text"
+                                placeholder="Search users..."
+                                value={search}
+                                onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                                className="bg-white/5 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-[12px] text-white focus:outline-none focus:border-[#10B981]/50 w-64"
+                            />
                         </div>
-                        <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all text-[12px] text-zinc-400 font-medium">
+                        {/* <button className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all text-[12px] text-zinc-400 font-medium">
                             <Filter className="w-4 h-4" />
-                        </button>
+                        </button> */}
                     </div>
                 </div>
                 <div className="overflow-x-auto">
@@ -107,7 +159,7 @@ export default function UserManagement() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
-                            {userData.map((user, i) => (
+                            {dynamicUsers.map((user: any, i: number) => (
                                 <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
                                     <td className="px-8 py-5">
                                         <div>
@@ -116,34 +168,43 @@ export default function UserManagement() {
                                         </div>
                                     </td>
                                     <td className="px-8 py-5">
-                                        <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
-                                            user.type === 'Influencer' 
-                                            ? 'bg-[#10B981]/10 text-[#10B981]' 
-                                            : 'bg-[#1447E6]/10 text-[#1447E6]'
-                                        }`}>
-                                            {user.type}
+                                        <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${user.isInfluencer
+                                            ? 'bg-[#10B981]/10 text-[#10B981]'
+                                            : user.role === 'ADMIN' ? 'bg-purple-500/10 text-purple-500' : 'bg-[#1447E6]/10 text-[#1447E6]'
+                                            }`}>
+                                            {user.isInfluencer ? 'Influencer' : user.role === 'ADMIN' ? 'Admin' : 'Regular User'}
                                         </span>
                                     </td>
                                     <td className="px-8 py-5">
                                         <span className="bg-white/5 border border-white/5 px-2.5 py-1 rounded text-[10px] font-mono text-zinc-400 uppercase tracking-widest font-bold">
-                                            {user.code}
+                                            {user.referralCode || user.code || '-'}
                                         </span>
                                     </td>
-                                    <td className="px-8 py-5 text-sm font-bold text-white text-center">{user.referrals}</td>
-                                    <td className="px-8 py-5 text-sm text-zinc-400 text-center">{user.subs}</td>
-                                    <td className="px-8 py-5 text-sm font-bold text-white">{user.earnings}</td>
-                                    <td className="px-8 py-5 text-sm font-bold text-[#10B981]">{user.commission}</td>
-                                    <td className="px-8 py-5 text-sm text-zinc-500 font-medium">{user.plan}</td>
+                                    <td className="px-8 py-5 text-sm font-bold text-white text-center">{user.referralsTotalCount ?? user.referrals ?? 0}</td>
+                                    <td className="px-8 py-5 text-sm text-zinc-400 text-center">{user.activeSubscriptionFromHimTotal ?? user.subs ?? 0}</td>
+                                    <td className="px-8 py-5 text-sm font-bold text-white">{typeof user.balance === 'number' ? `€${user.balance}` : (user.earnings || '€0')}</td>
+                                    <td className="px-8 py-5 text-sm font-bold text-[#10B981]">{user.commissionPercentage ?? user.percentage ?? (user.commission ? parseInt(user.commission) : 0)}%</td>
+                                    <td className="px-8 py-5 text-sm text-zinc-500 font-medium">{user.plan || 'N/A'}</td>
                                     <td className="px-8 py-5">
                                         <div className="flex items-center justify-end gap-3 text-zinc-500">
-                                            <button className="p-2 hover:bg-white/5 rounded-lg hover:text-[#10B981] transition-all">
+                                            <button
+                                                onClick={() => setEditingUser(user)}
+                                                className="p-2 hover:bg-white/5 rounded-lg hover:text-[#10B981] transition-all"
+                                            >
                                                 <Edit3 className="w-4 h-4" />
                                             </button>
-                                            <button className="p-2 hover:bg-white/5 rounded-lg hover:text-white transition-all">
+                                            <button
+                                                onClick={() => router.push(`/admin/users/${user._id}`)}
+                                                className="p-2 hover:bg-white/5 rounded-lg hover:text-white transition-all"
+                                            >
                                                 <Eye className="w-4 h-4" />
                                             </button>
-                                            <button className="p-2 hover:bg-white/5 rounded-lg hover:text-red-500 transition-all">
-                                                <Ban className="w-4 h-4" />
+                                            <button
+                                                onClick={() => handleToggleStatus(user._id, user.isActive)}
+                                                className={`p-2 hover:bg-white/5 rounded-lg transition-all ${user.isActive ? 'hover:text-red-500' : 'hover:text-[#10B981]'}`}
+                                                title={user.isActive ? 'Ban User' : 'Unban User'}
+                                            >
+                                                {user.isActive ? <Ban className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                                             </button>
                                         </div>
                                     </td>
@@ -154,12 +215,119 @@ export default function UserManagement() {
                 </div>
 
                 <div className="p-8 border-t border-white/5 flex items-center justify-between">
-                    <p className="text-xs text-zinc-500">Showing 10 of 10 users</p>
+                    <p className="text-xs text-zinc-500">Showing {dynamicUsers.length} of {meta.total} users</p>
                     <div className="flex gap-3">
-                        <button className="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-[11px] font-bold text-zinc-500 cursor-not-allowed">Previous</button>
-                        <button className="px-4 py-2 rounded-xl bg-white/5 border border-white/5 text-[11px] font-bold text-zinc-300 hover:bg-white/10 transition-all">Next</button>
+                        <button
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            disabled={!meta.hasPrev}
+                            className={`px-4 py-2 rounded-xl border text-[11px] font-bold transition-all ${meta.hasPrev ? 'bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10' : 'bg-transparent border-white/5 text-zinc-600 cursor-not-allowed'
+                                }`}>Previous</button>
+                        <button
+                            onClick={() => setPage(p => p + 1)}
+                            disabled={!meta.hasNext}
+                            className={`px-4 py-2 rounded-xl border text-[11px] font-bold transition-all ${meta.hasNext ? 'bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10' : 'bg-transparent border-white/5 text-zinc-600 cursor-not-allowed'
+                                }`}>Next</button>
                     </div>
                 </div>
+            </div>
+
+            {editingUser && (
+                <EditUserModal
+                    user={editingUser}
+                    onClose={() => setEditingUser(null)}
+                />
+            )}
+        </div>
+    );
+}
+
+function EditUserModal({ user, onClose }: { user: any, onClose: () => void }) {
+    const [updateUser, { isLoading }] = useUpdateUserMutation();
+    const [formData, setFormData] = useState({
+        isInfluencer: user.isInfluencer || false,
+        commissionPercentage: user.commissionPercentage ?? user.percentage ?? user.commission ?? 0,
+        maxPayout: user.maxPayout || 0,
+        commissionDuration: user.commissionDuration || 0
+    });
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        try {
+            await updateUser({ id: user._id, body: formData }).unwrap();
+            toast.success("User updated successfully");
+            onClose();
+        } catch (error: any) {
+            toast.error(error?.data?.message || "Failed to update user");
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+            <div className="bg-[#171717] border border-white/5 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+                <div className="p-6 border-b border-white/5 flex items-center justify-between">
+                    <h3 className="text-lg font-bold text-white">Edit User Settings</h3>
+                    <button onClick={onClose} className="p-2 text-zinc-400 hover:text-white hover:bg-white/5 rounded-xl transition-all">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                    <div className="flex items-center justify-between bg-white/[0.02] p-4 rounded-xl border border-white/5">
+                        <div>
+                            <p className="text-sm font-bold text-white">Influencer Status</p>
+                            <p className="text-xs text-zinc-500 mt-1">Enable to set custom commissions</p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({ ...prev, isInfluencer: !prev.isInfluencer }))}
+                            className={`w-12 h-6 rounded-full relative transition-all duration-300 ${formData.isInfluencer ? 'bg-[#10B981]' : 'bg-zinc-800'}`}
+                        >
+                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all duration-300 ${formData.isInfluencer ? 'right-1' : 'left-1'}`} />
+                        </button>
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Commission Percentage (%)</label>
+                            <input
+                                type="number"
+                                value={formData.commissionPercentage}
+                                onChange={e => setFormData(prev => ({ ...prev, commissionPercentage: parseFloat(e.target.value) || 0 }))}
+                                className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#10B981]/50 transition-all"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Maximum Payout (€)</label>
+                            <input
+                                type="number"
+                                value={formData.maxPayout}
+                                onChange={e => setFormData(prev => ({ ...prev, maxPayout: parseFloat(e.target.value) || 0 }))}
+                                className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#10B981]/50 transition-all"
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Commission Duration (Months)</label>
+                            <input
+                                type="number"
+                                value={formData.commissionDuration}
+                                onChange={e => setFormData(prev => ({ ...prev, commissionDuration: parseInt(e.target.value) || 0 }))}
+                                className="w-full bg-white/[0.03] border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#10B981]/50 transition-all"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="pt-2">
+                        <button
+                            type="submit"
+                            disabled={isLoading}
+                            className="w-full bg-[#10B981] text-white px-6 py-3.5 rounded-xl text-sm font-bold hover:bg-[#0ea5e9] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                        >
+                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save Changes'}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
