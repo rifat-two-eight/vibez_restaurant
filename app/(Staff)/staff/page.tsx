@@ -4,8 +4,8 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Calendar, Users, CheckCircle, Clock, LogOut, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { useDispatch } from 'react-redux';
-import { logOut } from '@/redux/features/auth/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { logOut, currentUser } from '@/redux/features/auth/authSlice';
 import {
     useGetReservationStatsQuery,
     useGetReservationsQuery,
@@ -28,6 +28,7 @@ const formatStatus = (status: string) => {
 export default function StaffPanel() {
     const router = useRouter();
     const dispatch = useDispatch();
+    const user = useSelector(currentUser);
 
     const { data: statsRes, isLoading: isStatsLoading } = useGetReservationStatsQuery({});
     const { data: reservationsRes, isLoading: isReservationsLoading } = useGetReservationsQuery({});

@@ -1,66 +1,17 @@
-{
-    "success": true,
-    "message": "Users retrieved successfully",
-    "data": [
-        {
-            "_id": "6a39a3c1c8a185924e5785d8",
-            "name": "dfssfd",
-            "email": "wy48k6n5tv@bltiwd.com",
-            "password": "$2b$12$wyEYjrkPgPBu9mN2qdn/G.7ZC24bSh2Fs7fQ9avzGUFGIJyg7aYL.",
-            "role": "USER",
-            "enableStaffLogin": true,
-            "phone": "45454556",
-            "isActive": true,
-            "isEmailVerified": true,
-            "isDeleted": false,
-            "isInfluencer": false,
-            "isNewUser": false,
-            "balance": 0,
-            "commissionPercentage": 10,
-            "maxPayout": 100,
-            "commissionDuration": 12,
-            "favoriteCuisines": [],
-            "dietaryPreferences": [],
-            "referredBy": null,
-            "fcmTokens": [],
-            "createdAt": "2026-06-22T21:06:09.418Z",
-            "updatedAt": "2026-06-29T22:34:58.120Z",
-            "referralCode": "DF92C241",
-            "location": {
-                "lat": 23.7808857,
-                "lng": 90.4075786
-            },
-            "lastLogin": "2026-06-29T22:34:58.120Z",
-            "aboutme": "Food enthusiast and regular diner. hgf",
-            "address": {
-                "street": "123 Rue de ffh",
-                "city": "Berlin",
-                "state": "GD",
-                "zipCode": "120265",
-                "country": "German"
-            },
-            "profileImage": "/uploads/profile-images/profile-245399-4888.webp",
-            "stripeConnectedAccountId": "acct_1TlHuEPXxi6T2tEv",
-            "subscriptionEndDate": "2026-07-23T23:15:02.959Z",
-            "subscriptionPlanId": {
-                "_id": "6a370c158ab5dfd1a0f30c28",
-                "name": "Premium Plan",
-                "price": 34.99,
-                "duration": "MONTHLY",
-                "isFreeTrial": false,
-                "freeTrialDays": 14
-            },
-            "referralsTotalCount": 0,
-            "activeSubscriptionFromHimTotal": 0
-        }
-    ],
-    "meta": {
-        "page": 1,
-        "limit": 20,
-        "total": 1,
-        "totalPages": 1,
-        "hasNext": false,
-        "hasPrev": false
-    }
-}
+Here is the raw Socket mapping for Next.js (no UI code):
+1. Connection Endpoint
+Base URL: https://vibezapi.apponislam.top/
+Transport: websocket
+2. Owner Connection (To Listen)
+Connect passing only the restaurantId in the query string:
+javascriptconst socket = io("https://vibezapi.apponislam.top", {  query: {    restaurantId: "YOUR_RESTAURANT_MONGO_ID"  }});
+Event to Listen to: restaurant_stats
+Response Payload:
+3. Staff Connection (To Go Online)
+Connect passing both the staff member's _id and the restaurantId in the query string:
+javascriptconst socket = io("https://vibezapi.apponislam.top", {  query: {    _id: "STAFF_USER_MONGO_ID",    restaurantId: "YOUR_RESTAURANT_MONGO_ID"  }});
+(Connecting instantly triggers the stats update to all connected owners)
+json{  "totalBookingsToday": { "count": 23, "change": "+5 from yesterday" },  "activeDeals": { "count": 2, "change": "Stable" },  "totalCustomersServed": { "count": 1847, "period": "This month" },  "staffOnlineNow": { "count": 0, "status": "No staff online" }}
+ 
+VIBEZ | Backend Engine
  

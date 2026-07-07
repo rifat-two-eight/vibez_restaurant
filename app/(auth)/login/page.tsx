@@ -65,9 +65,10 @@ export default function LoginPage() {
             }
 
             toast.success("Login successful!");
-        } catch (error) {
+        } catch (error: any) {
             console.error("Login failed:", error);
-            toast.error("Login failed. Please check your credentials.");
+            const errorMessage = error?.data?.message || "Login failed. Please check your credentials.";
+            toast.error(errorMessage);
         }
     };
 

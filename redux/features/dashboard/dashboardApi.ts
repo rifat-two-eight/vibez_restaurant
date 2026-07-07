@@ -85,6 +85,30 @@ export const dashboardApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['User'],
         }),
+        getRestaurantStats: builder.query({
+            query: () => '/dashboard/restaurant-stats',
+            providesTags: ['Dashboard'],
+        }),
+        getRestaurantBookingsPerDay: builder.query({
+            query: () => '/dashboard/restaurant-bookings-per-day',
+            providesTags: ['Dashboard'],
+        }),
+        getRestaurantLunchVsDinner: builder.query({
+            query: () => '/dashboard/restaurant-lunch-vs-dinner',
+            providesTags: ['Dashboard'],
+        }),
+        getRestaurantOverview: builder.query({
+            query: () => '/dashboard/restaurant-overview',
+            providesTags: ['Dashboard'],
+        }),
+        getRestaurantInsights: builder.query({
+            query: () => '/dashboard/restaurant-insights',
+            providesTags: ['Dashboard'],
+        }),
+        getRestaurantRealtimeStats: builder.query({
+            query: () => '/dashboard/restaurant-realtime-stats',
+            providesTags: ['Dashboard'],
+        }),
     }),
 });
 
@@ -103,5 +127,11 @@ export const {
     useGetAllUsersQuery,
     useGetUserActivityQuery,
     useToggleUserStatusMutation,
-    useUpdateUserMutation
+    useUpdateUserMutation,
+    useGetRestaurantStatsQuery,
+    useGetRestaurantBookingsPerDayQuery,
+    useGetRestaurantLunchVsDinnerQuery,
+    useGetRestaurantOverviewQuery,
+    useGetRestaurantInsightsQuery,
+    useGetRestaurantRealtimeStatsQuery
 } = dashboardApi;

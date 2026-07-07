@@ -32,7 +32,11 @@ const baseQuery = fetchBaseQuery({
 export const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions);
 
-    if (result?.error?.status === 401 || result?.error?.status === 403) {
+    const isAuthEndpoint = typeof args === 'string' 
+        ? args.includes('/auth/login') || args.includes('/auth/refresh-token')
+        : args.url?.includes('/auth/login') || args.url?.includes('/auth/refresh-token');
+
+    if ((result?.error?.status === 401 || result?.error?.status === 403) && !isAuthEndpoint) {
         const refreshResult = await baseQuery({ url: "/auth/refresh-token", method: "POST", credentials: "include" }, api, extraOptions);
 
         if (refreshResult.data && typeof refreshResult.data === "object" && "data" in refreshResult.data) {

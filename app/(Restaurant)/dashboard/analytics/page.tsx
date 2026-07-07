@@ -23,24 +23,15 @@ import {
     ChartLegendContent,
     type ChartConfig,
 } from '@/components/ui/chart';
-
-const barData = [
-    { day: 'Mon', bookings: 11 },
-    { day: 'Tue', bookings: 19 },
-    { day: 'Wed', bookings: 15 },
-    { day: 'Thu', bookings: 22 },
-    { day: 'Fri', bookings: 28 },
-    { day: 'Sat', bookings: 32 },
-    { day: 'Sun', bookings: 24 },
-];
-
-const pieData = [
-    { name: 'Dinner', value: 58 },
-    { name: 'Lunch',  value: 42 },
-];
+import { 
+    useGetRestaurantStatsQuery, 
+    useGetRestaurantBookingsPerDayQuery, 
+    useGetRestaurantLunchVsDinnerQuery 
+} from '@/redux/features/dashboard/dashboardApi';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const barConfig: ChartConfig = {
-    bookings: { label: 'Bookings', color: '#3B82F6' },
+    count: { label: 'Bookings', color: '#3B82F6' },
 };
 
 const pieConfig: ChartConfig = {
@@ -51,6 +42,34 @@ const pieConfig: ChartConfig = {
 const PIE_COLORS = ['#3B82F6', '#8B5CF6'];
 
 export default function AnalyticsPage() {
+    const { data: statsRes, isLoading: isLoadingStats } = useGetRestaurantStatsQuery({});
+    const { data: bookingsRes, isLoading: isLoadingBookings } = useGetRestaurantBookingsPerDayQuery({});
+    const { data: mealStatsRes, isLoading: isLoadingMealStats } = useGetRestaurantLunchVsDinnerQuery({});
+
+    const stats = statsRes?.data;
+    const barData = bookingsRes?.data || [];
+    const pieData = mealStatsRes?.data || [];
+
+    if (isLoadingStats || isLoadingBookings || isLoadingMealStats) {
+        return (
+            <div className="space-y-8 animate-pulse">
+                <div><Skeleton className="h-8 w-48 mb-2" /><Skeleton className="h-4 w-96" /></div>
+                <div>
+                    <Skeleton className="h-6 w-32 mb-4" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                        <Skeleton className="h-32 w-full rounded-[10px]" />
+                        <Skeleton className="h-32 w-full rounded-[10px]" />
+                        <Skeleton className="h-32 w-full rounded-[10px]" />
+                    </div>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <Skeleton className="h-[300px] w-full rounded-[10px]" />
+                    <Skeleton className="h-[300px] w-full rounded-[10px]" />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="space-y-8">
             {/* Header */}
@@ -67,20 +86,23 @@ export default function AnalyticsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                     <div className="bg-white rounded-[10px] border border-zinc-100 p-5">
                         <p className="text-xs text-zinc-400 font-medium mb-2">Most Popular Deal</p>
-                        <p className="text-lg font-bold text-zinc-900">2-for-1 Dinner</p>
-                        <p className="text-xs font-semibold text-emerald-500 flex items-center gap-1 mt-1">
-                            <TrendingUp className="w-3 h-3" /> +23% usage
+                        <p className="text-lg font-bold text-zinc-900">{stats?.mostPopularDeal?.title || 'N/A'}</p>
+                        <p className={`text-xs font-semibold flex items-center gap-1 mt-1 ${stats?.mostPopularDeal?.usageChange >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                            <TrendingUp className={`w-3 h-3 ${stats?.mostPopularDeal?.usageChange < 0 ? 'rotate-180' : ''}`} /> 
+                            {stats?.mostPopularDeal?.usageChange >= 0 ? '+' : ''}{stats?.mostPopularDeal?.usageChange || 0}% usage
                         </p>
                     </div>
                     <div className="bg-white rounded-[10px] border border-zinc-100 p-5">
                         <p className="text-xs text-zinc-400 font-medium mb-2">Peak Time</p>
-                        <p className="text-lg font-bold text-zinc-900">Dinner</p>
-                        <p className="text-xs text-zinc-400 mt-1">6:30 PM – 8:00 PM</p>
+                        <p className="text-lg font-bold text-zinc-900">{stats?.peakTime?.mealTime || 'N/A'}</p>
+                        <p className="text-xs text-zinc-400 mt-1">{stats?.peakTime?.timeRange || 'N/A'}</p>
                     </div>
                     <div className="bg-white rounded-[10px] border border-zinc-100 p-5">
                         <p className="text-xs text-zinc-400 font-medium mb-2">Average Guests per Booking</p>
-                        <p className="text-lg font-bold text-zinc-900">3.2</p>
-                        <p className="text-xs text-zinc-400 mt-1">↑ 0.4 from last week</p>
+                        <p className="text-lg font-bold text-zinc-900">{stats?.averageGuests?.average || 0}</p>
+                        <p className={`text-xs mt-1 ${stats?.averageGuests?.change >= 0 ? 'text-zinc-400' : 'text-red-400'}`}>
+                            {stats?.averageGuests?.change > 0 ? '↑' : stats?.averageGuests?.change < 0 ? '↓' : ''} {Math.abs(stats?.averageGuests?.change || 0)} from last week
+                        </p>
                     </div>
                 </div>
             </div>
@@ -91,14 +113,28 @@ export default function AnalyticsPage() {
                 {/* Bar Chart */}
                 <div className="bg-white rounded-[10px] border border-zinc-100 p-6">
                     <h2 className="text-base font-bold text-zinc-900 mb-4">Bookings per Day</h2>
-                    <ChartContainer config={barConfig} className="h-[240px] w-full">
-                        <BarChart data={barData} barCategoryGap="30%">
+                    <ChartContainer config={barConfig} className="h-[260px] w-full">
+                        <BarChart data={barData} barCategoryGap="30%" margin={{ bottom: 20 }}>
                             <CartesianGrid vertical={false} stroke="#F4F4F5" />
                             <XAxis
                                 dataKey="day"
                                 axisLine={false}
                                 tickLine={false}
-                                tick={{ fontSize: 12, fill: '#A1A1AA' }}
+                                tick={(props: any) => {
+                                    const { x, y, payload, index } = props;
+                                    const item = barData[index];
+                                    if (!item) return null;
+                                    return (
+                                        <g transform={`translate(${x},${y})`}>
+                                            <text x={0} y={0} dy={16} textAnchor="middle" fill="#71717A" fontSize={12} fontWeight={500}>
+                                                {item.day}
+                                            </text>
+                                            <text x={0} y={0} dy={32} textAnchor="middle" fill="#A1A1AA" fontSize={10}>
+                                                {item.date}
+                                            </text>
+                                        </g>
+                                    );
+                                }}
                             />
                             <YAxis
                                 axisLine={false}
@@ -106,7 +142,7 @@ export default function AnalyticsPage() {
                                 tick={{ fontSize: 12, fill: '#A1A1AA' }}
                             />
                             <ChartTooltip content={<ChartTooltipContent />} />
-                            <Bar dataKey="bookings" fill="#3B82F6" radius={[6, 6, 0, 0]} />
+                            <Bar dataKey="count" fill="#3B82F6" radius={[6, 6, 0, 0]} />
                         </BarChart>
                     </ChartContainer>
                 </div>

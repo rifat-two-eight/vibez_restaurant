@@ -117,7 +117,14 @@ export default function BookingsPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-4">
-                                    <span className="text-sm text-zinc-500 font-medium">{item.reservationTime}</span>
+                                    <div className="flex flex-col items-end text-right">
+                                        <span className="text-sm text-zinc-500 font-medium">{item.reservationTime}</span>
+                                        {item.reservationDate && (
+                                            <span className="text-[11px] text-zinc-400 font-medium mt-0.5">
+                                                {new Date(item.reservationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            </span>
+                                        )}
+                                    </div>
                                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${queueStatusStyle[item.status] || queueStatusStyle.ARRIVED}`}>
                                         {formatStatus(item.status)}
                                     </span>
@@ -172,7 +179,14 @@ export default function BookingsPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-6 text-sm text-zinc-500">
-                                    <span className="font-medium text-zinc-700">{booking.reservationTime}</span>
+                                    <div className="flex flex-col items-end text-right">
+                                        <span className="font-medium text-zinc-700">{booking.reservationTime}</span>
+                                        {booking.reservationDate && (
+                                            <span className="text-[11px] text-zinc-400 font-medium mt-0.5">
+                                                {new Date(booking.reservationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            </span>
+                                        )}
+                                    </div>
                                     <span className="text-zinc-300">•</span>
                                     <span className="font-medium">{booking.partySize} guests</span>
                                 </div>

@@ -1,6 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { io, Socket } from "socket.io-client";
+import { useSelector } from "react-redux";
+import { currentUser } from "@/redux/features/auth/authSlice";
+import { useGetRestaurantRealtimeStatsQuery } from "@/redux/features/dashboard/dashboardApi";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
     Calendar,
     Tag,
@@ -12,36 +17,83 @@ import {
     ArrowUpRight
 } from 'lucide-react';
 
+const SOCKET_URL = "https://vibezapi.apponislam.top";
+
 export default function DashboardOverview() {
+    const user = useSelector(currentUser);
+    const { data: initialStatsRes, isLoading } = useGetRestaurantRealtimeStatsQuery({});
+    const initialStats = initialStatsRes?.data;
+
+    const [realtimeStats, setRealtimeStats] = useState<any>(null);
+
+    useEffect(() => {
+        if (initialStats) {
+            setRealtimeStats(initialStats);
+        }
+    }, [initialStats]);
+
+    useEffect(() => {
+        if (!user?.restaurantId) return;
+
+        const socket: Socket = io(SOCKET_URL, {
+            query: {
+                restaurantId: user.restaurantId
+            },
+            transports: ['websocket'],
+            autoConnect: true,
+            reconnection: true
+        });
+
+        socket.on("connect", () => {
+            console.log("🔌 Connected to socket server with ID:", socket.id);
+        });
+
+        socket.on("restaurant_stats", (stats) => {
+            console.log("📊 Real-time Dashboard Stats Update:", stats);
+            setRealtimeStats((prev: any) => ({
+                ...prev,
+                ...stats
+            }));
+        });
+
+        socket.on("disconnect", () => {
+            console.log("❌ Disconnected from socket server");
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [user?.restaurantId]);
+
     const stats = [
         {
             label: 'Total Bookings Today',
-            value: '23',
-            trend: '+5 from yesterday',
+            value: realtimeStats?.totalBookingsToday?.count || 0,
+            trend: realtimeStats?.totalBookingsToday?.change || '0 from yesterday',
             icon: Calendar,
             iconBg: 'bg-emerald-50',
             iconColor: 'text-emerald-600'
         },
         {
             label: 'Active Deals',
-            value: '2',
-            trend: 'Stable',
+            value: realtimeStats?.activeDeals?.count || 0,
+            trend: realtimeStats?.activeDeals?.change || 'Stable',
             icon: Tag,
             iconBg: 'bg-blue-50',
             iconColor: 'text-blue-600'
         },
         {
             label: 'Total Customers Served',
-            value: '1,847',
-            trend: 'This month',
+            value: realtimeStats?.totalCustomersServed?.count || 0,
+            trend: realtimeStats?.totalCustomersServed?.period || 'This month',
             icon: Users,
             iconBg: 'bg-purple-50',
             iconColor: 'text-purple-600'
         },
         {
             label: 'Staff Active Today',
-            value: '4',
-            trend: 'Full capacity',
+            value: realtimeStats?.staffOnlineNow?.count || 0,
+            trend: realtimeStats?.staffOnlineNow?.status || 'No staff online',
             icon: UserCheck,
             iconBg: 'bg-amber-50',
             iconColor: 'text-amber-600'
@@ -64,7 +116,21 @@ export default function DashboardOverview() {
 
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat) => {
+                {isLoading && !realtimeStats ? (
+                    Array(4).fill(0).map((_, i) => (
+                        <div key={i} className="bg-white p-6 rounded-xl border border-zinc-100 shadow-sm space-y-4">
+                            <div className="flex justify-between items-start">
+                                <Skeleton className="w-12 h-12 rounded-xl" />
+                                <Skeleton className="w-5 h-5 rounded-md" />
+                            </div>
+                            <div className="space-y-2">
+                                <Skeleton className="w-24 h-4" />
+                                <Skeleton className="w-16 h-8" />
+                                <Skeleton className="w-32 h-3" />
+                            </div>
+                        </div>
+                    ))
+                ) : stats.map((stat) => {
                     const Icon = stat.icon;
                     return (
                         <div key={stat.label} className="bg-white p-6 rounded-xl border border-zinc-100 shadow-sm hover:shadow-md transition-shadow">
