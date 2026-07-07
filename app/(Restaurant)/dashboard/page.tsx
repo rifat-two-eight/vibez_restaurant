@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { io, Socket } from "socket.io-client";
 import { useSelector } from "react-redux";
 import { currentUser } from "@/redux/features/auth/authSlice";
@@ -121,9 +122,9 @@ export default function DashboardOverview() {
     ];
 
     const quickActions = [
-        { name: 'Create New Deal', icon: Plus, primary: true },
-        { name: 'Add Staff', icon: UserPlus, primary: false },
-        { name: 'Set Weekly Schedule', icon: Clock, primary: false },
+        { name: 'Create New Deal', icon: Plus, primary: true, href: '/dashboard/deals' },
+        { name: 'Add Staff', icon: UserPlus, primary: false, href: '/dashboard/staff' },
+        { name: 'Set Weekly Schedule', icon: Clock, primary: false, href: '/dashboard/schedule' },
     ];
 
     return (
@@ -179,8 +180,9 @@ export default function DashboardOverview() {
                     {quickActions.map((action) => {
                         const Icon = action.icon;
                         return (
-                            <button
+                            <Link
                                 key={action.name}
+                                href={action.href}
                                 className={`flex items-center justify-center gap-3 p-5 rounded-xl font-bold transition-all active:scale-[0.98] border ${action.primary
                                         ? "bg-[#013622] text-white shadow-lg shadow-[#013622]/20 border-transparent hover:bg-[#012a1a]"
                                         : "bg-white text-[#013622] border-zinc-200 hover:border-[#013622] hover:bg-[#013622]/5"
@@ -188,7 +190,7 @@ export default function DashboardOverview() {
                             >
                                 <Icon className="w-5 h-5" />
                                 <span>{action.name}</span>
-                            </button>
+                            </Link>
                         );
                     })}
                 </div>

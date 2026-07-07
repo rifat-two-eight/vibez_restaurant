@@ -105,11 +105,11 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-xs text-zinc-500">Max Payout limit</span>
-                                <span className="text-sm font-bold text-white">€{user.maxPayout}</span>
+                                <span className="text-sm font-bold text-white">CHF {user.maxPayout}</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-xs text-zinc-500">Current Balance</span>
-                                <span className="text-sm font-bold text-white">€{user.balance}</span>
+                                <span className="text-sm font-bold text-white">CHF {user.balance}</span>
                             </div>
                         </div>
                     </div>
@@ -160,7 +160,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${sub.status === 'ACTIVE' ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-red-500/10 text-red-500'}`}>{sub.status}</span>
                                             </td>
-                                            <td className="px-6 py-4 text-sm text-zinc-300">€{sub.subscriptionPlanId?.price}</td>
+                                            <td className="px-6 py-4 text-sm text-zinc-300">CHF {sub.subscriptionPlanId?.price}</td>
                                             <td className="px-6 py-4 text-xs text-zinc-500">{new Date(sub.startDate).toLocaleDateString()}</td>
                                             <td className="px-6 py-4 text-xs text-zinc-500">{new Date(sub.endDate).toLocaleDateString()}</td>
                                         </tr>
@@ -221,7 +221,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                 <tbody className="divide-y divide-white/5">
                                     {commissions?.length > 0 ? commissions.map((c: any, i: number) => (
                                         <tr key={i} className="hover:bg-white/[0.02]">
-                                            <td className="px-6 py-4 text-sm font-bold text-[#10B981]">€{c.amount}</td>
+                                            <td className="px-6 py-4 text-sm font-bold text-[#10B981]">CHF {c.amount}</td>
                                             <td className="px-6 py-4 text-sm text-zinc-300">{c.sourceUser?.name || 'Unknown'}</td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${c.status === 'COMPLETED' ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-orange-500/10 text-orange-500'}`}>{c.status}</span>
@@ -254,7 +254,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                 <tbody className="divide-y divide-white/5">
                                     {withdrawals?.length > 0 ? withdrawals.map((w: any, i: number) => (
                                         <tr key={i} className="hover:bg-white/[0.02]">
-                                            <td className="px-6 py-4 text-sm font-bold text-white">€{w.amount}</td>
+                                            <td className="px-6 py-4 text-sm font-bold text-white">CHF {w.amount}</td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${w.status === 'APPROVED' ? 'bg-[#10B981]/10 text-[#10B981]' : w.status === 'PENDING' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>{w.status}</span>
                                             </td>

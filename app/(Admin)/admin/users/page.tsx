@@ -23,16 +23,16 @@ import { toast } from 'sonner';
 import { useGetUserStatsQuery, useGetAllUsersQuery, useToggleUserStatusMutation, useUpdateUserMutation } from '../../../../redux/features/dashboard/dashboardApi';
 
 const userData = [
-    { name: 'Sarah Johnson', email: 'sarah.j@email.com', type: 'Influencer', code: 'SARAH2024', referrals: 142, subs: 98, earnings: '€4,260', commission: '15%', plan: 'Annual' },
-    { name: 'Michael Chen', email: 'm.chen@email.com', type: 'Influencer', code: 'MIKE15', referrals: 128, subs: 84, earnings: '€3,840', commission: '12%', plan: 'Monthly' },
-    { name: 'Jennifer Davis', email: 'jdavis@email.com', type: 'Regular User', code: 'JENDAVIS', referrals: 12, subs: 8, earnings: '€240', commission: '10%', plan: 'Monthly' },
-    { name: 'Robert Taylor', email: 'rtaylor@email.com', type: 'Regular User', code: 'ROBTAY', referrals: 8, subs: 5, earnings: '€150', commission: '10%', plan: 'Annual' },
-    { name: 'Emma Wilson', email: 'ewilson@email.com', type: 'Influencer', code: 'EMMA18', referrals: 95, subs: 67, earnings: '€2,850', commission: '10%', plan: 'Monthly' },
-    { name: 'Amanda White', email: 'awhite@email.com', type: 'Regular User', code: 'AMANDA24', referrals: 15, subs: 11, earnings: '€330', commission: '10%', plan: 'Monthly' },
-    { name: 'David Martinez', email: 'dmartinez@email.com', type: 'Influencer', code: 'DAVID20', referrals: 87, subs: 61, earnings: '€2,610', commission: '20%', plan: 'Annual' },
-    { name: 'Kevin Brown', email: 'kbrown@email.com', type: 'Regular User', code: 'KEVIN8', referrals: 6, subs: 4, earnings: '€120', commission: '10%', plan: 'Day Pass' },
-    { name: 'Lisa Anderson', email: 'landerson@email.com', type: 'Influencer', code: 'LISA12', referrals: 73, subs: 52, earnings: '€2,190', commission: '12%', plan: 'Annual' },
-    { name: 'Michelle Green', email: 'mgreen@email.com', type: 'Regular User', code: 'MICH10', referrals: 19, subs: 13, earnings: '€390', commission: '10%', plan: 'Monthly' },
+    { name: 'Sarah Johnson', email: 'sarah.j@email.com', type: 'Influencer', code: 'SARAH2024', referrals: 142, subs: 98, earnings: 'CHF 4,260', commission: '15%', plan: 'Annual' },
+    { name: 'Michael Chen', email: 'm.chen@email.com', type: 'Influencer', code: 'MIKE15', referrals: 128, subs: 84, earnings: 'CHF 3,840', commission: '12%', plan: 'Monthly' },
+    { name: 'Jennifer Davis', email: 'jdavis@email.com', type: 'Regular User', code: 'JENDAVIS', referrals: 12, subs: 8, earnings: 'CHF 240', commission: '10%', plan: 'Monthly' },
+    { name: 'Robert Taylor', email: 'rtaylor@email.com', type: 'Regular User', code: 'ROBTAY', referrals: 8, subs: 5, earnings: 'CHF 150', commission: '10%', plan: 'Annual' },
+    { name: 'Emma Wilson', email: 'ewilson@email.com', type: 'Influencer', code: 'EMMA18', referrals: 95, subs: 67, earnings: 'CHF 2,850', commission: '10%', plan: 'Monthly' },
+    { name: 'Amanda White', email: 'awhite@email.com', type: 'Regular User', code: 'AMANDA24', referrals: 15, subs: 11, earnings: 'CHF 330', commission: '10%', plan: 'Monthly' },
+    { name: 'David Martinez', email: 'dmartinez@email.com', type: 'Influencer', code: 'DAVID20', referrals: 87, subs: 61, earnings: 'CHF 2,610', commission: '20%', plan: 'Annual' },
+    { name: 'Kevin Brown', email: 'kbrown@email.com', type: 'Regular User', code: 'KEVIN8', referrals: 6, subs: 4, earnings: 'CHF 120', commission: '10%', plan: 'Day Pass' },
+    { name: 'Lisa Anderson', email: 'landerson@email.com', type: 'Influencer', code: 'LISA12', referrals: 73, subs: 52, earnings: 'CHF 2,190', commission: '12%', plan: 'Annual' },
+    { name: 'Michelle Green', email: 'mgreen@email.com', type: 'Regular User', code: 'MICH10', referrals: 19, subs: 13, earnings: 'CHF 390', commission: '10%', plan: 'Monthly' },
 ];
 
 export default function UserManagement() {
@@ -182,7 +182,7 @@ export default function UserManagement() {
                                     </td>
                                     <td className="px-8 py-5 text-sm font-bold text-white text-center">{user.referralsTotalCount ?? user.referrals ?? 0}</td>
                                     <td className="px-8 py-5 text-sm text-zinc-400 text-center">{user.activeSubscriptionFromHimTotal ?? user.subs ?? 0}</td>
-                                    <td className="px-8 py-5 text-sm font-bold text-white">{typeof user.balance === 'number' ? `€${user.balance}` : (user.earnings || '€0')}</td>
+                                    <td className="px-8 py-5 text-sm font-bold text-white">{typeof user.balance === 'number' ? `CHF${user.balance}` : (user.earnings || 'CHF 0')}</td>
                                     <td className="px-8 py-5 text-sm font-bold text-[#10B981]">{user.commissionPercentage ?? user.percentage ?? (user.commission ? parseInt(user.commission) : 0)}%</td>
                                     <td className="px-8 py-5 text-sm text-zinc-500 font-medium capitalize">{user.subscriptionPlanId?.duration?.toLowerCase().replace('_', ' ') || user.plan || 'N/A'}</td>
                                     <td className="px-8 py-5">
@@ -298,7 +298,7 @@ function EditUserModal({ user, onClose }: { user: any, onClose: () => void }) {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Maximum Payout (€)</label>
+                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Maximum Payout (CHF)</label>
                             <input
                                 type="number"
                                 value={formData.maxPayout}

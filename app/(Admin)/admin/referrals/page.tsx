@@ -1,24 +1,24 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-    Line, 
-    LineChart, 
-    Bar, 
-    BarChart, 
-    XAxis, 
-    YAxis, 
-    CartesianGrid, 
-    Tooltip, 
+import {
+    Line,
+    LineChart,
+    Bar,
+    BarChart,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
     ResponsiveContainer,
     Area,
     AreaChart,
     Dot
 } from 'recharts';
-import { 
-    Users, 
-    TrendingUp, 
-    CreditCard, 
+import {
+    Users,
+    TrendingUp,
+    CreditCard,
     DollarSign,
     ChevronRight,
     Search,
@@ -31,7 +31,7 @@ import {
     Wallet,
     Award
 } from 'lucide-react';
-import { 
+import {
     useGetAffiliateDashboardStatsQuery,
     useGetRevenueBreakdownQuery,
     useGetMonthlyCommissionGraphQuery,
@@ -60,9 +60,9 @@ const commissionData = [
 ];
 
 const pendingPayouts = [
-    { id: '1', affiliate: 'Sarah Johnson', amount: '€320', source: 'Monthly Subscriptions', subId: '#SUB-1647', dueDate: '2026-05-20', status: 'Pending' },
-    { id: '2', affiliate: 'Michael Chen', amount: '€280', source: 'Annual Subscriptions', subId: '#SUB-1845', dueDate: '2026-05-22', status: 'Pending' },
-    { id: '3', affiliate: 'Emma Wilson', amount: '€185', source: 'Monthly Subscriptions', subId: '#SUB-1843', dueDate: '2026-05-25', status: 'Approved' },
+    { id: '1', affiliate: 'Sarah Johnson', amount: 'CHF 320', source: 'Monthly Subscriptions', subId: '#SUB-1647', dueDate: '2026-05-20', status: 'Pending' },
+    { id: '2', affiliate: 'Michael Chen', amount: 'CHF 280', source: 'Annual Subscriptions', subId: '#SUB-1845', dueDate: '2026-05-22', status: 'Pending' },
+    { id: '3', affiliate: 'Emma Wilson', amount: 'CHF 185', source: 'Monthly Subscriptions', subId: '#SUB-1843', dueDate: '2026-05-25', status: 'Approved' },
 ];
 
 export default function ReferralsPage() {
@@ -104,14 +104,14 @@ export default function ReferralsPage() {
             toast.error(errorMessage);
         }
     };
-    
+
     const stats = affiliateStatsData?.data;
     const dynamicGrowthData = revenueBreakdownData?.data || growthData;
     const dynamicCommissionData = commissionGraphData?.data || commissionData;
     const dynamicPayouts = withdrawalsData?.data?.map((w: any) => ({
         id: w._id,
         affiliate: w.userId?.name || 'Unknown',
-        amount: `€${w.amount}`,
+        amount: `CHF${w.amount}`,
         source: w.paymentMethod,
         subId: `#W-${w._id.substring(w._id.length - 4).toUpperCase()}`,
         dueDate: w.createdAt?.split('T')[0],
@@ -133,8 +133,8 @@ export default function ReferralsPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-[#171717] border border-[#10B981]/20 rounded-2xl p-6 relative">
                     <p className="text-zinc-500 text-[12px] font-medium mb-1">Total Referral Revenue</p>
-                    <h3 className="text-2xl font-bold text-white mb-4">€{stats?.referralRevenue?.totalReferralRevenue || 0}</h3>
-                    <p className="text-[10px] text-zinc-500">This month: <span className="text-zinc-300">€{stats?.referralRevenue?.thisMonthReferralRevenue || 0}</span></p>
+                    <h3 className="text-2xl font-bold text-white mb-4">CHF {stats?.referralRevenue?.totalReferralRevenue || 0}</h3>
+                    <p className="text-[10px] text-zinc-500">This month: <span className="text-zinc-300">CHF {stats?.referralRevenue?.thisMonthReferralRevenue || 0}</span></p>
                     <div className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-[#10B981]/10 flex items-center justify-center">
                         <TrendingUp className="w-5 h-5 text-[#10B981]" />
                     </div>
@@ -169,8 +169,8 @@ export default function ReferralsPage() {
 
                 <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 relative">
                     <p className="text-zinc-500 text-[12px] font-medium mb-1">Total Commission Paid</p>
-                    <h3 className="text-2xl font-bold text-white mb-4">€{stats?.commissions?.totalCommissionPaid || 0}</h3>
-                    <p className="text-[10px] text-zinc-500">Pending: <span className="text-zinc-300">€{stats?.commissions?.pendingCommission || 0}</span></p>
+                    <h3 className="text-2xl font-bold text-white mb-4">CHF {stats?.commissions?.totalCommissionPaid || 0}</h3>
+                    <p className="text-[10px] text-zinc-500">Pending: <span className="text-zinc-300">CHF {stats?.commissions?.pendingCommission || 0}</span></p>
                     <div className="absolute top-6 right-6 w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                         <DollarSign className="w-5 h-5 text-zinc-400" />
                     </div>
@@ -185,14 +185,14 @@ export default function ReferralsPage() {
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart data={dynamicGrowthData}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#52525b', fontSize: 12}} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#52525b', fontSize: 12}} />
-                                <Tooltip 
-                                    contentStyle={{backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px'}} 
+                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}
                                     itemStyle={{ color: '#e4e4e7' }}
                                     labelStyle={{ color: '#a1a1aa' }}
                                 />
-                                <Line type="monotone" dataKey={revenueBreakdownData ? "referrals" : "conversions"} stroke="#10B981" strokeWidth={3} dot={{r: 4, fill: '#10B981', strokeWidth: 2, stroke: '#171717'}} activeDot={{r: 6, strokeWidth: 0}} />
+                                <Line type="monotone" dataKey={revenueBreakdownData ? "referrals" : "conversions"} stroke="#10B981" strokeWidth={3} dot={{ r: 4, fill: '#10B981', strokeWidth: 2, stroke: '#171717' }} activeDot={{ r: 6, strokeWidth: 0 }} />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
@@ -213,15 +213,15 @@ export default function ReferralsPage() {
                             <AreaChart data={dynamicCommissionData}>
                                 <defs>
                                     <linearGradient id="colorComm" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                                        <stop offset="5%" stopColor="#10B981" stopOpacity={0.3} />
+                                        <stop offset="95%" stopColor="#10B981" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff05" />
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#52525b', fontSize: 12}} dy={10} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#52525b', fontSize: 12}} />
-                                <Tooltip 
-                                    contentStyle={{backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px'}} 
+                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} dy={10} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#52525b', fontSize: 12 }} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: '#171717', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px' }}
                                     itemStyle={{ color: '#e4e4e7' }}
                                     labelStyle={{ color: '#a1a1aa' }}
                                 />
@@ -246,7 +246,7 @@ export default function ReferralsPage() {
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Affiliate</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Payment Source</th>
-                                <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Subscription ID</th>
+                                {/* <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Subscription ID</th> */}
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Due Date</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Actions</th>
@@ -260,40 +260,37 @@ export default function ReferralsPage() {
                                     </td>
                                     <td className="px-8 py-5 text-sm font-bold text-white">{p.amount}</td>
                                     <td className="px-8 py-5 text-sm text-zinc-500">{p.source}</td>
-                                    <td className="px-8 py-5 text-sm text-zinc-500 font-mono">{p.subId}</td>
+                                    {/* <td className="px-8 py-5 text-sm text-zinc-500 font-mono">{p.subId}</td> */}
                                     <td className="px-8 py-5 text-sm text-zinc-500">{p.dueDate}</td>
                                     <td className="px-8 py-5">
-                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
-                                            p.status === 'PENDING' || p.status === 'Pending'
-                                            ? 'bg-orange-500/10 text-orange-500' 
+                                        <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${p.status === 'PENDING' || p.status === 'Pending'
+                                            ? 'bg-orange-500/10 text-orange-500'
                                             : p.status === 'REJECTED' || p.status === 'Rejected'
-                                            ? 'bg-red-500/10 text-red-500'
-                                            : 'bg-[#10B981]/10 text-[#10B981]'
-                                        }`}>
+                                                ? 'bg-red-500/10 text-red-500'
+                                                : 'bg-[#10B981]/10 text-[#10B981]'
+                                            }`}>
                                             <div className={`w-1 h-1 rounded-full ${p.status === 'PENDING' || p.status === 'Pending' ? 'bg-orange-500' : p.status === 'REJECTED' || p.status === 'Rejected' ? 'bg-red-500' : 'bg-[#10B981]'}`} />
                                             {p.status}
                                         </span>
                                     </td>
                                     <td className="px-8 py-5">
                                         <div className="flex items-center gap-2">
-                                            <button 
+                                            <button
                                                 onClick={() => handleApprove(p.id)}
                                                 disabled={p.status !== 'PENDING' && p.status !== 'Pending'}
-                                                className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                                                p.status !== 'PENDING' && p.status !== 'Pending'
-                                                ? 'bg-[#10B981]/10 text-[#10B981] cursor-not-allowed opacity-50'
-                                                : 'bg-[#10B981] text-white hover:bg-[#0da673]'
-                                            }`}>
+                                                className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${p.status !== 'PENDING' && p.status !== 'Pending'
+                                                    ? 'bg-[#10B981]/10 text-[#10B981] cursor-not-allowed opacity-50'
+                                                    : 'bg-[#10B981] text-white hover:bg-[#0da673]'
+                                                    }`}>
                                                 {p.status === 'APPROVED' || p.status === 'Approved' ? 'Approved' : 'Approve'}
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => handleReject(p.id)}
                                                 disabled={p.status !== 'PENDING' && p.status !== 'Pending'}
-                                                className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${
-                                                    p.status !== 'PENDING' && p.status !== 'Pending'
+                                                className={`px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all ${p.status !== 'PENDING' && p.status !== 'Pending'
                                                     ? 'bg-red-500/10 text-red-500 cursor-not-allowed opacity-50'
                                                     : 'bg-zinc-800 text-zinc-400 hover:bg-red-500/20 hover:text-red-500'
-                                                }`}
+                                                    }`}
                                             >
                                                 {p.status === 'REJECTED' || p.status === 'Rejected' ? 'Rejected' : 'Reject'}
                                             </button>

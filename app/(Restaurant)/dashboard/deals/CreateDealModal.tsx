@@ -93,7 +93,7 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
             case DealType.PERCENT_DISCOUNT:
                 return `${percentDiscountValue}% Off ${percentDiscountAppliesTo === PercentDiscountAppliesTo.CATEGORY ? percentDiscountCategory.replace('_', ' ') : 'Entire Order'}`;
             case DealType.FIXED_DISCOUNT:
-                return `€${fixedDiscountAmount} Off`;
+                return `CHF${fixedDiscountAmount} Off`;
             default:
                 return "New Deal";
         }
@@ -313,7 +313,7 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
 
                             {dealType === DealType.FIXED_DISCOUNT && (
                                 <div className="space-y-3">
-                                    <label className="block text-sm font-bold text-zinc-800">Fixed Discount Amount (€)</label>
+                                    <label className="block text-sm font-bold text-zinc-800">Fixed Discount Amount (CHF)</label>
                                     <div className="grid grid-cols-3 gap-2">
                                         {[5, 10, 15, 20, 25, 30].map(val => (
                                             <button
@@ -323,7 +323,7 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                                                     fixedDiscountAmount === val ? 'border-[#013622] bg-[#013622]/5 text-[#013622]' : 'border-zinc-100 text-zinc-600 hover:bg-zinc-50'
                                                 }`}
                                             >
-                                                €{val}
+                                                CHF {val}
                                             </button>
                                         ))}
                                     </div>

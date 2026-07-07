@@ -108,7 +108,7 @@ export default function PlatformSettings() {
                                 />
                             </div>
                             <div className="space-y-3">
-                                <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Maximum Total Payout (€)</label>
+                                <label className="text-xs font-medium text-zinc-500 uppercase tracking-wider">Maximum Total Payout (CHF)</label>
                                 <input 
                                     type="number" 
                                     value={settings.defaultMaxPayout}

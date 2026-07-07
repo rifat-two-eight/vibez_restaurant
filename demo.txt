@@ -1,17 +1,195 @@
-Here is the raw Socket mapping for Next.js (no UI code):
-1. Connection Endpoint
-Base URL: https://vibezapi.apponislam.top/
-Transport: websocket
-2. Owner Connection (To Listen)
-Connect passing only the restaurantId in the query string:
-javascriptconst socket = io("https://vibezapi.apponislam.top", {  query: {    restaurantId: "YOUR_RESTAURANT_MONGO_ID"  }});
-Event to Listen to: restaurant_stats
-Response Payload:
-3. Staff Connection (To Go Online)
-Connect passing both the staff member's _id and the restaurantId in the query string:
-javascriptconst socket = io("https://vibezapi.apponislam.top", {  query: {    _id: "STAFF_USER_MONGO_ID",    restaurantId: "YOUR_RESTAURANT_MONGO_ID"  }});
-(Connecting instantly triggers the stats update to all connected owners)
-json{  "totalBookingsToday": { "count": 23, "change": "+5 from yesterday" },  "activeDeals": { "count": 2, "change": "Stable" },  "totalCustomersServed": { "count": 1847, "period": "This month" },  "staffOnlineNow": { "count": 0, "status": "No staff online" }}
+stats
+{{baseUrl}}/dashboard/admin-restaurant-stats
  
-VIBEZ | Backend Engine
+{
+    "success": true,
+    "message": "Admin restaurant dashboard statistics retrieved successfully",
+    "data": {
+        "totalRestaurants": {
+            "value": 1,
+            "change": "-1"
+        },
+        "pendingApprovals": {
+            "value": 3,
+            "change": "Requires attention"
+        },
+        "avgPerformance": {
+            "value": "20.0%",
+            "change": "Redemption rate"
+        }
+    }
+}
+
+
+
+
+restaurant approval queue
+{{baseUrl}}/restaurants/admin/pending
+{
+    "success": true,
+    "message": "Pending restaurants retrieved successfully for admin",
+    "data": [
+        {
+            "_id": "6a3ad9da84b2db1d20b24b88",
+            "restaurantName": "Shelby Nichols",
+            "restaurantDescription": "Mollit assumenda ist",
+            "restaurantType": "RESTAURANT",
+            "cuisineType": "CHINESE",
+            "restaurantOwner": {
+                "_id": "6a3ad9da84b2db1d20b24b87",
+                "name": "Kylynn Alvarado",
+                "email": "hekib@mailinator.com",
+                "phone": "+1 (152) 378-2413"
+            },
+            "createdAt": "2026-06-23T19:09:14.936Z"
+        },
+        {
+            "_id": "6a3ad9ad84b2db1d20b24b7c",
+            "restaurantName": "Camille Arnold",
+            "restaurantDescription": "Nihil sed et tempore",
+            "restaurantType": "FINE_DINING",
+            "cuisineType": "DESSERTS",
+            "restaurantOwner": {
+                "_id": "6a3ad9ad84b2db1d20b24b7b",
+                "name": "Thor Kemp",
+                "email": "rafiboty@mailinator.com",
+                "phone": "+1 (571) 145-4662"
+            },
+            "createdAt": "2026-06-23T19:08:29.220Z"
+        },
+        {
+            "_id": "6a3ad50b365654f358eddd32",
+            "restaurantName": "Gourmet Hub",
+            "restaurantDescription": "Fine Dining Experience",
+            "restaurantType": "RESTAURANT",
+            "cuisineType": "ITALIAN",
+            "restaurantOwner": {
+                "_id": "6a3ad50b365654f358eddd31",
+                "name": "Owner Name",
+                "email": "rifat@example.com",
+                "phone": "+123456789",
+                "profileImage": "/uploads/profile-images/profile-521927-7977.webp"
+            },
+            "restaurantImage": "/uploads/restaurant-images/restaurant-522070-2908.webp",
+            "createdAt": "2026-06-23T18:48:43.154Z"
+        }
+    ],
+    "meta": {
+        "page": 1,
+        "limit": 10,
+        "total": 3,
+        "totalPages": 1,
+        "hasNext": false,
+        "hasPrev": false
+    }
+}
+ 
+ 
+{{baseUrl}}/restaurants/:id/approve - patch 
+ 
+{{baseUrl}}/restaurants/:id/revoke-approval - reject
+
+
+
+
+
+
+restaurant avgPerformance{{baseUrl}}/admin/all?search=Bistro&cuisineType=ITALIAN&restaurantType=RESTAURANT&page=1&limit=10
+ 
+ 
+{
+    "success": true,
+    "message": "Restaurants retrieved successfully for admin",
+    "data": [
+        {
+            "_id": "6a31ad6c21fc771b0fa81932",
+            "restaurantName": "Gourmet Hub",
+            "restaurantImage": "/uploads/restaurant-images/restaurant-555858-7832.webp",
+            "approved": false,
+            "createdAt": "2026-06-16T20:09:16.421Z",
+            "restaurantOwner": {
+                "_id": "6a31ad6c21fc771b0fa81931",
+                "name": "Owner Name",
+                "email": "owner@example.com",
+                "phone": "+123456789",
+                "profileImage": "/uploads/profile-images/profile-555812-9464.webp"
+            },
+            "activeDeals": 0,
+            "totalBookings": 0,
+            "redemptionRate": "0%"
+        },
+        {
+            "_id": "6a39cc57030cac4021dd65f3",
+            "restaurantName": "The Grand Bistro",
+            "restaurantImage": "/uploads/restaurant-images/restaurant-300809-5288.webp",
+            "approved": true,
+            "createdAt": "2026-06-22T23:59:19.413Z",
+            "restaurantOwner": {
+                "_id": "6a39cc57030cac4021dd65f2",
+                "name": "Owner Name",
+                "email": "owner2@example.com",
+                "phone": "+123456789",
+                "profileImage": "/uploads/profile-images/profile-757897-9875.webp"
+            },
+            "activeDeals": 4,
+            "totalBookings": 1,
+            "redemptionRate": "20%"
+        },
+        {
+            "_id": "6a3ad50b365654f358eddd32",
+            "restaurantName": "Gourmet Hub",
+            "restaurantImage": "/uploads/restaurant-images/restaurant-522070-2908.webp",
+            "approved": false,
+            "createdAt": "2026-06-23T18:48:43.154Z",
+            "restaurantOwner": {
+                "_id": "6a3ad50b365654f358eddd31",
+                "name": "Owner Name",
+                "email": "rifat@example.com",
+                "phone": "+123456789",
+                "profileImage": "/uploads/profile-images/profile-521927-7977.webp"
+            },
+            "activeDeals": 0,
+            "totalBookings": 0,
+            "redemptionRate": "0%"
+        },
+        {
+            "_id": "6a3ad9ad84b2db1d20b24b7c",
+            "restaurantName": "Camille Arnold",
+            "approved": false,
+            "createdAt": "2026-06-23T19:08:29.220Z",
+            "restaurantOwner": {
+                "_id": "6a3ad9ad84b2db1d20b24b7b",
+                "name": "Thor Kemp",
+                "email": "rafiboty@mailinator.com",
+                "phone": "+1 (571) 145-4662"
+            },
+            "activeDeals": 0,
+            "totalBookings": 0,
+            "redemptionRate": "0%"
+        },
+        {
+            "_id": "6a3ad9da84b2db1d20b24b88",
+            "restaurantName": "Shelby Nichols",
+            "approved": false,
+            "createdAt": "2026-06-23T19:09:14.936Z",
+            "restaurantOwner": {
+                "_id": "6a3ad9da84b2db1d20b24b87",
+                "name": "Kylynn Alvarado",
+                "email": "hekib@mailinator.com",
+                "phone": "+1 (152) 378-2413"
+            },
+            "activeDeals": 0,
+            "totalBookings": 0,
+            "redemptionRate": "0%"
+        }
+    ],
+    "meta": {
+        "page": 1,
+        "limit": 10,
+        "total": 5,
+        "totalPages": 1,
+        "hasNext": false,
+        "hasPrev": false
+    }
+}
  

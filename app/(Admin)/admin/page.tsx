@@ -46,11 +46,11 @@ const bookingData = [
 ];
 
 const recentSubscriptions = [
-    { user: 'Emma Rodriguez', plan: 'Monthly', referral: 'Referred', amount: '€29.99', status: 'Active' },
-    { user: 'Lucas Chen', plan: 'Annual', referral: 'Direct', amount: '€299.99', status: 'Active' },
-    { user: 'Sofia Martinez', plan: 'Monthly', referral: 'Referred', amount: '€29.99', status: 'Trial' },
-    { user: 'James Wilson', plan: 'Day Pass', referral: 'Referred', amount: '€9.99', status: 'Active' },
-    { user: 'Olivia Brown', plan: 'Annual', referral: 'Direct', amount: '€299.99', status: 'Active' },
+    { user: 'Emma Rodriguez', plan: 'Monthly', referral: 'Referred', amount: 'CHF 29.99', status: 'Active' },
+    { user: 'Lucas Chen', plan: 'Annual', referral: 'Direct', amount: 'CHF 299.99', status: 'Active' },
+    { user: 'Sofia Martinez', plan: 'Monthly', referral: 'Referred', amount: 'CHF 29.99', status: 'Trial' },
+    { user: 'James Wilson', plan: 'Day Pass', referral: 'Referred', amount: 'CHF 9.99', status: 'Active' },
+    { user: 'Olivia Brown', plan: 'Annual', referral: 'Direct', amount: 'CHF 299.99', status: 'Active' },
 ];
 
 export default function AdminOverview() {
@@ -79,7 +79,7 @@ export default function AdminOverview() {
         user: sub.userId?.name || 'Unknown',
         plan: sub.subscriptionPlanId?.name || 'Unknown',
         referral: sub.commissionUser ? 'Referred' : 'Direct',
-        amount: `€${sub.subscriptionPlanId?.price || 0}`,
+        amount: `CHF${sub.subscriptionPlanId?.price || 0}`,
         status: sub.status === 'ACTIVE' ? 'Active' : sub.status === 'TRIAL' ? 'Trial' : sub.status,
     })) || recentSubscriptions;
 
@@ -97,15 +97,15 @@ export default function AdminOverview() {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-zinc-500 text-[13px] font-medium mb-1">Total Revenue</p>
-                            <h3 className="text-3xl font-bold text-white tracking-tight">€{stats?.revenue?.totalRevenue || '0'}</h3>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">CHF {stats?.revenue?.totalRevenue || '0'}</h3>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
                             <DollarSign className="w-5 h-5 text-zinc-400" />
                         </div>
                     </div>
                     <div className="flex gap-4 text-[11px] font-medium">
-                        <span className="text-zinc-500">Monthly: <span className="text-zinc-300">€{stats?.revenue?.monthlyRevenue || '0'}</span></span>
-                        <span className="text-zinc-500">Annual: <span className="text-zinc-300">€{stats?.revenue?.annualRevenue || '0'}</span></span>
+                        <span className="text-zinc-500">Monthly: <span className="text-zinc-300">CHF {stats?.revenue?.monthlyRevenue || '0'}</span></span>
+                        <span className="text-zinc-500">Annual: <span className="text-zinc-300">CHF {stats?.revenue?.annualRevenue || '0'}</span></span>
                     </div>
                     <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold text-[#10B981]">
                         <TrendingUp className="w-3.5 h-3.5" />
@@ -137,14 +137,14 @@ export default function AdminOverview() {
                     <div className="flex justify-between items-start mb-4">
                         <div>
                             <p className="text-zinc-500 text-[13px] font-medium mb-1">Referral Revenue</p>
-                            <h3 className="text-3xl font-bold text-white tracking-tight">€{stats?.referralRevenue?.totalReferralRevenue || '0'}</h3>
+                            <h3 className="text-3xl font-bold text-white tracking-tight">CHF {stats?.referralRevenue?.totalReferralRevenue || '0'}</h3>
                         </div>
                         <div className="w-10 h-10 rounded-xl bg-[#10B981]/10 flex items-center justify-center">
                             <ArrowUpRight className="w-5 h-5 text-[#10B981]" />
                         </div>
                     </div>
                     <div className="flex gap-4 text-[11px] font-medium">
-                        <span className="text-zinc-500">Commission: <span className="text-zinc-300">€{stats?.referralRevenue?.totalCommissionPaid || '0'}</span></span>
+                        <span className="text-zinc-500">Commission: <span className="text-zinc-300">CHF {stats?.referralRevenue?.totalCommissionPaid || '0'}</span></span>
                     </div>
                     <div className="mt-4 flex items-center gap-1.5 text-[11px] font-bold text-[#10B981]">
                         <TrendingUp className="w-3.5 h-3.5" />
