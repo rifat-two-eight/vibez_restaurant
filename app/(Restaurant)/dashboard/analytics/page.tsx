@@ -163,7 +163,7 @@ export default function AnalyticsPage() {
                                 outerRadius={90}
                                 paddingAngle={3}
                             >
-                                {pieData.map((_, i) => (
+                                {pieData.map((_: any, i: number) => (
                                     <Cell key={i} fill={PIE_COLORS[i]} />
                                 ))}
                             </Pie>
