@@ -17,8 +17,6 @@ import {
     ArrowUpRight
 } from 'lucide-react';
 
-const SOCKET_URL = "https://vibezapi.apponislam.top";
-
 export default function DashboardOverview() {
     const user = useSelector(currentUser);
     const { data: initialStatsRes, isLoading } = useGetRestaurantRealtimeStatsQuery({});
@@ -33,13 +31,30 @@ export default function DashboardOverview() {
     }, [initialStats]);
 
     useEffect(() => {
-        if (!user?.restaurantId) return;
+        if (!user?._id) return;
 
-        const socket: Socket = io(SOCKET_URL, {
+        const getSocketUrl = () => {
+            const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+            if (apiUrl) {
+                try {
+                    const url = new URL(apiUrl);
+                    return url.origin;
+                } catch (e) {
+                    console.error("Invalid NEXT_PUBLIC_API_URL:", e);
+                }
+            }
+            return "https://vibezapi.apponislam.top";
+        };
+
+        const socketUrl = getSocketUrl();
+        console.log(`🔌 Owner attempting to connect to socket at: ${socketUrl}`);
+
+        const socket: Socket = io(socketUrl, {
             query: {
-                restaurantId: user.restaurantId
+                _id: user._id,
+                restaurantId: user.restaurantId || ''
             },
-            transports: ['websocket'],
+            transports: ['polling', 'websocket'],
             autoConnect: true,
             reconnection: true
         });
@@ -48,12 +63,16 @@ export default function DashboardOverview() {
             console.log("🔌 Connected to socket server with ID:", socket.id);
         });
 
-        socket.on("restaurant_stats", (stats) => {
+        socket.on("restaurant_stats", (stats: any) => {
             console.log("📊 Real-time Dashboard Stats Update:", stats);
             setRealtimeStats((prev: any) => ({
                 ...prev,
                 ...stats
             }));
+        });
+
+        socket.on("connect_error", (error: any) => {
+            console.error("🔌 Owner socket connection error:", error);
         });
 
         socket.on("disconnect", () => {
@@ -62,8 +81,9 @@ export default function DashboardOverview() {
 
         return () => {
             socket.disconnect();
+            console.log("❌ Owner socket disconnected");
         };
-    }, [user?.restaurantId]);
+    }, [user?._id, user?.restaurantId]);
 
     const stats = [
         {

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAppDispatch, useAppSelector } from '@/redux/hooks';
-import { logOut, currentToken } from '@/redux/features/auth/authSlice';
+import { logOut, currentToken, currentUser } from '@/redux/features/auth/authSlice';
 import {
     LayoutDashboard,
     Tag,
@@ -28,16 +28,33 @@ export default function RestaurantLayout({
     const router = useRouter();
     const dispatch = useAppDispatch();
     const token = useAppSelector(currentToken);
+    const user = useAppSelector(currentUser);
     const [isChecking, setIsChecking] = useState(true);
 
     React.useEffect(() => {
         const localToken = typeof window !== 'undefined' ? localStorage.getItem('accessToken') : null;
         if (!token && !localToken) {
             router.push('/login');
-        } else {
-            setIsChecking(false);
+            return;
         }
-    }, [token, router]);
+
+        if (user) {
+            if (user.role === 'RESTAURANT_OWNER') {
+                setIsChecking(false);
+            } else if (user.role === 'STAFF') {
+                router.push('/staff');
+            } else if (user.role === 'ADMIN') {
+                router.push('/admin');
+            } else {
+                router.push('/login');
+            }
+        } else {
+            const localUser = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+            if (!localUser) {
+                router.push('/login');
+            }
+        }
+    }, [token, user, router]);
 
     const handleLogout = () => {
         dispatch(logOut());
