@@ -1,49 +1,14 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { blogPosts, alsoReadPosts } from '@/lib/blogData';
 
 const categories = ["All Posts", "Restaurants", "Burgers", "Pizza"];
 
-const blogPosts = [
-    {
-        id: 1,
-        category: "Recipe",
-        title: "1. PARMIGIANO",
-        summary: "This dish blew our minds. Parmesan, banana, nori brittle, and honey combined for an overload of sensory experiences.",
-        author: "Schwa",
-        location: "Chicago, IL",
-        image: "/food.png"
-    },
-    {
-        id: 2,
-        category: "Recipe",
-        title: "1. PARMIGIANO",
-        summary: "This dish blew our minds. Parmesan, banana, nori brittle, and honey combined for an overload of sensory experiences.",
-        author: "Schwa",
-        location: "Chicago, IL",
-        image: "/food.png"
-    },
-    {
-        id: 3,
-        category: "Recipe",
-        title: "1. PARMIGIANO",
-        summary: "This dish blew our minds. Parmesan, banana, nori brittle, and honey combined for an overload of sensory experiences.",
-        author: "Schwa",
-        location: "Chicago, IL",
-        image: "/food.png"
-    },
-    {
-        id: 4,
-        category: "Recipe",
-        title: "1. PARMIGIANO",
-        summary: "This dish blew our minds. Parmesan, banana, nori brittle, and honey combined for an overload of sensory experiences.",
-        author: "Schwa",
-        location: "Chicago, IL",
-        image: "/food.png"
-    }
-];
-
 export default function Blogs() {
+    const featuredPost = blogPosts[0];
+    const gridPosts = blogPosts.slice(1);
+
     return (
         <div className="container mx-auto px-4 py-12 md:py-20">
             {/* Header */}
@@ -62,24 +27,23 @@ export default function Blogs() {
                 <div className="flex flex-col lg:flex-row">
                     <div className="w-full lg:w-[60%] relative h-[300px] lg:h-[450px] overflow-hidden">
                         <Image
-                            src="/food.png"
+                            src={featuredPost.image}
                             alt="Featured"
                             fill
-                            className="object-cover transition-transform duration-500"
+                            className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                     </div>
                     <div className="w-full lg:w-[40%] p-8 md:p-12 flex flex-col justify-center">
-                        <span className="text-[#36654D] font-bold text-xs uppercase tracking-widest mb-4">Featured Article</span>
-                        <h2 className="text-3xl md:text-4xl font-bold text-[#151C27] mb-6">1. PARMIGIANO</h2>
+                        <span className="text-[#36654D] font-bold text-xs uppercase tracking-widest mb-4">{featuredPost.category}</span>
+                        <h2 className="text-3xl md:text-4xl font-bold text-[#151C27] mb-6">{featuredPost.title}</h2>
                         <p className="text-zinc-500 mb-8 leading-relaxed">
-                            This dish blew our minds. Parmesan, banana, nori brittle, and honey combined
-                            for an overload of sensory experiences. I think about this dish at least once a day.
+                            {featuredPost.summary}
                         </p>
                         <div className="flex items-center gap-2 text-xs text-zinc-400 mb-8 font-medium">
-                            <span className="underline">Schwa</span>
-                            <span>Chicago, IL</span>
+                            <span className="underline">{featuredPost.author}</span>
+                            <span>{featuredPost.location}</span>
                         </div>
-                        <Link href="/blogs/1">
+                        <Link href={`/blogs/${featuredPost.id}`}>
                             <button className="bg-[#CF0738] text-white font-bold px-8 py-3 rounded-lg shadow-lg hover:bg-red-700 transition-all">
                                 Read Article
                             </button>
@@ -103,7 +67,7 @@ export default function Blogs() {
 
             {/* Grid Posts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
-                {blogPosts.map((post) => (
+                {gridPosts.map((post) => (
                     <Link key={post.id} href={`/blogs/${post.id}`} className="group block bg-white shadow-md border border-zinc-50 overflow-hidden">
                         <div className="relative w-full h-[250px] lg:h-[300px] rounded-none overflow-hidden">
                             <Image
@@ -145,14 +109,14 @@ export default function Blogs() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {[1, 2, 3].map((i) => (
-                        <div key={i} className="group cursor-pointer overflow-hidden">
+                    {alsoReadPosts.map((post) => (
+                        <div key={post.id} className="group cursor-pointer overflow-hidden">
                             <div className="relative w-full h-[180px] rounded-none overflow-hidden">
-                                <Image src="/food.png" alt="Read Also" fill className="object-cover transition-transform duration-500" />
+                                <Image src={post.image} alt={post.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                             </div>
                             <div className="pt-4">
                                 <h4 className="text-xl font-bold text-[#151C27] group-hover:text-[#CF0738] transition-colors">
-                                    Salted & Dried Berries From the Summer
+                                    {post.title}
                                 </h4>
                             </div>
                         </div>

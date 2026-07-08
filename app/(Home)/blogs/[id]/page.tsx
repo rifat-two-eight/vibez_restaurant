@@ -1,16 +1,21 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { blogPosts, alsoReadPosts } from '@/lib/blogData';
 
-export default function BlogDetail() {
+export default function BlogDetail({ params }: any) {
+    // Await params if it's a promise, or safely access it
+    const id = React.use(params as any)?.id || params?.id || '1';
+    const post = blogPosts.find((p) => p.id === Number(id)) || blogPosts[0];
+
     return (
         <div className="bg-white min-h-screen">
             {/* Hero Section - Centered and max-width 6xl, height 400px */}
             <div className="container mx-auto px-4 mt-20">
                 <div className="relative w-full h-[400px] flex items-end max-w-6xl mx-auto rounded-none overflow-hidden">
                     <Image
-                        src="/food.png"
-                        alt="Blog Hero"
+                        src={post.image}
+                        alt={post.title}
                         fill
                         className="object-cover"
                         priority
@@ -20,14 +25,14 @@ export default function BlogDetail() {
                     <div className="relative z-10 p-8 md:p-12 w-full">
                         <div className="max-w-4xl">
                             <span className="bg-white text-[#151C27] font-bold text-[10px] md:text-xs px-4 py-2 rounded-full uppercase tracking-widest mb-6 inline-block shadow-lg">
-                                Burgers
+                                {post.category}
                             </span>
                             <h1 className="text-3xl md:text-5xl font-semibold text-white leading-tight mb-4">
-                                The 5 best burger spots in Birmingham that you absolutely must try
+                                {post.title}
                             </h1>
                             <div className="flex items-center gap-6 text-white/80 text-sm font-medium">
-                                <span>10 min read</span>
-                                <span>Nov 24, 2024</span>
+                                <span>{post.author}</span>
+                                <span>{post.location}</span>
                             </div>
                         </div>
                     </div>
@@ -40,7 +45,7 @@ export default function BlogDetail() {
                     {/* Highlight Quote */}
                     <div className="border-l-4 border-[#CF0738] pl-8 mb-16 py-2">
                         <p className="text-zinc-500 text-xl md:text-2xl italic leading-relaxed">
-                            Here are the 5 best restaurants in Stuttgart – with great deals on food, drinks, and much more. Read the blog now.
+                            {post.summary}
                         </p>
                     </div>
 
@@ -48,46 +53,10 @@ export default function BlogDetail() {
                     <div className="space-y-16">
                         <article className="space-y-6">
                             <h2 className="text-2xl md:text-3xl font-bold text-[#151C27]">
-                                1. Delhi-cious Indian Restaurant (halal)
+                                Overview
                             </h2>
-                            <p className="text-zinc-500 text-lg leading-relaxed">
-                                Authentic Delhi street food meets a stylish, modern ambiance. At Delhi-cious, you can expect dishes like Butter Chicken Naan, Aloo Tikki Burger, and much more. Ideal for a relaxed evening with friends – also available for outdoor seating. Order two main courses, and the cheaper one is completely free with NeoTaste.
-                            </p>
-                        </article>
-
-                        <article className="space-y-6">
-                            <h2 className="text-2xl md:text-3xl font-bold text-[#151C27]">
-                                2. Yuícery Hospitalstraße
-                            </h2>
-                            <p className="text-zinc-500 text-lg leading-relaxed">
-                                If your chain jumps between cogs while you’re pedaling, it’s often a sign of cable stretch. Most new bikes go through a “break-in” period where the shift cables settle into their housing.
-                            </p>
-                        </article>
-
-                        <article className="space-y-6">
-                            <h2 className="text-2xl md:text-3xl font-bold text-[#151C27]">
-                                3. Wilma Wunder Stuttgart
-                            </h2>
-                            <p className="text-zinc-500 text-lg leading-relaxed">
-                                Rhythmic clicking can be hard to track down. It might be a loose pedal, a dry bottom bracket, or even just a cable end hitting your crank arm. Focus on when the sound happens—is it only when you’re pedaling hard?
-                            </p>
-                        </article>
-
-                        <article className="space-y-6">
-                            <h2 className="text-2xl md:text-3xl font-bold text-[#151C27]">
-                                4. BURREATOS
-                            </h2>
-                            <p className="text-zinc-500 text-lg leading-relaxed">
-                                A tire that goes flat overnight but feels okay for a short ride has a “slow leak.” This is often a tiny piece of glass or wire embedded in the rubber that you can’t see at first glance.
-                            </p>
-                        </article>
-
-                        <article className="space-y-6">
-                            <h2 className="text-2xl md:text-3xl font-bold text-[#151C27]">
-                                5. The Whiskey Jar
-                            </h2>
-                            <p className="text-zinc-500 text-lg leading-relaxed">
-                                A noisy, crunchy-sounding drivetrain is screaming for maintenance. Grime acts like sandpaper on your expensive components, wearing them down prematurely.
+                            <p className="text-zinc-500 text-lg leading-relaxed whitespace-pre-wrap">
+                                {post.content}
                             </p>
                         </article>
                     </div>
@@ -125,14 +94,14 @@ export default function BlogDetail() {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {[1, 2, 3].map((i) => (
-                                <div key={i} className="group cursor-pointer overflow-hidden">
+                            {alsoReadPosts.map((post) => (
+                                <div key={post.id} className="group cursor-pointer overflow-hidden">
                                     <div className="relative w-full h-[180px] rounded-none overflow-hidden">
-                                        <Image src="/food.png" alt="Read Also" fill className="object-cover transition-transform duration-500" />
+                                        <Image src={post.image} alt={post.title} fill className="object-cover transition-transform duration-500 group-hover:scale-105" />
                                     </div>
                                     <div className="pt-4">
                                         <h4 className="text-xl font-bold text-[#151C27] group-hover:text-[#CF0738] transition-colors">
-                                            Salted & Dried Berries From the Summer
+                                            {post.title}
                                         </h4>
                                     </div>
                                 </div>

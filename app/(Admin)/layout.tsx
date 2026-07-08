@@ -3,6 +3,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useAppDispatch } from '@/redux/hooks';
+import { logOut } from '@/redux/features/auth/authSlice';
 import {
     LayoutDashboard,
     Users,
@@ -32,6 +34,7 @@ const menuItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const router = useRouter();
+    const dispatch = useAppDispatch();
 
     return (
         <div className="min-h-screen bg-[#0A0A0A] flex">
@@ -81,7 +84,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 {/* Logout */}
                 <div className="p-4">
                     <button
-                        onClick={() => router.push('/login')}
+                        onClick={() => {
+                            dispatch(logOut());
+                            router.push('/login');
+                        }}
                         className="flex items-center justify-center w-full py-3.5 rounded-xl bg-[#CF0738] text-white font-bold text-sm hover:bg-[#b00630] transition-all shadow-lg shadow-[#CF0738]/20"
                     >
                         Logout

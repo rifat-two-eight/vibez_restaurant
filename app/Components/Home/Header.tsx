@@ -12,14 +12,13 @@ export default function Header() {
   const pathname = usePathname();
   const dispatch = useAppDispatch();
   const user = useAppSelector(currentUser);
-  
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
   const navLinks = [
     { name: 'Home', href: '/' },
     { name: 'Restaurants', href: '/restaurant' },
-    { name: 'Prices', href: '/prices' },
     { name: 'FAQ', href: '/faq' },
     { name: 'Blogs', href: '/blogs' },
   ];
@@ -27,7 +26,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-zinc-200 bg-white/80 backdrop-blur-md py-2">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
-        
+
         {/* Logo */}
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">
@@ -63,7 +62,7 @@ export default function Header() {
         <div className="flex items-center gap-4">
           {user ? (
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-zinc-100 border border-zinc-200 overflow-hidden hover:ring-2 hover:ring-[#CF0738] transition-all"
               >
@@ -80,7 +79,7 @@ export default function Header() {
                     <p className="text-sm font-bold text-zinc-900 truncate">{user.name}</p>
                     <p className="text-xs text-zinc-500 truncate">{user.email}</p>
                   </div>
-                  <button 
+                  <button
                     onClick={() => {
                       dispatch(logOut());
                       setIsProfileMenuOpen(false);
@@ -107,7 +106,7 @@ export default function Header() {
           )}
 
           {/* Hamburger Menu Toggle */}
-          <button 
+          <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden p-2 text-[#0F172A] hover:bg-zinc-100 rounded-lg transition-colors"
             aria-label="Toggle Menu"
@@ -134,17 +133,16 @@ export default function Header() {
                 key={link.name}
                 href={link.href}
                 onClick={() => setIsMenuOpen(false)}
-                className={`text-lg font-semibold px-4 py-2 rounded-lg transition-colors ${
-                  pathname === link.href 
-                  ? "bg-zinc-50 text-[#CF0738]" 
-                  : "text-[#0F172A] hover:bg-zinc-50"
-                }`}
+                className={`text-lg font-semibold px-4 py-2 rounded-lg transition-colors ${pathname === link.href
+                    ? "bg-zinc-50 text-[#CF0738]"
+                    : "text-[#0F172A] hover:bg-zinc-50"
+                  }`}
               >
                 {link.name}
               </Link>
             ))}
             {user ? (
-              <button 
+              <button
                 onClick={() => {
                   dispatch(logOut());
                   setIsMenuOpen(false);
@@ -155,8 +153,8 @@ export default function Header() {
                 Logout
               </button>
             ) : (
-              <Link 
-                href="/partner" 
+              <Link
+                href="/partner"
                 onClick={() => setIsMenuOpen(false)}
                 className="sm:hidden block w-full text-center bg-[#CF0738] text-white font-bold py-3 rounded-lg"
               >
