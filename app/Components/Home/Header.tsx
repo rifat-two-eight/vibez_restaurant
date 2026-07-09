@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useState } from 'react';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { currentUser, logOut } from '@/redux/features/auth/authSlice';
-import { LogOut } from 'lucide-react';
+import { LogOut, LayoutDashboard } from 'lucide-react';
 
 export default function Header() {
   const pathname = usePathname();
@@ -15,6 +15,15 @@ export default function Header() {
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  const getDashboardUrl = () => {
+    switch (user?.role) {
+      case 'ADMIN': return '/admin';
+      case 'RESTAURANT_OWNER': return '/dashboard';
+      case 'STAFF': return '/staff';
+      default: return null;
+    }
+  };
 
   const navLinks = [
     { name: 'Home', href: '/' },
@@ -79,6 +88,16 @@ export default function Header() {
                     <p className="text-sm font-bold text-zinc-900 truncate">{user.name}</p>
                     <p className="text-xs text-zinc-500 truncate">{user.email}</p>
                   </div>
+                  {getDashboardUrl() && (
+                    <Link
+                      href={getDashboardUrl()!}
+                      onClick={() => setIsProfileMenuOpen(false)}
+                      className="w-full text-left px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-50 flex items-center gap-2 transition-colors"
+                    >
+                      <LayoutDashboard className="w-4 h-4" />
+                      Dashboard
+                    </Link>
+                  )}
                   <button
                     onClick={() => {
                       dispatch(logOut());
@@ -142,16 +161,28 @@ export default function Header() {
               </Link>
             ))}
             {user ? (
-              <button
-                onClick={() => {
-                  dispatch(logOut());
-                  setIsMenuOpen(false);
-                }}
-                className="sm:hidden w-full flex items-center justify-center gap-2 text-red-600 font-bold py-3 rounded-lg hover:bg-red-50"
-              >
-                <LogOut className="w-5 h-5" />
-                Logout
-              </button>
+              <>
+                {getDashboardUrl() && (
+                  <Link
+                    href={getDashboardUrl()!}
+                    onClick={() => setIsMenuOpen(false)}
+                    className="sm:hidden w-full flex items-center justify-center gap-2 text-zinc-700 font-bold py-3 rounded-lg hover:bg-zinc-50 mb-2"
+                  >
+                    <LayoutDashboard className="w-5 h-5" />
+                    Dashboard
+                  </Link>
+                )}
+                <button
+                  onClick={() => {
+                    dispatch(logOut());
+                    setIsMenuOpen(false);
+                  }}
+                  className="sm:hidden w-full flex items-center justify-center gap-2 text-red-600 font-bold py-3 rounded-lg hover:bg-red-50"
+                >
+                  <LogOut className="w-5 h-5" />
+                  Logout
+                </button>
+              </>
             ) : (
               <Link
                 href="/partner"

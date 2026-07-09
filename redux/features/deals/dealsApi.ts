@@ -14,6 +14,23 @@ export const dealsApi = baseApi.injectEndpoints({
             query: ({ page = 1, limit = 10 }) => `/deals/my-deals?page=${page}&limit=${limit}`,
             providesTags: ['Deal'],
         }),
+        getAllAdminDeals: builder.query({
+            query: ({ page = 1, limit = 10, search = '', isActive }) => {
+                let url = `/deals/admin/all?page=${page}&limit=${limit}`;
+                if (search) url += `&search=${search}`;
+                if (isActive !== undefined) url += `&isActive=${isActive}`;
+                return url;
+            },
+            providesTags: ['Deal'],
+        }),
+        getAdminDealById: builder.query({
+            query: (id) => `/deals/admin/${id}`,
+            providesTags: ['Deal'],
+        }),
+        getAdminDealsStats: builder.query({
+            query: () => `/deals/admin/stats`,
+            providesTags: ['Deal'],
+        }),
         toggleDealStatus: builder.mutation({
             query: (id) => ({
                 url: `/deals/${id}/toggle-status`,
@@ -39,4 +56,4 @@ export const dealsApi = baseApi.injectEndpoints({
     }),
 });
 
-export const { useCreateDealMutation, useGetMyDealsQuery, useToggleDealStatusMutation, useUpdateDealMutation, useDeleteDealMutation } = dealsApi;
+export const { useCreateDealMutation, useGetMyDealsQuery, useGetAllAdminDealsQuery, useGetAdminDealByIdQuery, useGetAdminDealsStatsQuery, useToggleDealStatusMutation, useUpdateDealMutation, useDeleteDealMutation } = dealsApi;

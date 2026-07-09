@@ -1,1 +1,19 @@
-Test to show the accept/decline UI. Please check if the button appears!
+{{baseUrl}}/deals/admin/stats
+{
+    "success": true,
+    "message": "Admin deal statistics retrieved successfully",
+    "data": {
+        "activeDeals": {
+            "value": 4,
+            "change": "+0"
+        },
+        "mostClaimed": {
+            "value": 3,
+            "change": "2 for 1 MAIN COURSE"
+        },
+        "inactiveDeals": {
+            "value": 0,
+            "change": "Inactive"
+        }
+    }
+}
