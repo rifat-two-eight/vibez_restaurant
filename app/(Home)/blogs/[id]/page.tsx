@@ -3,9 +3,10 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { blogPosts, alsoReadPosts } from '@/lib/blogData';
 
-export default function BlogDetail({ params }: any) {
+export default function BlogDetail({ params }: { params: Promise<{ id: string }> | any }) {
     // Await params if it's a promise, or safely access it
-    const id = React.use(params as any)?.id || params?.id || '1';
+    const resolvedParams: any = params instanceof Promise ? React.use(params) : params;
+    const id = resolvedParams?.id || '1';
     const post = blogPosts.find((p) => p.id === Number(id)) || blogPosts[0];
 
     return (
