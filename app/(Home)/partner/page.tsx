@@ -26,9 +26,6 @@ interface DaySlotData {
 type DaySlotsState = Record<Day, Record<Slot, DaySlotData>>;
 
 const ALL_DAYS: Day[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const DAY_MAP: Record<string, Day> = {
-    'MONDAY': 'Mon', 'TUESDAY': 'Tue', 'WEDNESDAY': 'Wed', 'THURSDAY': 'Thu', 'FRIDAY': 'Fri', 'SATURDAY': 'Sat', 'SUNDAY': 'Sun'
-};
 const DAY_REVERSE_MAP: Record<Day, string> = {
     'Mon': 'MONDAY', 'Tue': 'TUESDAY', 'Wed': 'WEDNESDAY', 'Thu': 'THURSDAY', 'Fri': 'FRIDAY', 'Sat': 'SATURDAY', 'Sun': 'SUNDAY'
 };
@@ -40,23 +37,21 @@ const SLOT_DEFAULTS: Record<Slot, { apiType: string; openTime: string; closeTime
 
 const SLOT_NAMES: Slot[] = ['Lunch', 'Dinner'];
 
-function createDefaultDaySlotsState(): DaySlotsState {
-    const state: Partial<DaySlotsState> = {};
-    ALL_DAYS.forEach(day => {
-        state[day] = {
-            Lunch: { enabled: (day !== 'Sat' && day !== 'Sun'), times: { openTime: SLOT_DEFAULTS.Lunch.openTime, closeTime: SLOT_DEFAULTS.Lunch.closeTime } },
-            Dinner: { enabled: false, times: { openTime: SLOT_DEFAULTS.Dinner.openTime, closeTime: SLOT_DEFAULTS.Dinner.closeTime } },
-        };
-    });
-    return state as DaySlotsState;
-}
-
 export default function Partner() {
     const router = useRouter();
     const dispatch = useAppDispatch();
-    const [selectedDays, setSelectedDays] = useState<Day[]>(['Mon', 'Tue', 'Wed', 'Thu', 'Fri']);
-    const [activeDay, setActiveDay] = useState<Day | null>('Mon');
-    const [daySlots, setDaySlots] = useState<DaySlotsState>(createDefaultDaySlotsState);
+    const [activeDay, setActiveDay] = useState<Day>('Mon');
+    const [daySlots, setDaySlots] = useState<DaySlotsState>(() => {
+        const state: Partial<DaySlotsState> = {};
+        ALL_DAYS.forEach(day => {
+            const isWeekday = day !== 'Sat' && day !== 'Sun';
+            state[day] = {
+                Lunch: { enabled: isWeekday, times: { openTime: SLOT_DEFAULTS.Lunch.openTime, closeTime: SLOT_DEFAULTS.Lunch.closeTime } },
+                Dinner: { enabled: false, times: { openTime: SLOT_DEFAULTS.Dinner.openTime, closeTime: SLOT_DEFAULTS.Dinner.closeTime } },
+            };
+        });
+        return state as DaySlotsState;
+    });
 
     const autocompleteInputRef = useRef<HTMLInputElement>(null);
     const autocompleteInstance = useRef<any>(null);
@@ -122,20 +117,7 @@ export default function Partner() {
         initAutocomplete();
     });
 
-    const toggleDay = (day: Day) => {
-        setSelectedDays(prev => {
-            if (prev.includes(day)) {
-                const newSelected = prev.filter(d => d !== day);
-                if (activeDay === day) {
-                    setActiveDay(newSelected.length > 0 ? newSelected[0] : null);
-                }
-                return newSelected;
-            } else {
-                if (prev.length === 0) setActiveDay(day);
-                return [...prev, day];
-            }
-        });
-    };
+
 
     const toggleSlot = (day: Day, slot: Slot) => {
         setDaySlots(prev => ({
@@ -171,21 +153,16 @@ export default function Partner() {
 
         const formData = new FormData(e.currentTarget);
 
-        const daysValid = selectedDays.length >= 5;
-        const slotsValid = selectedDays.every(day =>
-            SLOT_NAMES.some(slot => daySlots[day][slot].enabled)
-        );
+        const openDays = ALL_DAYS.filter(day => daySlots[day].Lunch.enabled || daySlots[day].Dinner.enabled);
+        const daysValid = openDays.length >= 5;
 
         if (!daysValid) {
-            toast.error("Please select at least 5 working days.");
-            return;
-        }
-        if (!slotsValid) {
-            toast.error("Please configure at least one active slot (Lunch or Dinner) for every selected day.");
+            toast.error("Please configure at least one active slot (Lunch or Dinner) for at least 5 days.");
             return;
         }
 
-        const restaurantOpenHours = selectedDays.map(dayStr => {
+        const restaurantOpenHours = ALL_DAYS.map(dayStr => {
+            const isOpen = openDays.includes(dayStr);
             const slotsToKeep = SLOT_NAMES
                 .filter(slot => daySlots[dayStr][slot].enabled)
                 .map(slot => ({
@@ -196,38 +173,28 @@ export default function Partner() {
 
             let topOpen = "11:00";
             let topClose = "15:00";
-            const lunchActive = daySlots[dayStr].Lunch.enabled;
-            const dinnerActive = daySlots[dayStr].Dinner.enabled;
-            if (lunchActive && dinnerActive) {
-                topOpen = daySlots[dayStr].Lunch.times.openTime;
-                topClose = daySlots[dayStr].Dinner.times.closeTime;
-            } else if (lunchActive) {
-                topOpen = daySlots[dayStr].Lunch.times.openTime;
-                topClose = daySlots[dayStr].Lunch.times.closeTime;
-            } else if (dinnerActive) {
-                topOpen = daySlots[dayStr].Dinner.times.openTime;
-                topClose = daySlots[dayStr].Dinner.times.closeTime;
+            if (isOpen) {
+                const lunchActive = daySlots[dayStr].Lunch.enabled;
+                const dinnerActive = daySlots[dayStr].Dinner.enabled;
+                if (lunchActive && dinnerActive) {
+                    topOpen = daySlots[dayStr].Lunch.times.openTime;
+                    topClose = daySlots[dayStr].Dinner.times.closeTime;
+                } else if (lunchActive) {
+                    topOpen = daySlots[dayStr].Lunch.times.openTime;
+                    topClose = daySlots[dayStr].Lunch.times.closeTime;
+                } else if (dinnerActive) {
+                    topOpen = daySlots[dayStr].Dinner.times.openTime;
+                    topClose = daySlots[dayStr].Dinner.times.closeTime;
+                }
             }
 
             return {
                 day: DAY_REVERSE_MAP[dayStr],
-                isOpen: true,
+                isOpen,
                 openTime: topOpen,
                 closeTime: topClose,
                 slots: slotsToKeep,
             };
-        });
-
-        ALL_DAYS.forEach(dayStr => {
-            if (!selectedDays.includes(dayStr)) {
-                restaurantOpenHours.push({
-                    day: DAY_REVERSE_MAP[dayStr],
-                    isOpen: false,
-                    openTime: "11:00",
-                    closeTime: "15:00",
-                    slots: [],
-                });
-            }
         });
 
         const payload = {
@@ -439,23 +406,30 @@ export default function Partner() {
                             </div>
                         </section>
 
+                        {/* Operational Details */}
                         <section className="space-y-6">
                             <h2 className="text-lg font-bold text-[#005C2C] tracking-wide border-b pb-2 uppercase">Operational Details</h2>
                             
+                            {/* Day Selection Grid */}
                             <div className="space-y-4">
-                                <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight block">Select Opening Days</label>
+                                <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight block">Select Opening Days & Configure Hours</label>
                                 <div className="grid grid-cols-7 gap-2">
                                     {ALL_DAYS.map(day => {
-                                        const active = selectedDays.includes(day);
+                                        const isCurrent = activeDay === day;
+                                        const hasActiveSlot = daySlots[day].Lunch.enabled || daySlots[day].Dinner.enabled;
                                         return (
                                             <button
                                                 key={day}
                                                 type="button"
-                                                onClick={() => toggleDay(day)}
+                                                onClick={() => setActiveDay(day)}
                                                 className={`py-3 rounded-xl text-xs font-bold border transition-all ${
-                                                    active
+                                                    isCurrent
+                                                        ? 'ring-2 ring-[#CF0738] ring-offset-2 border-transparent'
+                                                        : ''
+                                                } ${
+                                                    hasActiveSlot
                                                         ? 'bg-[#CF0738] text-white border-transparent shadow-md'
-                                                        : 'bg-zinc-50 text-zinc-700 border-zinc-200 hover:border-zinc-400'
+                                                        : 'bg-zinc-50 text-zinc-700 border-zinc-200 hover:bg-zinc-100 hover:border-zinc-300'
                                                 }`}
                                             >
                                                 {day}
@@ -463,105 +437,145 @@ export default function Partner() {
                                         );
                                     })}
                                 </div>
-                                {selectedDays.length < 5 && (
-                                    <p className="flex items-center gap-1.5 text-xs text-red-500 font-semibold mt-2">
-                                        <AlertCircle className="w-3.5 h-3.5" />
-                                        Minimum 5 days required ({selectedDays.length}/5 selected)
-                                    </p>
-                                )}
+                                <p className="text-[11px] text-zinc-400">
+                                    Days highlighted in red are open. Click any day to configure its specific Lunch and Dinner operating times below.
+                                </p>
                             </div>
 
-                            {selectedDays.length > 0 && (
-                                <div className="space-y-6 border-t pt-6">
-                                    <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight block">Operating Slots & Hours</label>
-                                    
-                                    <div className="flex flex-wrap gap-2 border-b pb-4">
-                                        {selectedDays.map(day => (
-                                            <button
-                                                key={day}
-                                                type="button"
-                                                onClick={() => setActiveDay(day)}
-                                                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all ${
-                                                    activeDay === day
-                                                        ? 'bg-[#CF0738] text-white shadow-sm'
-                                                        : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100 border border-zinc-200'
-                                                }`}
-                                            >
-                                                {day}
-                                            </button>
-                                        ))}
+                            {/* Active Day Slots Configuration */}
+                            {activeDay && (
+                                <div className="space-y-6 border-t pt-6 animate-in fade-in duration-200">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight block">
+                                            Operating Slots & Hours for {DAY_REVERSE_MAP[activeDay]}
+                                        </label>
+                                        {(daySlots[activeDay].Lunch.enabled || daySlots[activeDay].Dinner.enabled) ? (
+                                            <span className="bg-[#CF0738]/10 text-[#CF0738] text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                                                Open
+                                            </span>
+                                        ) : (
+                                            <span className="bg-zinc-100 text-zinc-400 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                                                Closed
+                                            </span>
+                                        )}
                                     </div>
+                                    
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        {/* Lunch Card */}
+                                        <div
+                                            className={`p-5 rounded-2xl border transition-all ${
+                                                daySlots[activeDay].Lunch.enabled
+                                                    ? 'border-[#CF0738] bg-[#CF0738]/5'
+                                                    : 'border-zinc-200 bg-white hover:border-zinc-300'
+                                            }`}
+                                        >
+                                            <div
+                                                className="flex items-center justify-between cursor-pointer"
+                                                onClick={() => toggleSlot(activeDay, 'Lunch')}
+                                            >
+                                                <div>
+                                                    <h4 className="text-sm font-bold text-zinc-900">Lunch Slot</h4>
+                                                    <p className="text-xs text-zinc-400 mt-0.5">
+                                                        {daySlots[activeDay].Lunch.enabled
+                                                            ? `${daySlots[activeDay].Lunch.times.openTime} – ${daySlots[activeDay].Lunch.times.closeTime}`
+                                                            : 'Tap to enable this slot'
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={daySlots[activeDay].Lunch.enabled}
+                                                    readOnly
+                                                    className="w-5 h-5 accent-[#CF0738] cursor-pointer"
+                                                />
+                                            </div>
 
-                                    {activeDay && selectedDays.includes(activeDay) && (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-200">
-                                            {SLOT_NAMES.map(slotName => {
-                                                const slotData = daySlots[activeDay][slotName];
-                                                const isEnabled = slotData.enabled;
-                                                return (
-                                                    <div
-                                                        key={slotName}
-                                                        className={`p-5 rounded-2xl border transition-all ${
-                                                            isEnabled
-                                                                ? 'border-[#CF0738] bg-[#CF0738]/5'
-                                                                : 'border-zinc-200 bg-white'
-                                                        }`}
-                                                    >
-                                                        <div
-                                                            className="flex items-center justify-between cursor-pointer"
-                                                            onClick={() => toggleSlot(activeDay, slotName)}
-                                                        >
-                                                            <div>
-                                                                <h4 className="text-sm font-bold text-zinc-900">{slotName} Slot</h4>
-                                                                <p className="text-xs text-zinc-400 mt-0.5">
-                                                                    {isEnabled
-                                                                        ? `${slotData.times.openTime} – ${slotData.times.closeTime}`
-                                                                        : 'Tap to enable this slot'
-                                                                    }
-                                                                </p>
-                                                            </div>
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={isEnabled}
-                                                                readOnly
-                                                                className="w-5 h-5 accent-[#CF0738] cursor-pointer"
-                                                            />
-                                                        </div>
-
-                                                        {isEnabled && (
-                                                            <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-zinc-100">
-                                                                <div className="space-y-2">
-                                                                    <label className="text-xs font-bold text-[#CF0738] uppercase tracking-tight">Opens at</label>
-                                                                    <input
-                                                                        type="time"
-                                                                        value={slotData.times.openTime}
-                                                                        onChange={(e) => updateSlotTime(activeDay, slotName, 'openTime', e.target.value)}
-                                                                        className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#CF0738] outline-none transition-all cursor-pointer"
-                                                                    />
-                                                                </div>
-                                                                <div className="space-y-2">
-                                                                    <label className="text-xs font-bold text-[#CF0738] uppercase tracking-tight">Closes at</label>
-                                                                    <input
-                                                                        type="time"
-                                                                        value={slotData.times.closeTime}
-                                                                        onChange={(e) => updateSlotTime(activeDay, slotName, 'closeTime', e.target.value)}
-                                                                        className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#CF0738] outline-none transition-all cursor-pointer"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        )}
+                                            {daySlots[activeDay].Lunch.enabled && (
+                                                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-zinc-100">
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-bold text-[#CF0738] uppercase tracking-tight">Opens at</label>
+                                                        <input
+                                                            type="time"
+                                                            value={daySlots[activeDay].Lunch.times.openTime}
+                                                            onChange={(e) => updateSlotTime(activeDay, 'Lunch', 'openTime', e.target.value)}
+                                                            className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#CF0738] outline-none transition-all cursor-pointer"
+                                                        />
                                                     </div>
-                                                );
-                                            })}
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-bold text-[#CF0738] uppercase tracking-tight">Closes at</label>
+                                                        <input
+                                                            type="time"
+                                                            value={daySlots[activeDay].Lunch.times.closeTime}
+                                                            onChange={(e) => updateSlotTime(activeDay, 'Lunch', 'closeTime', e.target.value)}
+                                                            className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#CF0738] outline-none transition-all cursor-pointer"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                    )}
 
-                                    {!selectedDays.every(day => SLOT_NAMES.some(slot => daySlots[day][slot].enabled)) && (
-                                        <p className="flex items-center gap-1.5 text-xs text-red-500 font-semibold mt-2">
-                                            <AlertCircle className="w-3.5 h-3.5" />
-                                            Please make sure every selected day has at least one active slot configured.
-                                        </p>
-                                    )}
+                                        {/* Dinner Card */}
+                                        <div
+                                            className={`p-5 rounded-2xl border transition-all ${
+                                                daySlots[activeDay].Dinner.enabled
+                                                    ? 'border-[#CF0738] bg-[#CF0738]/5'
+                                                    : 'border-zinc-200 bg-white hover:border-zinc-300'
+                                            }`}
+                                        >
+                                            <div
+                                                className="flex items-center justify-between cursor-pointer"
+                                                onClick={() => toggleSlot(activeDay, 'Dinner')}
+                                            >
+                                                <div>
+                                                    <h4 className="text-sm font-bold text-zinc-900">Dinner Slot</h4>
+                                                    <p className="text-xs text-zinc-400 mt-0.5">
+                                                        {daySlots[activeDay].Dinner.enabled
+                                                            ? `${daySlots[activeDay].Dinner.times.openTime} – ${daySlots[activeDay].Dinner.times.closeTime}`
+                                                            : 'Tap to enable this slot'
+                                                        }
+                                                    </p>
+                                                </div>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={daySlots[activeDay].Dinner.enabled}
+                                                    readOnly
+                                                    className="w-5 h-5 accent-[#CF0738] cursor-pointer"
+                                                />
+                                            </div>
+
+                                            {daySlots[activeDay].Dinner.enabled && (
+                                                <div className="grid grid-cols-2 gap-4 mt-4 pt-4 border-t border-zinc-100">
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-bold text-[#CF0738] uppercase tracking-tight">Opens at</label>
+                                                        <input
+                                                            type="time"
+                                                            value={daySlots[activeDay].Dinner.times.openTime}
+                                                            onChange={(e) => updateSlotTime(activeDay, 'Dinner', 'openTime', e.target.value)}
+                                                            className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#CF0738] outline-none transition-all cursor-pointer"
+                                                        />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <label className="text-xs font-bold text-[#CF0738] uppercase tracking-tight">Closes at</label>
+                                                        <input
+                                                            type="time"
+                                                            value={daySlots[activeDay].Dinner.times.closeTime}
+                                                            onChange={(e) => updateSlotTime(activeDay, 'Dinner', 'closeTime', e.target.value)}
+                                                            className="w-full bg-white border border-zinc-200 rounded-xl px-4 py-2.5 text-sm focus:border-[#CF0738] outline-none transition-all cursor-pointer"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
+                            )}
+
+                            {/* Validation warning for number of active days */}
+                            {ALL_DAYS.filter(d => daySlots[d].Lunch.enabled || daySlots[d].Dinner.enabled).length < 5 && (
+                                <p className="flex items-center gap-1.5 text-xs text-red-500 font-semibold mt-2">
+                                    <AlertCircle className="w-3.5 h-3.5" />
+                                    Minimum 5 open days required (currently {ALL_DAYS.filter(d => daySlots[d].Lunch.enabled || daySlots[d].Dinner.enabled).length} selected)
+                                </p>
                             )}
                         </section>
 
