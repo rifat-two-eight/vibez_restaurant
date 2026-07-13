@@ -80,7 +80,7 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
     const [fixedDiscountAmount, setFixedDiscountAmount] = useState<number>(5);
 
     // Step 3 State
-    const [day, setDay] = useState<DayOfWeek>(DayOfWeek.FRIDAY);
+    const [selectedDays, setSelectedDays] = useState<DayOfWeek[]>([DayOfWeek.FRIDAY]);
     const [mealTime, setMealTime] = useState<MealTimeType>(MealTimeType.DINNER);
     const [maxClaims, setMaxClaims] = useState(50);
 
@@ -112,7 +112,7 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
             dealType,
             title: generateTitle(),
             description: `Exclusive offer generated from dashboard.`,
-            day,
+            day: selectedDays,
             mealTime,
             maxClaimsPerDay: maxClaims,
             isActive: true,
@@ -338,23 +338,49 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                                 <p className="text-sm font-bold text-[#013622]">Deal Title Preview</p>
                                 <p className="text-xl font-black text-zinc-900 mt-1">{generateTitle()}</p>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <label className="block text-sm font-bold text-zinc-800">Day of Week</label>
-                                    <select value={day} onChange={e => setDay(e.target.value as DayOfWeek)} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#013622]">
-                                        {Object.values(DayOfWeek).map(d => <option key={d} value={d}>{formatEnumLabel(d)}</option>)}
-                                    </select>
+                            <div className="space-y-3">
+                                <label className="block text-sm font-bold text-zinc-800">Days of Week</label>
+                                <div className="grid grid-cols-4 gap-2">
+                                    {Object.values(DayOfWeek).map(d => {
+                                        const isSelected = selectedDays.includes(d);
+                                        return (
+                                            <button
+                                                key={d}
+                                                type="button"
+                                                onClick={() => {
+                                                    if (isSelected) {
+                                                        if (selectedDays.length > 1) {
+                                                            setSelectedDays(selectedDays.filter(day => day !== d));
+                                                        } else {
+                                                            toast.error("Please select at least one day.");
+                                                        }
+                                                    } else {
+                                                        setSelectedDays([...selectedDays, d]);
+                                                    }
+                                                }}
+                                                className={`py-2 px-3 rounded-xl text-xs font-bold border-2 transition-all ${
+                                                    isSelected
+                                                        ? 'border-[#013622] bg-[#013622]/5 text-[#013622]'
+                                                        : 'border-zinc-100 text-zinc-600 hover:bg-zinc-50 bg-white'
+                                                }`}
+                                            >
+                                                {formatEnumLabel(d)}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="block text-sm font-bold text-zinc-800">Meal Time</label>
                                     <select value={mealTime} onChange={e => setMealTime(e.target.value as MealTimeType)} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#013622]">
                                         {Object.values(MealTimeType).map(m => <option key={m} value={m}>{formatEnumLabel(m)}</option>)}
                                     </select>
                                 </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="block text-sm font-bold text-zinc-800">Max Claims Per Day</label>
-                                <input type="number" min={1} value={maxClaims} onChange={e => setMaxClaims(parseInt(e.target.value))} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#013622]" />
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-bold text-zinc-800">Max Claims Per Day</label>
+                                    <input type="number" min={1} value={maxClaims} onChange={e => setMaxClaims(parseInt(e.target.value))} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#013622]" />
+                                </div>
                             </div>
                         </div>
                     )}

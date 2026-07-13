@@ -66,20 +66,19 @@ export default function SchedulePage() {
     const { data: restaurantRes, isLoading: isFetching } = useGetMyRestaurantQuery({});
     const [updateMyRestaurant, { isLoading: isUpdating }] = useUpdateMyRestaurantMutation();
 
-    const [selectedDays, setSelectedDays] = useState<Day[]>([]);
-    const [activeDay, setActiveDay] = useState<Day | null>(null);
+    const [activeDay, setActiveDay] = useState<Day>('Mon');
     const [daySlots, setDaySlots] = useState<DaySlotsState>(createDefaultDaySlotsState);
 
     useEffect(() => {
         if (restaurantRes?.data?.restaurantOpenHours) {
             const openHours = restaurantRes.data.restaurantOpenHours;
-            const days: Day[] = [];
             const newState = createDefaultDaySlotsState();
+            let firstOpenDay: Day | null = null;
 
             openHours.forEach((oh: any) => {
                 const uiDay = DAY_MAP[oh.day];
                 if (uiDay && oh.isOpen) {
-                    days.push(uiDay);
+                    if (!firstOpenDay) firstOpenDay = uiDay;
                     oh.slots?.forEach((s: any) => {
                         if (s.type === 'LUNCH') {
                             newState[uiDay].Lunch = {
@@ -97,26 +96,10 @@ export default function SchedulePage() {
                 }
             });
 
-            setSelectedDays(days);
             setDaySlots(newState);
-            if (days.length > 0) setActiveDay(days[0]);
+            setActiveDay(firstOpenDay || 'Mon');
         }
     }, [restaurantRes]);
-
-    const toggleDay = (day: Day) => {
-        setSelectedDays(prev => {
-            if (prev.includes(day)) {
-                const newSelected = prev.filter(d => d !== day);
-                if (activeDay === day) {
-                    setActiveDay(newSelected.length > 0 ? newSelected[0] : null);
-                }
-                return newSelected;
-            } else {
-                if (prev.length === 0) setActiveDay(day);
-                return [...prev, day];
-            }
-        });
-    };
 
     const toggleSlot = (day: Day, slot: Slot) => {
         setDaySlots(prev => ({
@@ -147,11 +130,10 @@ export default function SchedulePage() {
         }));
     };
 
-    const daysValid = selectedDays.length >= 5;
-    const slotsValid = selectedDays.every(day =>
-        SLOT_NAMES.some(slot => daySlots[day][slot].enabled)
-    );
-    const timesValid = selectedDays.every(day =>
+    const openDays = ALL_DAYS.filter(day => daySlots[day].Lunch.enabled || daySlots[day].Dinner.enabled);
+    const daysValid = openDays.length >= 5;
+    const slotsValid = true;
+    const timesValid = openDays.every(day =>
         SLOT_NAMES.every(slot => {
             const data = daySlots[day][slot];
             if (!data.enabled) return true;
@@ -161,12 +143,13 @@ export default function SchedulePage() {
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!daysValid || !slotsValid || !timesValid) {
+        if (!daysValid || !timesValid) {
             toast.error("Please enter valid operating times in 24-hour format (e.g., 08:00, 22:30).");
             return;
         }
 
-        const restaurantOpenHours = selectedDays.map(dayStr => {
+        const restaurantOpenHours = ALL_DAYS.map(dayStr => {
+            const isOpen = openDays.includes(dayStr);
             const slotsToKeep = SLOT_NAMES
                 .filter(slot => daySlots[dayStr][slot].enabled)
                 .map(slot => ({
@@ -177,20 +160,9 @@ export default function SchedulePage() {
 
             return {
                 day: DAY_REVERSE_MAP[dayStr],
-                isOpen: true,
+                isOpen,
                 slots: slotsToKeep,
             };
-        });
-
-        // Add missing days as closed
-        ALL_DAYS.forEach(dayStr => {
-            if (!selectedDays.includes(dayStr)) {
-                restaurantOpenHours.push({
-                    day: DAY_REVERSE_MAP[dayStr],
-                    isOpen: false,
-                    slots: [],
-                });
-            }
         });
 
         try {
@@ -221,23 +193,28 @@ export default function SchedulePage() {
             </div>
 
             <form onSubmit={handleSave} className="space-y-6">
-                {/* Working Days */}
+                {/* Working Days & Schedule Configuration */}
                 <div className="bg-white rounded-[10px] border border-zinc-100 p-6 space-y-5">
                     <div>
-                        <h2 className="text-base font-bold text-zinc-900">Select Working Days</h2>
-                        <p className="text-xs text-zinc-400 mt-0.5">Choose at least 5 days (platform requirement)</p>
+                        <h2 className="text-base font-bold text-zinc-900">Select Working Days & Configure Hours</h2>
+                        <p className="text-xs text-zinc-400 mt-0.5">Choose at least 5 days (platform requirement). Click any day to configure its hours below.</p>
                     </div>
 
                     <div className="grid grid-cols-7 gap-3">
                         {ALL_DAYS.map(day => {
-                            const active = selectedDays.includes(day);
+                            const isCurrent = activeDay === day;
+                            const hasActiveSlot = daySlots[day].Lunch.enabled || daySlots[day].Dinner.enabled;
                             return (
                                 <button
                                     key={day}
                                     type="button"
-                                    onClick={() => toggleDay(day)}
+                                    onClick={() => setActiveDay(day)}
                                     className={`py-3 rounded-[10px] text-sm font-semibold border transition-all ${
-                                        active
+                                        isCurrent
+                                            ? 'ring-2 ring-[#013622] ring-offset-2 border-transparent'
+                                            : ''
+                                    } ${
+                                        hasActiveSlot
                                             ? 'bg-[#013622] text-white border-transparent shadow-sm'
                                             : 'bg-white text-zinc-700 border-zinc-200 hover:border-zinc-400'
                                     }`}
@@ -251,137 +228,103 @@ export default function SchedulePage() {
                     {!daysValid && (
                         <p className="flex items-center gap-1.5 text-xs text-red-500 font-medium">
                             <AlertCircle className="w-3.5 h-3.5" />
-                            Minimum 5 days required ({selectedDays.length}/5 selected)
+                            Minimum 5 working days required (currently {openDays.length} selected)
                         </p>
                     )}
                 </div>
 
-                {/* Per-Day Time Slots via Tabs */}
-                <div className="bg-white rounded-[10px] border border-zinc-100 p-6 space-y-5">
-                    <div>
-                        <h2 className="text-base font-bold text-zinc-900">Set Time Slots</h2>
-                        <p className="text-xs text-zinc-400 mt-0.5">Configure hours for your selected working days</p>
-                    </div>
-
-                    {selectedDays.length === 0 ? (
-                        <p className="text-sm text-zinc-500 py-4 bg-zinc-50 rounded-lg px-4 border border-zinc-100 text-center">
-                            Please select working days above to configure their time slots.
-                        </p>
-                    ) : (
-                        <div className="space-y-6">
-                            {/* Tabs for selected days */}
-                            <div className="flex flex-wrap gap-2 border-b border-zinc-100 pb-4">
-                                {selectedDays.map(day => (
-                                    <button
-                                        key={day}
-                                        type="button"
-                                        onClick={() => setActiveDay(day)}
-                                        className={`px-5 py-2 text-sm font-bold rounded-lg transition-all ${
-                                            activeDay === day
-                                                ? 'bg-[#013622] text-white shadow-sm'
-                                                : 'bg-zinc-50 text-zinc-500 hover:bg-zinc-100 border border-zinc-200'
-                                        }`}
-                                    >
-                                        {day}
-                                    </button>
-                                ))}
+                {/* Per-Day Time Slots */}
+                {activeDay && (
+                    <div className="bg-white rounded-[10px] border border-zinc-100 p-6 space-y-5">
+                        <div className="flex items-center justify-between border-b border-zinc-100 pb-4">
+                            <div>
+                                <h2 className="text-base font-bold text-zinc-900">Operating Slots & Hours for {DAY_REVERSE_MAP[activeDay]}</h2>
+                                <p className="text-xs text-zinc-400 mt-0.5">Toggle and configure times for Lunch/Dinner slots</p>
                             </div>
-
-                            {/* Time Slots for activeDay */}
-                            {activeDay && selectedDays.includes(activeDay) && (
-                                <div className="animate-in fade-in duration-200">
-                                    <p className="text-sm font-bold text-[#013622] mb-3">Time Slots for {activeDay}</p>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {SLOT_NAMES.map(slotName => {
-                                            const slotData = daySlots[activeDay][slotName];
-                                            const isEnabled = slotData.enabled;
-                                            return (
-                                                <div
-                                                    key={slotName}
-                                                    className={`rounded-[10px] border transition-all overflow-hidden ${
-                                                        isEnabled
-                                                            ? 'border-[#013622] bg-[#013622]/5'
-                                                            : 'border-zinc-200 hover:border-zinc-400'
-                                                    }`}
-                                                >
-                                                    {/* Slot Toggle Header */}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => toggleSlot(activeDay, slotName)}
-                                                        className="flex items-center justify-between p-5 w-full text-left"
-                                                    >
-                                                        <div>
-                                                            <p className="text-sm font-bold text-zinc-900">{slotName}</p>
-                                                            <p className="text-xs text-zinc-400 mt-0.5">
-                                                                {isEnabled
-                                                                    ? `${slotData.times.openTime} – ${slotData.times.closeTime}`
-                                                                    : 'Tap to enable this slot'
-                                                                }
-                                                            </p>
-                                                        </div>
-                                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                                                            isEnabled ? 'border-[#013622]' : 'border-zinc-300'
-                                                        }`}>
-                                                            {isEnabled && <div className="w-2.5 h-2.5 rounded-full bg-[#013622]" />}
-                                                        </div>
-                                                    </button>
- 
-                                                    {/* Time Pickers (expandable) */}
-                                                    {isEnabled && (
-                                                        <div className="px-5 pb-5 pt-0 border-t border-zinc-100">
-                                                            <div className="grid grid-cols-2 gap-4 mt-4">
-                                                                {/* Open Time */}
-                                                                <div>
-                                                                    <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 mb-2">
-                                                                        <Clock className="w-3 h-3" />
-                                                                        Opens at
-                                                                    </label>
-                                                                    <input
-                                                                        type="time"
-                                                                        value={slotData.times.openTime}
-                                                                        onChange={(e) => updateSlotTime(activeDay, slotName, 'openTime', e.target.value)}
-                                                                        className="w-full px-3 py-2.5 rounded-lg border border-zinc-200 text-sm text-zinc-900 font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622] transition-all"
-                                                                    />
-                                                                </div>
-                                                                {/* Close Time */}
-                                                                <div>
-                                                                    <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 mb-2">
-                                                                        <Clock className="w-3 h-3" />
-                                                                        Closes at
-                                                                    </label>
-                                                                    <input
-                                                                        type="time"
-                                                                        value={slotData.times.closeTime}
-                                                                        onChange={(e) => updateSlotTime(activeDay, slotName, 'closeTime', e.target.value)}
-                                                                        className="w-full px-3 py-2.5 rounded-lg border border-zinc-200 text-sm text-zinc-900 font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622] transition-all"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                    
-                                    {enabledSlotsForActiveDay === 0 && (
-                                        <p className="flex items-center gap-1.5 text-xs text-red-500 font-medium mt-4">
-                                            <AlertCircle className="w-3.5 h-3.5" />
-                                            Please select at least one slot for {activeDay}
-                                        </p>
-                                    )}
-                                </div>
+                            {(daySlots[activeDay].Lunch.enabled || daySlots[activeDay].Dinner.enabled) ? (
+                                <span className="bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full uppercase">
+                                    Open
+                                </span>
+                            ) : (
+                                <span className="bg-zinc-100 text-zinc-400 text-xs font-bold px-3 py-1 rounded-full uppercase">
+                                    Closed
+                                </span>
                             )}
                         </div>
-                    )}
-                </div>
 
-                {/* Validation Warnings for entire form */}
-                {!slotsValid && selectedDays.length > 0 && (
-                    <p className="flex items-center gap-1.5 text-sm text-red-500 font-medium">
-                        <AlertCircle className="w-4 h-4" />
-                        Please make sure every selected working day has at least one time slot.
-                    </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {SLOT_NAMES.map(slotName => {
+                                const slotData = daySlots[activeDay][slotName];
+                                const isEnabled = slotData.enabled;
+                                return (
+                                    <div
+                                        key={slotName}
+                                        className={`rounded-[10px] border transition-all overflow-hidden bg-white ${
+                                            isEnabled
+                                                ? 'border-[#013622] bg-[#013622]/5'
+                                                : 'border-zinc-200 hover:border-zinc-400'
+                                        }`}
+                                    >
+                                        {/* Slot Toggle Header */}
+                                        <button
+                                            type="button"
+                                            onClick={() => toggleSlot(activeDay, slotName)}
+                                            className="flex items-center justify-between p-5 w-full text-left"
+                                        >
+                                            <div>
+                                                <p className="text-sm font-bold text-zinc-900">{slotName}</p>
+                                                <p className="text-xs text-zinc-400 mt-0.5">
+                                                    {isEnabled
+                                                        ? `${slotData.times.openTime} – ${slotData.times.closeTime}`
+                                                        : 'Tap to enable this slot'
+                                                    }
+                                                </p>
+                                            </div>
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                                                isEnabled ? 'border-[#013622]' : 'border-zinc-300'
+                                            }`}>
+                                                {isEnabled && <div className="w-2.5 h-2.5 rounded-full bg-[#013622]" />}
+                                            </div>
+                                        </button>
+
+                                        {/* Time Pickers (expandable) */}
+                                        {isEnabled && (
+                                            <div className="px-5 pb-5 pt-0 border-t border-zinc-100">
+                                                <div className="grid grid-cols-2 gap-4 mt-4">
+                                                    {/* Open Time */}
+                                                    <div>
+                                                        <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 mb-2">
+                                                            <Clock className="w-3 h-3" />
+                                                            Opens at
+                                                        </label>
+                                                        <input
+                                                            type="time"
+                                                            value={slotData.times.openTime}
+                                                            onChange={(e) => updateSlotTime(activeDay, slotName, 'openTime', e.target.value)}
+                                                            className="w-full px-3 py-2.5 rounded-lg border border-zinc-200 text-sm text-zinc-900 font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622] transition-all"
+                                                        />
+                                                    </div>
+                                                    {/* Close Time */}
+                                                    <div>
+                                                        <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 mb-2">
+                                                            <Clock className="w-3 h-3" />
+                                                            Closes at
+                                                        </label>
+                                                        <input
+                                                            type="time"
+                                                            value={slotData.times.closeTime}
+                                                            onChange={(e) => updateSlotTime(activeDay, slotName, 'closeTime', e.target.value)}
+                                                            className="w-full px-3 py-2.5 rounded-lg border border-zinc-200 text-sm text-zinc-900 font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622] transition-all"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                 )}
 
                 {/* Save Button */}

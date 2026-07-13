@@ -11,9 +11,9 @@ import { toast } from "sonner";
 export default function DealsPage() {
     const [showModal, setShowModal] = useState(false);
     const [editingDeal, setEditingDeal] = useState<any>(null);
-    const [deletingDeal, setDeletingDeal] = useState<{id: string, title: string} | null>(null);
+    const [deletingDeal, setDeletingDeal] = useState<{ id: string, title: string } | null>(null);
     const [page, setPage] = useState(1);
-    
+
     const { data: response, isLoading, isFetching } = useGetMyDealsQuery({ page, limit: 10 });
     const [toggleDealStatus] = useToggleDealStatusMutation();
     const deals = response?.data || [];
@@ -31,6 +31,12 @@ export default function DealsPage() {
             console.error("Toggle status failed:", error);
             toast.error("Failed to toggle deal status.");
         }
+    };
+
+    const formatDayLabels = (days: any) => {
+        if (!days) return '';
+        const dayArr = Array.isArray(days) ? days : [days];
+        return dayArr.map((d: string) => d.charAt(0) + d.slice(1).toLowerCase()).join(', ');
     };
 
     return (
@@ -81,14 +87,23 @@ export default function DealsPage() {
                                 <tr key={deal._id} className={`border-b border-zinc-50 hover:bg-zinc-50 transition-colors ${i === deals.length - 1 ? 'border-b-0' : ''}`}>
                                     <td className="px-6 py-5">
                                         <div className="font-semibold text-zinc-900">{deal.title}</div>
-                                        <div className="text-xs text-zinc-400 mt-0.5">{deal.dealType?.replace(/_/g, ' ')}</div>
+                                        <div className="text-xs mt-1.5 flex flex-wrap items-center gap-1.5 text-zinc-500">
+                                            <span className="bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wide">{deal.dealType?.replace(/_/g, ' ')}</span>
+                                            <span className="text-zinc-300">•</span>
+                                            <span className="font-medium text-zinc-700">{formatDayLabels(deal.day)}</span>
+                                            {deal.mealTime && (
+                                                <>
+                                                    <span className="text-zinc-300">•</span>
+                                                    <span className="font-medium  uppercase text-[10px] bg-[#013622]/5 text-[#013622] px-1.5 py-0.5 rounded">{deal.mealTime}</span>
+                                                </>
+                                            )}
+                                        </div>
                                     </td>
                                     <td className="px-6 py-5">
-                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                                            deal.isActive
-                                                ? 'bg-emerald-50 text-emerald-700'
-                                                : 'bg-red-50 text-red-700'
-                                        }`}>
+                                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${deal.isActive
+                                            ? 'bg-emerald-50 text-emerald-700'
+                                            : 'bg-red-50 text-red-700'
+                                            }`}>
                                             {deal.isActive ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
@@ -97,9 +112,9 @@ export default function DealsPage() {
                                     <td className="px-6 py-5 text-zinc-400 font-medium">{deal.maxClaimsPerDay}</td>
                                     <td className="px-6 py-5">
                                         <div className="flex items-center gap-3">
-                                            <button 
+                                            <button
                                                 onClick={() => setEditingDeal(deal)}
-                                                className="text-zinc-500 hover:text-[#013622] transition-colors" 
+                                                className="text-zinc-500 hover:text-[#013622] transition-colors"
                                                 title="Edit"
                                             >
                                                 <Pencil className="w-4 h-4" />
@@ -125,7 +140,7 @@ export default function DealsPage() {
                         )}
                     </tbody>
                 </table>
-                
+
                 {/* Pagination */}
                 {meta && meta.totalPages > 1 && (
                     <div className="border-t border-zinc-100 px-6 py-4 flex items-center justify-between">
@@ -133,14 +148,14 @@ export default function DealsPage() {
                             Page {meta.page} of {meta.totalPages}
                         </span>
                         <div className="flex items-center gap-2">
-                            <button 
+                            <button
                                 disabled={!meta.hasPrev}
                                 onClick={() => setPage(p => p - 1)}
                                 className="p-2 rounded-lg border border-zinc-200 text-zinc-500 disabled:opacity-50 hover:bg-zinc-50 transition-colors"
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
-                            <button 
+                            <button
                                 disabled={!meta.hasNext}
                                 onClick={() => setPage(p => p + 1)}
                                 className="p-2 rounded-lg border border-zinc-200 text-zinc-500 disabled:opacity-50 hover:bg-zinc-50 transition-colors"
@@ -154,15 +169,15 @@ export default function DealsPage() {
 
             {/* Create Deal Modal */}
             {showModal && (
-                <CreateDealModal 
-                    onClose={() => setShowModal(false)} 
-                    onSuccess={() => setShowModal(false)} 
+                <CreateDealModal
+                    onClose={() => setShowModal(false)}
+                    onSuccess={() => setShowModal(false)}
                 />
             )}
 
             {/* Edit Deal Modal */}
             {editingDeal && (
-                <EditDealModal 
+                <EditDealModal
                     deal={editingDeal}
                     onClose={() => setEditingDeal(null)}
                     onSuccess={() => setEditingDeal(null)}
@@ -171,7 +186,7 @@ export default function DealsPage() {
 
             {/* Delete Confirmation Modal */}
             {deletingDeal && (
-                <DeleteDealModal 
+                <DeleteDealModal
                     deal={deletingDeal}
                     onClose={() => setDeletingDeal(null)}
                     onSuccess={() => setDeletingDeal(null)}
