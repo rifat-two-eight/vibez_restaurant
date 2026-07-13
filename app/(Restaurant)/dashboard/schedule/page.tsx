@@ -1,12 +1,24 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Save, AlertCircle, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Save, AlertCircle, Loader2, Clock } from 'lucide-react';
 import { useGetMyRestaurantQuery, useUpdateMyRestaurantMutation } from '@/redux/features/restaurant/restaurantApi';
 import { toast } from 'sonner';
 
 type Day = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
 type Slot = 'Lunch' | 'Dinner';
+
+interface SlotTimes {
+    openTime: string;
+    closeTime: string;
+}
+
+interface DaySlotData {
+    enabled: boolean;
+    times: SlotTimes;
+}
+
+type DaySlotsState = Record<Day, Record<Slot, DaySlotData>>;
 
 const ALL_DAYS: Day[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const DAY_MAP: Record<string, Day> = {
@@ -16,10 +28,39 @@ const DAY_REVERSE_MAP: Record<Day, string> = {
     'Mon': 'MONDAY', 'Tue': 'TUESDAY', 'Wed': 'WEDNESDAY', 'Thu': 'THURSDAY', 'Fri': 'FRIDAY', 'Sat': 'SATURDAY', 'Sun': 'SUNDAY'
 };
 
-const TIME_SLOTS: { name: Slot; hours: string; apiType: string; openTime: string; closeTime: string }[] = [
-    { name: 'Lunch',  hours: '11:00 AM – 3:00 PM', apiType: 'LUNCH', openTime: '11:00', closeTime: '15:00' },
-    { name: 'Dinner', hours: '5:00 PM – 10:00 PM', apiType: 'DINNER', openTime: '17:00', closeTime: '22:00' },
-];
+const SLOT_DEFAULTS: Record<Slot, { apiType: string; openTime: string; closeTime: string }> = {
+    'Lunch':  { apiType: 'LUNCH',  openTime: '11:00', closeTime: '15:00' },
+    'Dinner': { apiType: 'DINNER', openTime: '17:00', closeTime: '22:00' },
+};
+
+const SLOT_NAMES: Slot[] = ['Lunch', 'Dinner'];
+
+function createDefaultDaySlotsState(): DaySlotsState {
+    const state: Partial<DaySlotsState> = {};
+    ALL_DAYS.forEach(day => {
+        state[day] = {
+            Lunch: { enabled: false, times: { openTime: SLOT_DEFAULTS.Lunch.openTime, closeTime: SLOT_DEFAULTS.Lunch.closeTime } },
+            Dinner: { enabled: false, times: { openTime: SLOT_DEFAULTS.Dinner.openTime, closeTime: SLOT_DEFAULTS.Dinner.closeTime } },
+        };
+    });
+    return state as DaySlotsState;
+}
+
+function formatTime12h(time24: string, padHour = true): string {
+    if (!time24 || !time24.includes(':')) return '';
+    const [hStr, mStr] = time24.split(':');
+    const h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    if (isNaN(h) || isNaN(m)) return time24;
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const hour = h % 12 || 12;
+    const hourStr = padHour ? hour.toString().padStart(2, '0') : hour.toString();
+    return `${hourStr}:${m.toString().padStart(2, '0')} ${ampm}`;
+}
+
+function isValid24hTime(time: string): boolean {
+    return /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time);
+}
 
 export default function SchedulePage() {
     const { data: restaurantRes, isLoading: isFetching } = useGetMyRestaurantQuery({});
@@ -27,31 +68,37 @@ export default function SchedulePage() {
 
     const [selectedDays, setSelectedDays] = useState<Day[]>([]);
     const [activeDay, setActiveDay] = useState<Day | null>(null);
-    const [slotsPerDay, setSlotsPerDay] = useState<Record<Day, Slot[]>>({
-        Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: [], Sun: []
-    });
+    const [daySlots, setDaySlots] = useState<DaySlotsState>(createDefaultDaySlotsState);
 
     useEffect(() => {
         if (restaurantRes?.data?.restaurantOpenHours) {
             const openHours = restaurantRes.data.restaurantOpenHours;
             const days: Day[] = [];
-            const parsedSlots: Record<Day, Slot[]> = {
-                Mon: [], Tue: [], Wed: [], Thu: [], Fri: [], Sat: [], Sun: []
-            };
+            const newState = createDefaultDaySlotsState();
 
             openHours.forEach((oh: any) => {
                 const uiDay = DAY_MAP[oh.day];
                 if (uiDay && oh.isOpen) {
                     days.push(uiDay);
                     oh.slots?.forEach((s: any) => {
-                        if (s.type === 'LUNCH') parsedSlots[uiDay].push('Lunch');
-                        if (s.type === 'DINNER') parsedSlots[uiDay].push('Dinner');
+                        if (s.type === 'LUNCH') {
+                            newState[uiDay].Lunch = {
+                                enabled: true,
+                                times: { openTime: s.openTime || SLOT_DEFAULTS.Lunch.openTime, closeTime: s.closeTime || SLOT_DEFAULTS.Lunch.closeTime },
+                            };
+                        }
+                        if (s.type === 'DINNER') {
+                            newState[uiDay].Dinner = {
+                                enabled: true,
+                                times: { openTime: s.openTime || SLOT_DEFAULTS.Dinner.openTime, closeTime: s.closeTime || SLOT_DEFAULTS.Dinner.closeTime },
+                            };
+                        }
                     });
                 }
             });
 
             setSelectedDays(days);
-            setSlotsPerDay(parsedSlots);
+            setDaySlots(newState);
             if (days.length > 0) setActiveDay(days[0]);
         }
     }, [restaurantRes]);
@@ -72,33 +119,66 @@ export default function SchedulePage() {
     };
 
     const toggleSlot = (day: Day, slot: Slot) => {
-        setSlotsPerDay(prev => {
-            const currentSlots = prev[day];
-            const newSlots = currentSlots.includes(slot)
-                ? currentSlots.filter(s => s !== slot)
-                : [...currentSlots, slot];
-            return { ...prev, [day]: newSlots };
-        });
+        setDaySlots(prev => ({
+            ...prev,
+            [day]: {
+                ...prev[day],
+                [slot]: {
+                    ...prev[day][slot],
+                    enabled: !prev[day][slot].enabled,
+                },
+            },
+        }));
+    };
+
+    const updateSlotTime = (day: Day, slot: Slot, field: 'openTime' | 'closeTime', value: string) => {
+        setDaySlots(prev => ({
+            ...prev,
+            [day]: {
+                ...prev[day],
+                [slot]: {
+                    ...prev[day][slot],
+                    times: {
+                        ...prev[day][slot].times,
+                        [field]: value,
+                    },
+                },
+            },
+        }));
     };
 
     const daysValid = selectedDays.length >= 5;
-    const slotsValid = selectedDays.every(day => slotsPerDay[day].length >= 1);
+    const slotsValid = selectedDays.every(day =>
+        SLOT_NAMES.some(slot => daySlots[day][slot].enabled)
+    );
+    const timesValid = selectedDays.every(day =>
+        SLOT_NAMES.every(slot => {
+            const data = daySlots[day][slot];
+            if (!data.enabled) return true;
+            return isValid24hTime(data.times.openTime) && isValid24hTime(data.times.closeTime);
+        })
+    );
 
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!daysValid || !slotsValid) return;
+        if (!daysValid || !slotsValid || !timesValid) {
+            toast.error("Please enter valid operating times in 24-hour format (e.g., 08:00, 22:30).");
+            return;
+        }
 
         const restaurantOpenHours = selectedDays.map(dayStr => {
-            const slotsToKeep = TIME_SLOTS.filter(ts => slotsPerDay[dayStr].includes(ts.name)).map(ts => ({
-                type: ts.apiType,
-                openTime: ts.openTime,
-                closeTime: ts.closeTime
-            }));
+            const slotsToKeep = SLOT_NAMES
+                .filter(slot => daySlots[dayStr][slot].enabled)
+                .map(slot => ({
+                    type: SLOT_DEFAULTS[slot].apiType,
+                    openTime: daySlots[dayStr][slot].times.openTime,
+                    closeTime: daySlots[dayStr][slot].times.closeTime,
+                }));
 
             return {
                 day: DAY_REVERSE_MAP[dayStr],
                 isOpen: true,
-                slots: slotsToKeep
+                slots: slotsToKeep,
             };
         });
 
@@ -108,7 +188,7 @@ export default function SchedulePage() {
                 restaurantOpenHours.push({
                     day: DAY_REVERSE_MAP[dayStr],
                     isOpen: false,
-                    slots: []
+                    slots: [],
                 });
             }
         });
@@ -129,6 +209,8 @@ export default function SchedulePage() {
             </div>
         );
     }
+
+    const enabledSlotsForActiveDay = activeDay ? SLOT_NAMES.filter(s => daySlots[activeDay][s].enabled).length : 0;
 
     return (
         <div className="space-y-8">
@@ -210,34 +292,79 @@ export default function SchedulePage() {
                                 <div className="animate-in fade-in duration-200">
                                     <p className="text-sm font-bold text-[#013622] mb-3">Time Slots for {activeDay}</p>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {TIME_SLOTS.map(slot => {
-                                            const active = slotsPerDay[activeDay].includes(slot.name);
+                                        {SLOT_NAMES.map(slotName => {
+                                            const slotData = daySlots[activeDay][slotName];
+                                            const isEnabled = slotData.enabled;
                                             return (
-                                                <button
-                                                    key={slot.name}
-                                                    type="button"
-                                                    onClick={() => toggleSlot(activeDay, slot.name)}
-                                                    className={`flex items-center justify-between p-5 rounded-[10px] border text-left transition-all ${
-                                                        active
+                                                <div
+                                                    key={slotName}
+                                                    className={`rounded-[10px] border transition-all overflow-hidden ${
+                                                        isEnabled
                                                             ? 'border-[#013622] bg-[#013622]/5'
                                                             : 'border-zinc-200 hover:border-zinc-400'
                                                     }`}
                                                 >
-                                                    <div>
-                                                        <p className="text-sm font-bold text-zinc-900">{slot.name}</p>
-                                                        <p className="text-xs text-zinc-400 mt-0.5">{slot.hours}</p>
-                                                    </div>
-                                                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                                                        active ? 'border-[#013622]' : 'border-zinc-300'
-                                                    }`}>
-                                                        {active && <div className="w-2.5 h-2.5 rounded-full bg-[#013622]" />}
-                                                    </div>
-                                                </button>
+                                                    {/* Slot Toggle Header */}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleSlot(activeDay, slotName)}
+                                                        className="flex items-center justify-between p-5 w-full text-left"
+                                                    >
+                                                        <div>
+                                                            <p className="text-sm font-bold text-zinc-900">{slotName}</p>
+                                                            <p className="text-xs text-zinc-400 mt-0.5">
+                                                                {isEnabled
+                                                                    ? `${slotData.times.openTime} – ${slotData.times.closeTime}`
+                                                                    : 'Tap to enable this slot'
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
+                                                            isEnabled ? 'border-[#013622]' : 'border-zinc-300'
+                                                        }`}>
+                                                            {isEnabled && <div className="w-2.5 h-2.5 rounded-full bg-[#013622]" />}
+                                                        </div>
+                                                    </button>
+ 
+                                                    {/* Time Pickers (expandable) */}
+                                                    {isEnabled && (
+                                                        <div className="px-5 pb-5 pt-0 border-t border-zinc-100">
+                                                            <div className="grid grid-cols-2 gap-4 mt-4">
+                                                                {/* Open Time */}
+                                                                <div>
+                                                                    <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 mb-2">
+                                                                        <Clock className="w-3 h-3" />
+                                                                        Opens at
+                                                                    </label>
+                                                                    <input
+                                                                        type="time"
+                                                                        value={slotData.times.openTime}
+                                                                        onChange={(e) => updateSlotTime(activeDay, slotName, 'openTime', e.target.value)}
+                                                                        className="w-full px-3 py-2.5 rounded-lg border border-zinc-200 text-sm text-zinc-900 font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622] transition-all"
+                                                                    />
+                                                                </div>
+                                                                {/* Close Time */}
+                                                                <div>
+                                                                    <label className="flex items-center gap-1.5 text-xs font-semibold text-zinc-500 mb-2">
+                                                                        <Clock className="w-3 h-3" />
+                                                                        Closes at
+                                                                    </label>
+                                                                    <input
+                                                                        type="time"
+                                                                        value={slotData.times.closeTime}
+                                                                        onChange={(e) => updateSlotTime(activeDay, slotName, 'closeTime', e.target.value)}
+                                                                        className="w-full px-3 py-2.5 rounded-lg border border-zinc-200 text-sm text-zinc-900 font-medium bg-white focus:outline-none focus:ring-2 focus:ring-[#013622]/20 focus:border-[#013622] transition-all"
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             );
                                         })}
                                     </div>
                                     
-                                    {slotsPerDay[activeDay].length === 0 && (
+                                    {enabledSlotsForActiveDay === 0 && (
                                         <p className="flex items-center gap-1.5 text-xs text-red-500 font-medium mt-4">
                                             <AlertCircle className="w-3.5 h-3.5" />
                                             Please select at least one slot for {activeDay}
@@ -260,9 +387,9 @@ export default function SchedulePage() {
                 {/* Save Button */}
                 <button
                     type="submit"
-                    disabled={!daysValid || !slotsValid || isUpdating}
+                    disabled={!daysValid || !slotsValid || !timesValid || isUpdating}
                     className={`flex items-center gap-2 px-6 py-3 rounded-[10px] text-sm font-semibold transition-all ${
-                        daysValid && slotsValid
+                        daysValid && slotsValid && timesValid
                             ? 'bg-[#013622] text-white hover:bg-[#012a1a] shadow-lg shadow-[#013622]/20'
                             : 'bg-zinc-200 text-zinc-400 cursor-not-allowed'
                     }`}
@@ -278,6 +405,7 @@ export default function SchedulePage() {
                 <ul className="space-y-1.5 text-xs text-blue-700">
                     <li>• Your schedule must include at least 5 open working days</li>
                     <li>• Use the tabs in the Time Slots section to configure hours for each day independently</li>
+                    <li>• You can set custom open and close times for Lunch and Dinner on each day</li>
                     <li>• Changes to your schedule will be reflected immediately</li>
                     <li>• Existing bookings won't be affected by schedule changes</li>
                 </ul>
