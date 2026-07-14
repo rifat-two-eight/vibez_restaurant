@@ -19,17 +19,23 @@ import {
 } from 'lucide-react';
 import { useGetAllAdminDealsQuery, useGetAdminDealsStatsQuery, useToggleDealStatusMutation, useGetAdminDealByIdQuery } from '@/redux/features/deals/dealsApi';
 
+const formatDaysString = (days: any) => {
+    if (!days) return '';
+    const arr = Array.isArray(days) ? days : [days];
+    return arr.map((d: string) => d.charAt(0) + d.slice(1).toLowerCase()).join(', ');
+};
+
 export default function DealsManagement() {
     const [page, setPage] = useState(1);
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('ALL');
     const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
-    
+
     const isActive = statusFilter === 'ALL' ? undefined : statusFilter === 'ACTIVE';
     const { data, isLoading, isFetching } = useGetAllAdminDealsQuery({ page, limit: 10, search, isActive });
     const { data: statsRes, isLoading: isStatsLoading } = useGetAdminDealsStatsQuery(undefined);
     const [toggleDealStatus] = useToggleDealStatusMutation();
-    
+
     const liveDeals = data?.data || [];
     const meta = data?.meta;
     const stats = statsRes?.data;
@@ -107,15 +113,15 @@ export default function DealsManagement() {
                     <div className="flex gap-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                            <input 
-                                type="text" 
-                                placeholder="Search deals..." 
+                            <input
+                                type="text"
+                                placeholder="Search deals..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
-                                className="bg-white/5 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-[12px] text-white focus:outline-none focus:border-[#10B981]/50 w-64" 
+                                className="bg-white/5 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-[12px] text-white focus:outline-none focus:border-[#10B981]/50 w-64"
                             />
                         </div>
-                        <select 
+                        <select
                             value={statusFilter}
                             onChange={(e) => setStatusFilter(e.target.value)}
                             className="bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-[12px] text-white focus:outline-none focus:border-[#10B981]/50"
@@ -129,11 +135,11 @@ export default function DealsManagement() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-white/[0.01]">
+                            <tr className="bg-white/1">
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Restaurant</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Deal Title</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-center">Times Claimed</th>
-                                <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-center">Max Claims</th>
+                                <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-center">Max Claims Per Day</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-center">Expiry Date</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-right">Actions</th>
@@ -154,7 +160,7 @@ export default function DealsManagement() {
                                     </td>
                                 </tr>
                             ) : liveDeals.map((deal: any) => (
-                                <tr key={deal._id} className="hover:bg-white/[0.02] transition-colors group">
+                                <tr key={deal._id} className="hover:bg-white/2 transition-colors group">
                                     <td className="px-8 py-5">
                                         <p className="text-sm font-bold text-white group-hover:text-[#10B981] transition-colors cursor-pointer">{deal.restaurantId?.restaurantName || 'Unknown'}</p>
                                     </td>
@@ -165,25 +171,25 @@ export default function DealsManagement() {
                                         </span>
                                     </td>
                                     <td className="px-8 py-5 text-sm text-zinc-400 text-center">{deal.maxClaimsPerDay || 'N/A'}</td>
-                                    <td className="px-8 py-5 text-sm text-zinc-500 text-center">{deal.end ? `${deal.day || ''} ${deal.end}` : 'N/A'}</td>
+                                    <td className="px-8 py-5 text-sm text-zinc-500 text-center">{deal.end ? `${formatDaysString(deal.day)} ${deal.end}` : 'N/A'}</td>
                                     <td className="px-8 py-5">
                                         <span className={`inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${deal.isActive
-                                                ? 'bg-[#10B981]/10 text-[#10B981]'
-                                                : 'bg-orange-500/10 text-orange-500'
+                                            ? 'bg-[#10B981]/10 text-[#10B981]'
+                                            : 'bg-orange-500/10 text-orange-500'
                                             }`}>
                                             {deal.isActive ? 'Active' : 'Inactive'}
                                         </span>
                                     </td>
                                     <td className="px-8 py-5">
                                         <div className="flex items-center justify-end gap-3 text-zinc-500">
-                                            <button 
+                                            <button
                                                 onClick={() => handleToggleStatus(deal._id)}
                                                 className={`p-2 hover:bg-white/5 rounded-lg transition-all ${deal.isActive ? 'hover:text-red-500 text-zinc-400' : 'hover:text-[#10B981] text-zinc-400'}`}
                                                 title={deal.isActive ? "Deactivate Deal" : "Activate Deal"}
                                             >
                                                 {deal.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => setSelectedDealId(deal._id)}
                                                 className="p-2 hover:bg-white/5 rounded-lg hover:text-white transition-all"
                                                 title="View Details"
@@ -277,7 +283,7 @@ const DealDetailsModal = ({ dealId, onClose }: { dealId: string; onClose: () => 
                         </div>
                         <div>
                             <p className="text-xs text-zinc-500 uppercase font-bold mb-1">Day</p>
-                            <p className="text-white">{deal.day}</p>
+                            <p className="text-white">{formatDaysString(deal.day)}</p>
                         </div>
                         <div>
                             <p className="text-xs text-zinc-500 uppercase font-bold mb-1">Meal Time</p>
