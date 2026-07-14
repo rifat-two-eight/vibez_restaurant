@@ -184,7 +184,11 @@ export default function RestaurantManagement() {
                                     </div>
                                     <div className="flex justify-between text-[11px]">
                                         <span className="text-zinc-500 font-medium">Cuisine</span>
-                                        <span className="text-white font-bold">{item.cuisineType}</span>
+                                        <span className="text-white font-bold">
+                                            {Array.isArray(item.cuisineType)
+                                                ? item.cuisineType.map((c: string) => c.charAt(0) + c.slice(1).toLowerCase().replace('_', ' ')).join(', ')
+                                                : (item.cuisineType ? item.cuisineType.charAt(0) + item.cuisineType.slice(1).toLowerCase().replace('_', ' ') : 'N/A')}
+                                        </span>
                                     </div>
                                     <div className="flex justify-between text-[11px]">
                                         <span className="text-zinc-500 font-medium">Submitted</span>
