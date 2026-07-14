@@ -380,6 +380,7 @@ export default function SubscriptionManagement() {
                                     <option value="MONTHLY" className="bg-[#171717]">MONTHLY</option>
                                     <option value="HALF_YEARLY" className="bg-[#171717]">HALF_YEARLY</option>
                                     <option value="YEARLY" className="bg-[#171717]">YEARLY</option>
+                                    <option value="TWO_YEARLY" className="bg-[#171717]">TWO_YEARLY</option>
                                 </select>
                             </div>
                             <div className="flex items-center gap-3 py-2">
