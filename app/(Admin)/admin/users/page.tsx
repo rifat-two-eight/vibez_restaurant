@@ -146,7 +146,7 @@ export default function UserManagement() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-white/[0.01]">
+                            <tr className="bg-white/1">
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">User</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Type</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Referral Code</th>
@@ -160,7 +160,7 @@ export default function UserManagement() {
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {dynamicUsers.map((user: any, i: number) => (
-                                <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
+                                <tr key={i} className="hover:bg-white/2 transition-colors group">
                                     <td className="px-8 py-5">
                                         <div>
                                             <p className="text-sm font-bold text-white group-hover:text-[#10B981] transition-colors cursor-pointer">{user.name}</p>
@@ -272,7 +272,7 @@ function EditUserModal({ user, onClose }: { user: any, onClose: () => void }) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    <div className="flex items-center justify-between bg-white/[0.02] p-4 rounded-xl border border-white/5">
+                    <div className="flex items-center justify-between bg-white/2 p-4 rounded-xl border border-white/5">
                         <div>
                             <p className="text-sm font-bold text-white">Influencer Status</p>
                             <p className="text-xs text-zinc-500 mt-1">Enable to set custom commissions</p>

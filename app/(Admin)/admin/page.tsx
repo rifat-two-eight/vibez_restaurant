@@ -58,7 +58,7 @@ export default function AdminOverview() {
     const { data: weeklyBookingsData, isLoading: isWeeklyBookingsLoading } = useGetWeeklyBookingsQuery(undefined);
     const { data: revenueBreakdownData, isLoading: isRevenueBreakdownLoading } = useGetRevenueBreakdownQuery(undefined);
     const { data: allSubscriptionsData, isLoading: isSubscriptionsLoading } = useGetAllUserSubscriptionsQuery(undefined);
-    
+
     if (isStatsLoading || isWeeklyBookingsLoading || isRevenueBreakdownLoading || isSubscriptionsLoading) {
         return (
             <div className="flex h-[400px] items-center justify-center">
@@ -66,7 +66,7 @@ export default function AdminOverview() {
             </div>
         );
     }
-    
+
     const stats = statsData?.data;
     const formattedBookingData = weeklyBookingsData?.data?.currentWeek?.map((item: any) => ({
         day: item.day,
@@ -290,7 +290,7 @@ export default function AdminOverview() {
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {formattedSubscriptions.map((sub: any, i: number) => (
-                                <tr key={i} className="hover:bg-white/[0.02] transition-colors group">
+                                <tr key={i} className="hover:bg-white/2 transition-colors group">
                                     <td className="px-8 py-4 text-sm font-medium text-white">{sub.user}</td>
                                     <td className="px-8 py-4 text-sm text-zinc-400">{sub.plan}</td>
                                     <td className="px-8 py-4 text-sm text-zinc-400">
@@ -302,8 +302,8 @@ export default function AdminOverview() {
                                     <td className="px-8 py-4 text-sm text-white font-medium">{sub.amount}</td>
                                     <td className="px-8 py-4">
                                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${sub.status === 'Active'
-                                                ? 'bg-[#10B981]/10 text-[#10B981]'
-                                                : 'bg-orange-500/10 text-orange-500'
+                                            ? 'bg-[#10B981]/10 text-[#10B981]'
+                                            : 'bg-orange-500/10 text-orange-500'
                                             }`}>
                                             {sub.status}
                                         </span>
