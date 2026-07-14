@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { 
-    Users, 
-    CreditCard, 
-    AlertCircle, 
-    RefreshCw, 
+import {
+    Users,
+    CreditCard,
+    AlertCircle,
+    RefreshCw,
     ArrowUpRight,
     Plus,
     X,
@@ -137,7 +137,7 @@ export default function SubscriptionManagement() {
                     <h1 className="text-2xl font-bold text-white tracking-tight">Subscription Management</h1>
                     <p className="text-zinc-500 text-sm mt-1">Manage subscription plans and monitor revenue</p>
                 </div>
-                <button 
+                <button
                     onClick={openCreateModal}
                     className="flex items-center gap-2 px-4 py-2.5 bg-[#10B981] hover:bg-[#0da673] text-white text-sm font-bold rounded-xl transition-all shadow-lg shadow-[#10B981]/10"
                 >
@@ -217,13 +217,13 @@ export default function SubscriptionManagement() {
                             </div>
 
                             <div className="flex gap-3 pt-4">
-                                <button 
+                                <button
                                     onClick={() => openEditModal(plan)}
                                     className="flex-1 py-2.5 rounded-xl bg-white/5 text-zinc-400 text-[11px] font-bold hover:bg-white/10 hover:text-white transition-all flex items-center justify-center gap-2"
                                 >
                                     <Edit3 className="w-3 h-3" /> Edit
                                 </button>
-                                <button 
+                                <button
                                     onClick={() => handleDelete(plan._id)}
                                     disabled={isDeleting}
                                     className="flex-1 py-2.5 rounded-xl bg-red-500/10 text-red-500 text-[11px] font-bold hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
@@ -263,7 +263,7 @@ export default function SubscriptionManagement() {
                                 </tr>
                             ) : (
                                 subscriptions.map((sub: any, i: number) => (
-                                    <tr key={sub._id || i} className="hover:bg-white/[0.02] transition-colors group">
+                                    <tr key={sub._id || i} className="hover:bg-white/2 transition-colors group">
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-3">
                                                 {sub.userId?.profileImage ? (
@@ -284,11 +284,10 @@ export default function SubscriptionManagement() {
                                             <p className="text-[11px] text-zinc-500">CHF {sub.subscriptionPlanId?.price || '0'} / {sub.subscriptionPlanId?.duration}</p>
                                         </td>
                                         <td className="px-8 py-5">
-                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                                                sub.status === 'ACTIVE' ? 'bg-[#10B981]/10 text-[#10B981]' :
+                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${sub.status === 'ACTIVE' ? 'bg-[#10B981]/10 text-[#10B981]' :
                                                 sub.status === 'CANCELED' ? 'bg-red-500/10 text-red-500' :
-                                                'bg-zinc-500/10 text-zinc-400'
-                                            }`}>
+                                                    'bg-zinc-500/10 text-zinc-400'
+                                                }`}>
                                                 {sub.status || 'UNKNOWN'}
                                             </span>
                                         </td>
@@ -312,14 +311,14 @@ export default function SubscriptionManagement() {
                             Showing page {meta.page} of {meta.totalPages} ({meta.total} total)
                         </p>
                         <div className="flex gap-2 pr-4">
-                            <button 
+                            <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={!meta.hasPrev}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setCurrentPage(p => Math.min(meta.totalPages, p + 1))}
                                 disabled={!meta.hasNext}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
@@ -339,7 +338,7 @@ export default function SubscriptionManagement() {
                             <h2 className="text-lg font-bold text-white">
                                 {editingPlan ? 'Edit Plan' : 'Create New Plan'}
                             </h2>
-                            <button 
+                            <button
                                 onClick={() => setIsModalOpen(false)}
                                 className="text-zinc-500 hover:text-white transition-colors"
                             >
@@ -380,7 +379,6 @@ export default function SubscriptionManagement() {
                                     <option value="MONTHLY" className="bg-[#171717]">MONTHLY</option>
                                     <option value="HALF_YEARLY" className="bg-[#171717]">HALF_YEARLY</option>
                                     <option value="YEARLY" className="bg-[#171717]">YEARLY</option>
-                                    <option value="TWO_YEARLY" className="bg-[#171717]">TWO_YEARLY</option>
                                 </select>
                             </div>
                             <div className="flex items-center gap-3 py-2">
