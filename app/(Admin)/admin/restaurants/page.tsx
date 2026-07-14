@@ -1,10 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { 
-    Store, 
-    Calendar, 
-    TrendingUp, 
+import {
+    Store,
+    Calendar,
+    TrendingUp,
     Search,
     Filter,
     ChevronLeft,
@@ -41,10 +41,10 @@ export default function RestaurantManagement() {
         return () => clearTimeout(handler);
     }, [searchTerm]);
 
-    const { data: allRes, isLoading: isLoadingAll } = useGetAllRestaurantsQuery({ 
-        search: debouncedSearch, 
-        page: currentPage, 
-        limit: 10 
+    const { data: allRes, isLoading: isLoadingAll } = useGetAllRestaurantsQuery({
+        search: debouncedSearch,
+        page: currentPage,
+        limit: 10
     });
     const allRestaurants = allRes?.data || [];
     const meta = allRes?.meta;
@@ -197,13 +197,13 @@ export default function RestaurantManagement() {
                                 </div>
 
                                 <div className="flex gap-3 pt-2">
-                                    <button 
+                                    <button
                                         onClick={() => handleApprove(item._id)}
                                         className="flex-1 py-2.5 rounded-xl bg-[#10B981] text-white text-[11px] font-bold hover:bg-[#0da673] transition-all shadow-lg shadow-[#10B981]/10"
                                     >
                                         Approve
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={() => handleReject(item._id)}
                                         className="flex-1 py-2.5 rounded-xl bg-white/5 text-red-500 text-[11px] font-bold hover:bg-red-500/10 transition-all"
                                     >
@@ -223,12 +223,12 @@ export default function RestaurantManagement() {
                     <div className="flex gap-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                            <input 
-                                type="text" 
-                                placeholder="Search restaurants..." 
+                            <input
+                                type="text"
+                                placeholder="Search restaurants..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="bg-white/5 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-[12px] text-white focus:outline-none focus:border-[#10B981]/50 w-full md:w-64" 
+                                className="bg-white/5 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-[12px] text-white focus:outline-none focus:border-[#10B981]/50 w-full md:w-64"
                             />
                         </div>
                     </div>
@@ -236,7 +236,7 @@ export default function RestaurantManagement() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-white/[0.01]">
+                            <tr className="bg-white/1">
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Restaurant</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-center">Status</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-center">Active Deals</th>
@@ -255,7 +255,7 @@ export default function RestaurantManagement() {
                                 </tr>
                             ) : (
                                 allRestaurants.map((res: any) => (
-                                    <tr key={res._id} className="hover:bg-white/[0.02] transition-colors group">
+                                    <tr key={res._id} className="hover:bg-white/2 transition-colors group">
                                         <td className="px-8 py-5">
                                             <div className="flex items-center gap-3">
                                                 {res.restaurantImage ? (
@@ -272,9 +272,8 @@ export default function RestaurantManagement() {
                                             </div>
                                         </td>
                                         <td className="px-8 py-5 text-center">
-                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                                                res.approved ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-orange-500/10 text-orange-500'
-                                            }`}>
+                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${res.approved ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-orange-500/10 text-orange-500'
+                                                }`}>
                                                 {res.approved ? 'APPROVED' : 'PENDING'}
                                             </span>
                                         </td>
@@ -299,14 +298,14 @@ export default function RestaurantManagement() {
                             Showing page {meta.page} of {meta.totalPages} ({meta.total} total)
                         </p>
                         <div className="flex gap-2 pr-4">
-                            <button 
+                            <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                 disabled={!meta.hasPrev}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
-                            <button 
+                            <button
                                 onClick={() => setCurrentPage(p => Math.min(meta.totalPages, p + 1))}
                                 disabled={!meta.hasNext}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
