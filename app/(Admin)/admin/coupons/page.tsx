@@ -3,11 +3,11 @@
 import React, { useState } from 'react';
 import { Plus, Edit2, Trash2, Loader2, X, Ticket, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
-import { 
-    useGetCouponsQuery, 
-    useCreateCouponMutation, 
-    useUpdateCouponMutation, 
-    useDeleteCouponMutation 
+import {
+    useGetCouponsQuery,
+    useCreateCouponMutation,
+    useUpdateCouponMutation,
+    useDeleteCouponMutation
 } from '@/redux/features/coupon/couponApi';
 
 export default function AdminCouponsPage() {
@@ -68,7 +68,7 @@ export default function AdminCouponsPage() {
                                 </tr>
                             ) : (
                                 coupons.map((c: any) => (
-                                    <tr key={c._id} className="hover:bg-white/[0.02] transition-colors">
+                                    <tr key={c._id} className="hover:bg-white/2 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="font-bold text-white flex items-center gap-2">
                                                 <Ticket className="w-4 h-4 text-[#1447E6]" />
@@ -115,15 +115,15 @@ export default function AdminCouponsPage() {
             </div>
 
             {isModalOpen && (
-                <CouponModal 
-                    isOpen={isModalOpen} 
-                    onClose={() => setIsModalOpen(false)} 
-                    editingCoupon={editingCoupon} 
+                <CouponModal
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    editingCoupon={editingCoupon}
                 />
             )}
 
             {deletingCoupon && (
-                <DeleteCouponModal 
+                <DeleteCouponModal
                     coupon={deletingCoupon}
                     onClose={() => setDeletingCoupon(null)}
                 />
@@ -147,7 +147,7 @@ function DeleteCouponModal({ coupon, onClose }: { coupon: any, onClose: () => vo
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
             <div className="bg-[#171717] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
                 <div className="p-8 text-center">
                     <div className="w-20 h-20 bg-red-500/10 border border-red-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -157,7 +157,7 @@ function DeleteCouponModal({ coupon, onClose }: { coupon: any, onClose: () => vo
                     <p className="text-zinc-400 mb-8 leading-relaxed">
                         Are you sure you want to delete <strong className="text-white font-semibold">"{coupon.couponId}"</strong>? This will permanently remove it from your database and Stripe.
                     </p>
-                    
+
                     <div className="flex items-center gap-4">
                         <button
                             onClick={onClose}
@@ -252,7 +252,7 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
     };
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="bg-[#171717] border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
                 <div className="flex justify-between items-center p-6 border-b border-white/5">
                     <h3 className="text-xl font-bold text-white">{isEditing ? 'Edit Coupon' : 'Create New Coupon'}</h3>
@@ -264,11 +264,11 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
                     <div className="space-y-4">
                         <div>
                             <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Coupon ID / Code</label>
-                            <input 
-                                required 
+                            <input
+                                required
                                 name="couponId"
-                                value={formData.couponId} 
-                                onChange={handleChange} 
+                                value={formData.couponId}
+                                onChange={handleChange}
                                 disabled={isEditing}
                                 placeholder="e.g. SUMMER50"
                                 className="w-full bg-[#0A0A0A] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#1447E6] disabled:opacity-50"
@@ -278,10 +278,10 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
 
                         <div>
                             <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Descriptive Name</label>
-                            <input 
+                            <input
                                 name="name"
-                                value={formData.name} 
-                                onChange={handleChange} 
+                                value={formData.name}
+                                onChange={handleChange}
                                 placeholder="e.g. 50% Off Summer Sale"
                                 className="w-full bg-[#0A0A0A] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#1447E6]"
                             />
@@ -291,7 +291,7 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
                             <div className="grid grid-cols-2 gap-4 border-t border-white/5 pt-4 mt-2">
                                 <div>
                                     <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Discount Type</label>
-                                    <select 
+                                    <select
                                         name="discountType"
                                         value={formData.discountType}
                                         onChange={handleChange}
@@ -305,12 +305,12 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
                                     <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">
                                         Value {formData.discountType === 'percent' ? '(%)' : '(CHF)'}
                                     </label>
-                                    <input 
+                                    <input
                                         type="number"
-                                        required 
+                                        required
                                         name="discountValue"
-                                        value={formData.discountValue} 
-                                        onChange={handleChange} 
+                                        value={formData.discountValue}
+                                        onChange={handleChange}
                                         placeholder={formData.discountType === 'percent' ? 'e.g. 15' : 'e.g. 5.00'}
                                         min="0"
                                         step={formData.discountType === 'percent' ? '1' : '0.01'}
@@ -321,7 +321,7 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
 
                                 <div>
                                     <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Duration</label>
-                                    <select 
+                                    <select
                                         name="duration"
                                         value={formData.duration}
                                         onChange={handleChange}
@@ -336,12 +336,12 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
                                 {formData.duration === 'repeating' && (
                                     <div>
                                         <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Duration in Months</label>
-                                        <input 
+                                        <input
                                             type="number"
-                                            required 
+                                            required
                                             name="durationInMonths"
-                                            value={formData.durationInMonths} 
-                                            onChange={handleChange} 
+                                            value={formData.durationInMonths}
+                                            onChange={handleChange}
                                             placeholder="e.g. 3"
                                             min="1"
                                             className="w-full bg-[#0A0A0A] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#1447E6]"
@@ -351,11 +351,11 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
 
                                 <div>
                                     <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider mb-2">Max Redemptions</label>
-                                    <input 
+                                    <input
                                         type="number"
                                         name="maxRedemptions"
-                                        value={formData.maxRedemptions} 
-                                        onChange={handleChange} 
+                                        value={formData.maxRedemptions}
+                                        onChange={handleChange}
                                         placeholder="Optional limit"
                                         min="1"
                                         className="w-full bg-[#0A0A0A] border border-white/10 rounded-lg px-4 py-3 text-sm text-white focus:outline-none focus:border-[#1447E6]"
@@ -366,8 +366,8 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
 
                         <div className="border-t border-white/5 pt-4 mt-2">
                             <label className="flex items-center gap-3 cursor-pointer group">
-                                <input 
-                                    type="checkbox" 
+                                <input
+                                    type="checkbox"
                                     name="isDefault"
                                     checked={formData.isDefault}
                                     onChange={handleChange}
@@ -382,15 +382,15 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
                     </div>
 
                     <div className="flex justify-end gap-3 border-t border-white/5 pt-6 mt-6">
-                        <button 
-                            type="button" 
-                            onClick={onClose} 
+                        <button
+                            type="button"
+                            onClick={onClose}
                             className="px-5 py-2.5 rounded-xl text-sm font-bold text-zinc-400 hover:text-white hover:bg-white/5 transition-all"
                         >
                             Cancel
                         </button>
-                        <button 
-                            type="submit" 
+                        <button
+                            type="submit"
                             disabled={isCreating || isUpdating}
                             className="bg-[#1447E6] text-white px-8 py-2.5 rounded-xl text-sm font-bold hover:bg-[#0c2f99] transition-all flex items-center gap-2 disabled:opacity-50"
                         >

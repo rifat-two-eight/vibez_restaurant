@@ -33,8 +33,8 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
         <div className="space-y-8 pb-12">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <button 
-                    onClick={() => router.back()} 
+                <button
+                    onClick={() => router.back()}
                     className="p-2 hover:bg-white/5 rounded-xl transition-all"
                 >
                     <ArrowLeft className="w-5 h-5 text-zinc-400" />
@@ -59,9 +59,8 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                             </div>
                             <div>
                                 <h3 className="text-lg font-bold text-white">{user.name}</h3>
-                                <span className={`inline-flex px-2 py-0.5 mt-1 rounded text-[10px] font-bold uppercase tracking-wider ${
-                                    user.isInfluencer ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-[#1447E6]/10 text-[#1447E6]'
-                                }`}>
+                                <span className={`inline-flex px-2 py-0.5 mt-1 rounded text-[10px] font-bold uppercase tracking-wider ${user.isInfluencer ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-[#1447E6]/10 text-[#1447E6]'
+                                    }`}>
                                     {user.isInfluencer ? 'Influencer' : 'User'}
                                 </span>
                             </div>
@@ -140,11 +139,11 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                     {/* Subscriptions */}
                     <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
                         <div className="p-6 border-b border-white/5">
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><CreditCard className="w-4 h-4 text-purple-500"/> Subscription History</h3>
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><CreditCard className="w-4 h-4 text-purple-500" /> Subscription History</h3>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-white/[0.02]">
+                                <thead className="bg-white/2">
                                     <tr>
                                         <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Plan Name</th>
                                         <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
@@ -155,7 +154,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
                                     {subscriptions?.length > 0 ? subscriptions.map((sub: any, i: number) => (
-                                        <tr key={i} className="hover:bg-white/[0.02]">
+                                        <tr key={i} className="hover:bg-white/2">
                                             <td className="px-6 py-4 text-sm font-bold text-white">{sub.subscriptionPlanId?.name}</td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${sub.status === 'ACTIVE' ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-red-500/10 text-red-500'}`}>{sub.status}</span>
@@ -175,11 +174,11 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                     {/* Referrals */}
                     <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
                         <div className="p-6 border-b border-white/5 flex gap-4">
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><UserCheck className="w-4 h-4 text-[#10B981]"/> Recent Referrals</h3>
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><UserCheck className="w-4 h-4 text-[#10B981]" /> Recent Referrals</h3>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-white/[0.02]">
+                                <thead className="bg-white/2">
                                     <tr>
                                         <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">User</th>
                                         <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Plan</th>
@@ -189,7 +188,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
                                     {referrals?.length > 0 ? referrals.map((ref: any, i: number) => (
-                                        <tr key={i} className="hover:bg-white/[0.02]">
+                                        <tr key={i} className="hover:bg-white/2">
                                             <td className="px-6 py-4 text-sm font-bold text-white">{ref.name}</td>
                                             <td className="px-6 py-4 text-sm text-zinc-300">{ref.planName || 'N/A'}</td>
                                             <td className="px-6 py-4 text-sm text-zinc-300">{ref.status || 'Active'}</td>
@@ -206,11 +205,11 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                     {/* Commissions */}
                     <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
                         <div className="p-6 border-b border-white/5 flex gap-4">
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><ArrowDownRight className="w-4 h-4 text-[#10B981]"/> Commission History</h3>
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><ArrowDownRight className="w-4 h-4 text-[#10B981]" /> Commission History</h3>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-white/[0.02]">
+                                <thead className="bg-white/2">
                                     <tr>
                                         <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
                                         <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Source User</th>
@@ -220,7 +219,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
                                     {commissions?.length > 0 ? commissions.map((c: any, i: number) => (
-                                        <tr key={i} className="hover:bg-white/[0.02]">
+                                        <tr key={i} className="hover:bg-white/2">
                                             <td className="px-6 py-4 text-sm font-bold text-[#10B981]">CHF {c.amount}</td>
                                             <td className="px-6 py-4 text-sm text-zinc-300">{c.sourceUser?.name || 'Unknown'}</td>
                                             <td className="px-6 py-4">
@@ -239,11 +238,11 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                     {/* Withdrawals */}
                     <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
                         <div className="p-6 border-b border-white/5">
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><ArrowUpRight className="w-4 h-4 text-orange-500"/> Withdrawal History</h3>
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><ArrowUpRight className="w-4 h-4 text-orange-500" /> Withdrawal History</h3>
                         </div>
                         <div className="overflow-x-auto">
                             <table className="w-full text-left">
-                                <thead className="bg-white/[0.02]">
+                                <thead className="bg-white/2">
                                     <tr>
                                         <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
                                         <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
@@ -253,7 +252,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
                                     {withdrawals?.length > 0 ? withdrawals.map((w: any, i: number) => (
-                                        <tr key={i} className="hover:bg-white/[0.02]">
+                                        <tr key={i} className="hover:bg-white/2">
                                             <td className="px-6 py-4 text-sm font-bold text-white">CHF {w.amount}</td>
                                             <td className="px-6 py-4">
                                                 <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${w.status === 'APPROVED' ? 'bg-[#10B981]/10 text-[#10B981]' : w.status === 'PENDING' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>{w.status}</span>

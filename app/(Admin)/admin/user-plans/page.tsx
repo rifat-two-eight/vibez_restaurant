@@ -244,7 +244,7 @@ export default function SubscriptionManagement() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className="bg-white/[0.01]">
+                            <tr className="bg-white/1">
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">User</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Plan</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
