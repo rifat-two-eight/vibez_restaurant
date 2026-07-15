@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { Tag, TrendingUp, Clock, Eye, ShieldAlert, Search, Filter, MoreHorizontal, ArrowUpRight, CheckCircle, XCircle, Loader2, Activity, Award } from "lucide-react";
+import { Tag, TrendingUp, Clock, Eye, ShieldAlert, Search, Filter, MoreHorizontal, ArrowUpRight, CheckCircle, XCircle, Loader2, Activity, Award, Edit3 } from "lucide-react";
 import { useGetAllAdminDealsQuery, useGetAdminDealsStatsQuery, useToggleDealStatusMutation, useGetAdminDealByIdQuery } from "@/redux/features/deals/dealsApi";
+import EditDealModal from "./EditDealModal";
 
 const formatDaysString = (days: any) => {
     if (!days) return "";
@@ -15,6 +16,7 @@ export default function DealsManagement() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("ALL");
     const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
+    const [editingDeal, setEditingDeal] = useState<any | null>(null);
 
     const isActive = statusFilter === "ALL" ? undefined : statusFilter === "ACTIVE";
     const { data, isLoading, isFetching } = useGetAllAdminDealsQuery({ page, limit: 10, search, isActive });
@@ -168,7 +170,14 @@ export default function DealsManagement() {
                                                 >
                                                     {deal.isActive ? <XCircle className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                                                 </button>
-                                                <button onClick={() => setSelectedDealId(deal._id)} className="p-2 hover:bg-white/5 rounded-lg hover:text-white transition-all" title="View Details">
+                                                <button
+                                                    onClick={() => setEditingDeal(deal)}
+                                                    className="p-2 hover:bg-white/5 rounded-lg hover:text-[#10B981] transition-all text-zinc-400"
+                                                    title="Edit Deal"
+                                                >
+                                                    <Edit3 className="w-4 h-4" />
+                                                </button>
+                                                <button onClick={() => setSelectedDealId(deal._id)} className="p-2 hover:bg-white/5 rounded-lg hover:text-white transition-all text-zinc-400" title="View Details">
                                                     <Eye className="w-4 h-4" />
                                                 </button>
                                             </div>
@@ -222,6 +231,13 @@ export default function DealsManagement() {
             </div> */}
             {/* Modal */}
             {selectedDealId && <DealDetailsModal dealId={selectedDealId} onClose={() => setSelectedDealId(null)} />}
+            {editingDeal && (
+                <EditDealModal
+                    deal={editingDeal}
+                    onClose={() => setEditingDeal(null)}
+                    onSuccess={() => setEditingDeal(null)}
+                />
+            )}
         </div>
     );
 }
