@@ -23,7 +23,8 @@ import {
     CalendarCheck,
     ArrowUpRight
 } from 'lucide-react';
-import { useGetAdminDashboardStatsQuery, useGetRevenueBreakdownQuery, useGetAllUserSubscriptionsQuery } from '../../../redux/features/dashboard/dashboardApi';
+import { useGetAdminDashboardStatsQuery, useGetRevenueBreakdownQuery } from '../../../redux/features/dashboard/dashboardApi';
+import { useGetAllUserSubscriptionsQuery } from '@/redux/features/admin/subscriptionApi';
 import { useGetWeeklyBookingsQuery } from '../../../redux/features/reservations/reservationApi';
 
 const revenueData = [
@@ -57,7 +58,7 @@ export default function AdminOverview() {
     const { data: statsData, isLoading: isStatsLoading } = useGetAdminDashboardStatsQuery(undefined);
     const { data: weeklyBookingsData, isLoading: isWeeklyBookingsLoading } = useGetWeeklyBookingsQuery(undefined);
     const { data: revenueBreakdownData, isLoading: isRevenueBreakdownLoading } = useGetRevenueBreakdownQuery(undefined);
-    const { data: allSubscriptionsData, isLoading: isSubscriptionsLoading } = useGetAllUserSubscriptionsQuery(undefined);
+    const { data: allSubscriptionsData, isLoading: isSubscriptionsLoading } = useGetAllUserSubscriptionsQuery();
 
     if (isStatsLoading || isWeeklyBookingsLoading || isRevenueBreakdownLoading || isSubscriptionsLoading) {
         return (

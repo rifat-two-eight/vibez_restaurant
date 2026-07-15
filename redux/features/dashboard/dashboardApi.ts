@@ -10,10 +10,6 @@ export const dashboardApi = baseApi.injectEndpoints({
             query: () => '/user-subscriptions/admin/revenue-breakdown',
             providesTags: ['Dashboard'],
         }),
-        getAllUserSubscriptions: builder.query({
-            query: () => '/user-subscriptions/admin/all',
-            providesTags: ['Dashboard'],
-        }),
         getAffiliateDashboardStats: builder.query({
             query: () => '/dashboard/affiliate-stats',
             providesTags: ['Dashboard'],
@@ -115,7 +111,6 @@ export const dashboardApi = baseApi.injectEndpoints({
 export const { 
     useGetAdminDashboardStatsQuery, 
     useGetRevenueBreakdownQuery, 
-    useGetAllUserSubscriptionsQuery,
     useGetAffiliateDashboardStatsQuery,
     useGetMonthlyCommissionGraphQuery,
     useGetAllWithdrawalsQuery,

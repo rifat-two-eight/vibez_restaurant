@@ -9,8 +9,10 @@ import {
     Filter,
     ChevronLeft,
     ChevronRight,
-    User
+    User,
+    Edit3
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import {
     useGetAdminRestaurantStatsQuery,
     useGetPendingRestaurantsQuery,
@@ -23,6 +25,7 @@ import { getImageUrl } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export default function RestaurantManagement() {
+    const router = useRouter();
     const { data: statsRes } = useGetAdminRestaurantStatsQuery();
     const stats = statsRes?.data;
 
@@ -48,6 +51,10 @@ export default function RestaurantManagement() {
     });
     const allRestaurants = allRes?.data || [];
     const meta = allRes?.meta;
+
+    const totalPages = (meta?.totalPages ?? Math.ceil((meta?.total || 0) / (meta?.limit || 10))) || 1;
+    const hasPrev = meta?.hasPrev ?? (meta?.page || 1) > 1;
+    const hasNext = meta?.hasNext ?? (meta?.page || 1) < totalPages;
 
     const [approveRestaurant] = useApproveRestaurantMutation();
     const [rejectRestaurant] = useRejectRestaurantMutation();
@@ -242,16 +249,17 @@ export default function RestaurantManagement() {
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-center">Active Deals</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-center">Total Bookings</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-right">Redemption Rate</th>
+                                <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {isLoadingAll ? (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-8 text-center text-sm text-zinc-500">Loading restaurants...</td>
+                                    <td colSpan={6} className="px-8 py-8 text-center text-sm text-zinc-500">Loading restaurants...</td>
                                 </tr>
                             ) : allRestaurants.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-8 text-center text-sm text-zinc-500">No restaurants found.</td>
+                                    <td colSpan={6} className="px-8 py-8 text-center text-sm text-zinc-500">No restaurants found.</td>
                                 </tr>
                             ) : (
                                 allRestaurants.map((res: any) => (
@@ -284,6 +292,17 @@ export default function RestaurantManagement() {
                                                 {res.redemptionRate || '0%'}
                                             </span>
                                         </td>
+                                        <td className="px-8 py-5 text-right">
+                                            <div className="flex justify-end items-center gap-3 text-zinc-500">
+                                                <button
+                                                    onClick={() => router.push(`/admin/restaurants/${res._id}/edit`)}
+                                                    className="p-2 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-[#10B981] transition-all"
+                                                    title="Edit Restaurant"
+                                                >
+                                                    <Edit3 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
                                     </tr>
                                 ))
                             )}
@@ -292,22 +311,22 @@ export default function RestaurantManagement() {
                 </div>
 
                 {/* Pagination */}
-                {meta && meta.totalPages > 1 && (
+                {meta && meta.total > 0 && (
                     <div className="p-4 border-t border-white/5 flex items-center justify-between">
                         <p className="text-xs text-zinc-500 font-medium px-4">
-                            Showing page {meta.page} of {meta.totalPages} ({meta.total} total)
+                            Showing page {meta.page} of {totalPages} ({meta.total} total)
                         </p>
                         <div className="flex gap-2 pr-4">
                             <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={!meta.hasPrev}
+                                disabled={!hasPrev}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
                             <button
-                                onClick={() => setCurrentPage(p => Math.min(meta.totalPages, p + 1))}
-                                disabled={!meta.hasNext}
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={!hasNext}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronRight className="w-4 h-4" />

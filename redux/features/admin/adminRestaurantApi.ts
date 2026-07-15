@@ -46,13 +46,30 @@ export const adminRestaurantApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ["AdminRestaurant"],
         }),
+        getRestaurantById: builder.query<any, string>({
+            query: (id) => ({
+                url: `/restaurants/${id}`,
+                method: "GET",
+            }),
+            providesTags: ["AdminRestaurant"],
+        }),
+        updateRestaurantByAdmin: builder.mutation<any, { id: string; data: FormData | any }>({
+            query: ({ id, data }) => ({
+                url: `/restaurants/admin/${id}`,
+                method: "PATCH",
+                body: data,
+            }),
+            invalidatesTags: ["AdminRestaurant"],
+        }),
     }),
 });
-
-export const {
-    useGetAdminRestaurantStatsQuery,
-    useGetPendingRestaurantsQuery,
-    useGetAllRestaurantsQuery,
-    useApproveRestaurantMutation,
-    useRejectRestaurantMutation,
-} = adminRestaurantApi;
+ 
+ export const {
+     useGetAdminRestaurantStatsQuery,
+     useGetPendingRestaurantsQuery,
+     useGetAllRestaurantsQuery,
+     useApproveRestaurantMutation,
+     useRejectRestaurantMutation,
+     useGetRestaurantByIdQuery,
+     useUpdateRestaurantByAdminMutation,
+ } = adminRestaurantApi;

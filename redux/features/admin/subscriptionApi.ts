@@ -16,8 +16,8 @@ export const subscriptionApi = baseApi.injectEndpoints({
             }),
             providesTags: ["SubscriptionPlan"],
         }),
-        getAllUserSubscriptions: builder.query<any, { page?: number; limit?: number }>({
-            query: ({ page = 1, limit = 10 }) => ({
+        getAllUserSubscriptions: builder.query<any, { page?: number; limit?: number } | void>({
+            query: ({ page = 1, limit = 10 } = {}) => ({
                 url: `/user-subscriptions/admin/all?page=${page}&limit=${limit}`,
                 method: "GET",
             }),
