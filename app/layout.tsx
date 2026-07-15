@@ -24,8 +24,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={cn("h-full", "antialiased", plusJakartaSans.variable, "font-sans", geist.variable)}>
-      <body className={`${plusJakartaSans.className} min-h-full flex flex-col`}>
+    <html lang="en" translate="no" suppressHydrationWarning className={cn("h-full", "antialiased", plusJakartaSans.variable, "font-sans", geist.variable)}>
+      <body suppressHydrationWarning className={`${plusJakartaSans.className} min-h-full flex flex-col`}>
         <ReduxProvider>
           <main className="flex-1 flex flex-col">
             {children}
