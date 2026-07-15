@@ -293,10 +293,10 @@ export default function RestaurantManagement() {
                                             </span>
                                         </td>
                                         <td className="px-8 py-5 text-right">
-                                            <div className="flex justify-end items-center">
+                                            <div className="flex justify-end items-center gap-3 text-zinc-500">
                                                 <button
                                                     onClick={() => router.push(`/admin/restaurants/${res._id}/edit`)}
-                                                    className="p-2 hover:bg-white/5 rounded-lg hover:text-[#10B981] transition-all"
+                                                    className="p-2 hover:bg-white/5 rounded-lg text-zinc-400 hover:text-[#10B981] transition-all"
                                                     title="Edit Restaurant"
                                                 >
                                                     <Edit3 className="w-4 h-4" />
