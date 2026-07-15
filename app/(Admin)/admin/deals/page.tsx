@@ -82,9 +82,25 @@ export default function DealsManagement() {
                     <div className="flex gap-4">
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
-                            <input type="text" placeholder="Search deals..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-white/5 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-[12px] text-white focus:outline-none focus:border-[#10B981]/50 w-64" />
+                            <input
+                                type="text"
+                                placeholder="Search deals..."
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                    setPage(1);
+                                }}
+                                className="bg-white/5 border border-white/5 rounded-xl py-2 pl-10 pr-4 text-[12px] text-white focus:outline-none focus:border-[#10B981]/50 w-64"
+                            />
                         </div>
-                        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-[12px] text-white focus:outline-none focus:border-[#10B981]/50">
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => {
+                                setStatusFilter(e.target.value);
+                                setPage(1);
+                            }}
+                            className="bg-white/5 border border-white/5 rounded-xl px-4 py-2 text-[12px] text-white focus:outline-none focus:border-[#10B981]/50"
+                        >
                             <option value="ALL" className="bg-[#171717] text-white">
                                 All Statuses
                             </option>
@@ -159,6 +175,34 @@ export default function DealsManagement() {
                         </tbody>
                     </table>
                 </div>
+
+                {meta && (
+                    <div className="p-8 border-t border-white/5 flex items-center justify-between">
+                        <p className="text-xs text-zinc-500">
+                            Showing {liveDeals.length} of {meta.total || 0} deals
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                                disabled={!meta.hasPrev}
+                                className={`px-4 py-2 rounded-xl border text-[11px] font-bold transition-all ${
+                                    meta.hasPrev ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"
+                                }`}
+                            >
+                                Previous
+                            </button>
+                            <button
+                                onClick={() => setPage((p) => p + 1)}
+                                disabled={!meta.hasNext}
+                                className={`px-4 py-2 rounded-xl border text-[11px] font-bold transition-all ${
+                                    meta.hasNext ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"
+                                }`}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Peak Booking Times */}
