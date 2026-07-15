@@ -9,8 +9,10 @@ import {
     Filter,
     ChevronLeft,
     ChevronRight,
-    User
+    User,
+    Edit3
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import {
     useGetAdminRestaurantStatsQuery,
     useGetPendingRestaurantsQuery,
@@ -23,6 +25,7 @@ import { getImageUrl } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export default function RestaurantManagement() {
+    const router = useRouter();
     const { data: statsRes } = useGetAdminRestaurantStatsQuery();
     const stats = statsRes?.data;
 
@@ -246,16 +249,17 @@ export default function RestaurantManagement() {
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-center">Active Deals</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-center">Total Bookings</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-right">Redemption Rate</th>
+                                <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-right">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {isLoadingAll ? (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-8 text-center text-sm text-zinc-500">Loading restaurants...</td>
+                                    <td colSpan={6} className="px-8 py-8 text-center text-sm text-zinc-500">Loading restaurants...</td>
                                 </tr>
                             ) : allRestaurants.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-8 text-center text-sm text-zinc-500">No restaurants found.</td>
+                                    <td colSpan={6} className="px-8 py-8 text-center text-sm text-zinc-500">No restaurants found.</td>
                                 </tr>
                             ) : (
                                 allRestaurants.map((res: any) => (
@@ -287,6 +291,17 @@ export default function RestaurantManagement() {
                                             <span className="text-sm font-bold text-[#10B981]">
                                                 {res.redemptionRate || '0%'}
                                             </span>
+                                        </td>
+                                        <td className="px-8 py-5 text-right">
+                                            <div className="flex justify-end items-center">
+                                                <button
+                                                    onClick={() => router.push(`/admin/restaurants/${res._id}/edit`)}
+                                                    className="p-2 hover:bg-white/5 rounded-lg hover:text-[#10B981] transition-all"
+                                                    title="Edit Restaurant"
+                                                >
+                                                    <Edit3 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
