@@ -49,6 +49,10 @@ export default function RestaurantManagement() {
     const allRestaurants = allRes?.data || [];
     const meta = allRes?.meta;
 
+    const totalPages = (meta?.totalPages ?? Math.ceil((meta?.total || 0) / (meta?.limit || 10))) || 1;
+    const hasPrev = meta?.hasPrev ?? (meta?.page || 1) > 1;
+    const hasNext = meta?.hasNext ?? (meta?.page || 1) < totalPages;
+
     const [approveRestaurant] = useApproveRestaurantMutation();
     const [rejectRestaurant] = useRejectRestaurantMutation();
 
@@ -292,22 +296,22 @@ export default function RestaurantManagement() {
                 </div>
 
                 {/* Pagination */}
-                {meta && meta.totalPages > 1 && (
+                {meta && meta.total > 0 && (
                     <div className="p-4 border-t border-white/5 flex items-center justify-between">
                         <p className="text-xs text-zinc-500 font-medium px-4">
-                            Showing page {meta.page} of {meta.totalPages} ({meta.total} total)
+                            Showing page {meta.page} of {totalPages} ({meta.total} total)
                         </p>
                         <div className="flex gap-2 pr-4">
                             <button
                                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                disabled={!meta.hasPrev}
+                                disabled={!hasPrev}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
                             <button
-                                onClick={() => setCurrentPage(p => Math.min(meta.totalPages, p + 1))}
-                                disabled={!meta.hasNext}
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={!hasNext}
                                 className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/5 text-zinc-400 hover:bg-white/10 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                             >
                                 <ChevronRight className="w-4 h-4" />

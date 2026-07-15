@@ -25,6 +25,10 @@ export default function DealsManagement() {
     const meta = data?.meta;
     const stats = statsRes?.data;
 
+    const totalPages = (meta?.totalPages ?? Math.ceil((meta?.total || 0) / (meta?.limit || 10))) || 1;
+    const hasPrev = meta?.hasPrev ?? (meta?.page || 1) > 1;
+    const hasNext = meta?.hasNext ?? (meta?.page || 1) < totalPages;
+
     const handleToggleStatus = async (id: string) => {
         try {
             await toggleDealStatus(id).unwrap();
@@ -179,24 +183,20 @@ export default function DealsManagement() {
                 {meta && (
                     <div className="p-8 border-t border-white/5 flex items-center justify-between">
                         <p className="text-xs text-zinc-500">
-                            Showing {liveDeals.length} of {meta.total || 0} deals
+                            Showing {liveDeals.length} of {meta.total || 0} deals (Page {meta.page} of {totalPages})
                         </p>
                         <div className="flex gap-3">
                             <button
                                 onClick={() => setPage((p) => Math.max(1, p - 1))}
-                                disabled={!meta.hasPrev}
-                                className={`px-4 py-2 rounded-xl border text-[11px] font-bold transition-all ${
-                                    meta.hasPrev ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"
-                                }`}
+                                disabled={!hasPrev}
+                                className={`px-4 py-2 rounded-xl border text-[11px] font-bold transition-all ${hasPrev ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"}`}
                             >
                                 Previous
                             </button>
                             <button
-                                onClick={() => setPage((p) => p + 1)}
-                                disabled={!meta.hasNext}
-                                className={`px-4 py-2 rounded-xl border text-[11px] font-bold transition-all ${
-                                    meta.hasNext ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"
-                                }`}
+                                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                                disabled={!hasNext}
+                                className={`px-4 py-2 rounded-xl border text-[11px] font-bold transition-all ${hasNext ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"}`}
                             >
                                 Next
                             </button>
