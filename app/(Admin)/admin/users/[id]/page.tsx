@@ -4,6 +4,7 @@ import React, { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, Phone, MapPin, Calendar, CreditCard, ArrowUpRight, ArrowDownRight, UserCheck } from 'lucide-react';
 import { useGetUserActivityQuery } from '../../../../../redux/features/dashboard/dashboardApi';
+import { getImageUrl } from '@/lib/utils';
 
 export default function UserActivityPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -52,7 +53,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                         <div className="flex items-center gap-4 border-b border-white/5 pb-6 mb-6">
                             <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden">
                                 {user.profileImage ? (
-                                    <img src={process.env.NEXT_PUBLIC_IMAGE_URL + user.profileImage} alt={user.name} className="w-full h-full object-cover" />
+                                    <img src={getImageUrl(user.profileImage)} alt={user.name} className="w-full h-full object-cover" />
                                 ) : (
                                     <span className="text-2xl font-bold text-zinc-500">{user.name?.charAt(0)}</span>
                                 )}
