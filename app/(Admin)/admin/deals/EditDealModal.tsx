@@ -5,6 +5,43 @@ import { X, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { useUpdateDealMutation } from "@/redux/features/deals/dealsApi";
 
+export enum DealType {
+    TWO_FOR_ONE = "TWO_FOR_ONE",
+    FREE_ITEM = "FREE_ITEM",
+    PERCENT_DISCOUNT = "PERCENT_DISCOUNT",
+    FIXED_DISCOUNT = "FIXED_DISCOUNT",
+}
+
+export enum TwoForOneCategory {
+    MAIN_COURSE = "MAIN_COURSE",
+    DRINKS = "DRINKS",
+    DESSERTS = "DESSERTS",
+    STARTERS = "STARTERS",
+}
+
+export enum FreeItemBuy {
+    MAIN_COURSE = "MAIN_COURSE",
+    MENU = "MENU",
+    MAIN_COURSE_PLUS_DRINK = "MAIN_COURSE_PLUS_DRINK",
+}
+
+export enum FreeItemGet {
+    DRINK = "DRINK",
+    DESSERT = "DESSERT",
+    STARTER = "STARTER",
+}
+
+export enum PercentDiscountAppliesTo {
+    ENTIRE_ORDER = "ENTIRE_ORDER",
+    CATEGORY = "CATEGORY",
+}
+
+export enum PercentDiscountCategory {
+    MAIN_COURSE = "MAIN_COURSE",
+    MENU = "MENU",
+    DRINKS = "DRINKS",
+}
+
 export enum DayOfWeek {
     MONDAY = "MONDAY",
     TUESDAY = "TUESDAY",
@@ -28,13 +65,57 @@ interface EditDealModalProps {
 }
 
 export default function EditDealModal({ deal, onClose, onSuccess }: EditDealModalProps) {
-    const [title, setTitle] = useState(deal.title || "");
-    const [maxClaimsPerDay, setMaxClaimsPerDay] = useState<number>(deal.maxClaimsPerDay || 0);
+    const [dealType, setDealType] = useState<DealType>(deal.dealType || DealType.TWO_FOR_ONE);
+    
+    // Type Parameters States
+    const [twoForOneAppliesTo, setTwoForOneAppliesTo] = useState<TwoForOneCategory>(
+        deal.twoForOne?.appliesTo || TwoForOneCategory.MAIN_COURSE
+    );
+    const [freeItemBuy, setFreeItemBuy] = useState<FreeItemBuy>(
+        deal.freeItem?.buy || FreeItemBuy.MAIN_COURSE
+    );
+    const [freeItemGet, setFreeItemGet] = useState<FreeItemGet>(
+        deal.freeItem?.get || FreeItemGet.DRINK
+    );
+    const [percentDiscountValue, setPercentDiscountValue] = useState<10 | 15 | 20 | 30>(
+        deal.percentDiscount?.percentage || 10
+    );
+    const [percentDiscountAppliesTo, setPercentDiscountAppliesTo] = useState<PercentDiscountAppliesTo>(
+        deal.percentDiscount?.appliesTo || PercentDiscountAppliesTo.ENTIRE_ORDER
+    );
+    const [percentDiscountCategory, setPercentDiscountCategory] = useState<PercentDiscountCategory>(
+        deal.percentDiscount?.category || PercentDiscountCategory.MAIN_COURSE
+    );
+    const [fixedDiscountAmount, setFixedDiscountAmount] = useState<number>(
+        deal.fixedDiscount?.amount || 5
+    );
+
+    // Schedule & Claim States
     const initialDays = Array.isArray(deal.day) ? deal.day : deal.day ? [deal.day] : [];
     const [selectedDays, setSelectedDays] = useState<DayOfWeek[]>(initialDays);
     const [mealTime, setMealTime] = useState<MealTimeType>(deal.mealTime || MealTimeType.DINNER);
-    
+    const [maxClaimsPerDay, setMaxClaimsPerDay] = useState<number>(deal.maxClaimsPerDay || 50);
+
     const [updateDeal, { isLoading }] = useUpdateDealMutation();
+
+    const generateTitle = () => {
+        switch (dealType) {
+            case DealType.TWO_FOR_ONE:
+                return `2 for 1 ${twoForOneAppliesTo.replace("_", " ")}`;
+            case DealType.FREE_ITEM:
+                return `Buy ${freeItemBuy.replace(/_/g, " ")}, Get Free ${freeItemGet.replace(/_/g, " ")}`;
+            case DealType.PERCENT_DISCOUNT:
+                return `${percentDiscountValue}% Off ${
+                    percentDiscountAppliesTo === PercentDiscountAppliesTo.CATEGORY
+                        ? percentDiscountCategory.replace("_", " ")
+                        : "Entire Order"
+                }`;
+            case DealType.FIXED_DISCOUNT:
+                return `CHF${fixedDiscountAmount} Off`;
+            default:
+                return "New Deal";
+        }
+    };
 
     const formatEnumLabel = (str: string) => {
         return str
@@ -45,19 +126,48 @@ export default function EditDealModal({ deal, onClose, onSuccess }: EditDealModa
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        
-        if (!title.trim()) return toast.error("Deal title is required");
+
         if (selectedDays.length === 0) return toast.error("Please select at least one day");
         if (maxClaimsPerDay <= 0) return toast.error("Max claims per day must be at least 1");
 
+        const payload: any = {
+            id: deal._id,
+            dealType,
+            title: generateTitle(),
+            description: deal.description || `Exclusive offer generated from dashboard.`,
+            day: selectedDays,
+            mealTime,
+            maxClaimsPerDay,
+        };
+
+        if (dealType === DealType.TWO_FOR_ONE) {
+            payload.twoForOne = { appliesTo: twoForOneAppliesTo };
+            payload.freeItem = null;
+            payload.percentDiscount = null;
+            payload.fixedDiscount = null;
+        } else if (dealType === DealType.FREE_ITEM) {
+            payload.freeItem = { buy: freeItemBuy, get: freeItemGet };
+            payload.twoForOne = null;
+            payload.percentDiscount = null;
+            payload.fixedDiscount = null;
+        } else if (dealType === DealType.PERCENT_DISCOUNT) {
+            payload.percentDiscount = {
+                percentage: percentDiscountValue,
+                appliesTo: percentDiscountAppliesTo,
+                category: percentDiscountAppliesTo === PercentDiscountAppliesTo.CATEGORY ? percentDiscountCategory : undefined,
+            };
+            payload.twoForOne = null;
+            payload.freeItem = null;
+            payload.fixedDiscount = null;
+        } else if (dealType === DealType.FIXED_DISCOUNT) {
+            payload.fixedDiscount = { amount: fixedDiscountAmount };
+            payload.twoForOne = null;
+            payload.freeItem = null;
+            payload.percentDiscount = null;
+        }
+
         try {
-            await updateDeal({
-                id: deal._id,
-                title,
-                maxClaimsPerDay,
-                day: selectedDays,
-                mealTime,
-            }).unwrap();
+            await updateDeal(payload).unwrap();
             toast.success("Deal updated successfully!");
             onSuccess();
         } catch (error: any) {
@@ -68,37 +178,211 @@ export default function EditDealModal({ deal, onClose, onSuccess }: EditDealModa
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-[#171717] border border-white/5 rounded-2xl w-full max-w-md shadow-2xl flex flex-col overflow-hidden">
+            <div className="bg-[#171717] border border-white/5 rounded-2xl w-full max-w-lg shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-white/5">
+                <div className="flex items-center justify-between p-6 border-b border-white/5 bg-white/1">
                     <div>
-                        <h2 className="text-lg font-bold text-white">Edit Deal</h2>
-                        <p className="text-xs text-zinc-500 mt-0.5">Update title, claim days, meal slot and limit.</p>
+                        <h2 className="text-lg font-bold text-white">Edit Deal Settings</h2>
+                        <p className="text-xs text-zinc-500 mt-0.5">Modify deal mechanics, claimable schedule, and limits.</p>
                     </div>
-                    <button 
-                        onClick={onClose} 
+                    <button
+                        onClick={onClose}
                         className="p-2 rounded-xl hover:bg-white/5 text-zinc-400 hover:text-white transition-all border border-transparent hover:border-white/5"
                     >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                {/* Form */}
-                <div className="p-6">
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Title */}
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Deal Title</label>
-                            <input
-                                type="text"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                required
-                                className="w-full bg-white/3 border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#10B981]/50 transition-all placeholder-zinc-600"
-                                placeholder="Enter deal title"
-                            />
-                        </div>
+                {/* Body */}
+                <div className="p-6 overflow-y-auto space-y-6">
+                    {/* Live Preview Card */}
+                    <div className="p-4 bg-[#10B981]/5 border border-[#10B981]/25 rounded-xl">
+                        <p className="text-xs font-bold text-[#10B981] uppercase tracking-wider">Live Deal Title Preview</p>
+                        <p className="text-lg font-black text-white mt-1.5">{generateTitle()}</p>
+                    </div>
 
+                    {/* Deal Type Selection */}
+                    <div className="space-y-2">
+                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Deal Type</label>
+                        <div className="grid grid-cols-2 gap-2">
+                            {[
+                                { type: DealType.TWO_FOR_ONE, label: "2 for 1 Deal" },
+                                { type: DealType.FREE_ITEM, label: "Free Item Deal" },
+                                { type: DealType.PERCENT_DISCOUNT, label: "Percentage %" },
+                                { type: DealType.FIXED_DISCOUNT, label: "Fixed Discount" },
+                            ].map((opt) => (
+                                <button
+                                    key={opt.type}
+                                    type="button"
+                                    onClick={() => setDealType(opt.type)}
+                                    className={`py-3 px-4 rounded-xl text-xs font-bold border transition-all text-center ${
+                                        dealType === opt.type
+                                            ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981] shadow-lg shadow-[#10B981]/5"
+                                            : "bg-white/3 border-white/5 text-zinc-400 hover:text-white hover:bg-white/5"
+                                    }`}
+                                >
+                                    {opt.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Deal Parameters */}
+                    <div className="border-t border-white/5 pt-4 space-y-4">
+                        {dealType === DealType.TWO_FOR_ONE && (
+                            <div className="space-y-3">
+                                <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">What does the deal apply to?</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {Object.values(TwoForOneCategory).map((cat) => (
+                                        <button
+                                            key={cat}
+                                            type="button"
+                                            onClick={() => setTwoForOneAppliesTo(cat)}
+                                            className={`py-3 px-4 rounded-xl text-xs font-bold border transition-all ${
+                                                twoForOneAppliesTo === cat
+                                                    ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981]"
+                                                    : "bg-white/3 border-white/5 text-zinc-400 hover:bg-white/5 hover:text-white"
+                                            }`}
+                                        >
+                                            {formatEnumLabel(cat)}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {dealType === DealType.FREE_ITEM && (
+                            <div className="space-y-4">
+                                <div className="space-y-3">
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">What does the customer buy?</label>
+                                    <div className="grid grid-cols-1 gap-2">
+                                        {Object.values(FreeItemBuy).map((cat) => (
+                                            <button
+                                                key={cat}
+                                                type="button"
+                                                onClick={() => setFreeItemBuy(cat)}
+                                                className={`py-3 px-4 rounded-xl text-xs font-bold border transition-all text-left ${
+                                                    freeItemBuy === cat
+                                                        ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981]"
+                                                        : "bg-white/3 border-white/5 text-zinc-400 hover:bg-white/5 hover:text-white"
+                                                }`}
+                                            >
+                                                {formatEnumLabel(cat)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">What does the customer get free?</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {Object.values(FreeItemGet).map((cat) => (
+                                            <button
+                                                key={cat}
+                                                type="button"
+                                                onClick={() => setFreeItemGet(cat)}
+                                                className={`py-3 px-2 rounded-xl text-xs font-bold border transition-all ${
+                                                    freeItemGet === cat
+                                                        ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981]"
+                                                        : "bg-white/3 border-white/5 text-zinc-400 hover:bg-white/5 hover:text-white"
+                                                }`}
+                                            >
+                                                {formatEnumLabel(cat)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {dealType === DealType.PERCENT_DISCOUNT && (
+                            <div className="space-y-4">
+                                <div className="space-y-3">
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">Discount Percentage</label>
+                                    <div className="grid grid-cols-4 gap-2">
+                                        {[10, 15, 20, 30].map((val) => (
+                                            <button
+                                                key={val}
+                                                type="button"
+                                                onClick={() => setPercentDiscountValue(val as any)}
+                                                className={`py-3 rounded-xl text-xs font-bold border transition-all ${
+                                                    percentDiscountValue === val
+                                                        ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981]"
+                                                        : "bg-white/3 border-white/5 text-zinc-400 hover:bg-white/5 hover:text-white"
+                                                }`}
+                                            >
+                                                {val}%
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="space-y-3">
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">Applies to:</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {Object.values(PercentDiscountAppliesTo).map((cat) => (
+                                            <button
+                                                key={cat}
+                                                type="button"
+                                                onClick={() => setPercentDiscountAppliesTo(cat)}
+                                                className={`py-3 px-4 rounded-xl text-xs font-bold border transition-all ${
+                                                    percentDiscountAppliesTo === cat
+                                                        ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981]"
+                                                        : "bg-white/3 border-white/5 text-zinc-400 hover:bg-white/5 hover:text-white"
+                                                }`}
+                                            >
+                                                {formatEnumLabel(cat)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                                {percentDiscountAppliesTo === PercentDiscountAppliesTo.CATEGORY && (
+                                    <div className="space-y-3">
+                                        <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">Select Category:</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {Object.values(PercentDiscountCategory).map((cat) => (
+                                                <button
+                                                    key={cat}
+                                                    type="button"
+                                                    onClick={() => setPercentDiscountCategory(cat)}
+                                                    className={`py-2 px-3 rounded-xl text-[10px] font-bold border transition-all ${
+                                                        percentDiscountCategory === cat
+                                                            ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981]"
+                                                            : "bg-white/3 border-white/5 text-zinc-400 hover:bg-white/5 hover:text-white"
+                                                    }`}
+                                                >
+                                                    {formatEnumLabel(cat)}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {dealType === DealType.FIXED_DISCOUNT && (
+                            <div className="space-y-3">
+                                <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">Fixed Discount Amount (CHF)</label>
+                                <div className="grid grid-cols-3 gap-2">
+                                    {[5, 10, 15, 20, 25, 30].map((val) => (
+                                        <button
+                                            key={val}
+                                            type="button"
+                                            onClick={() => setFixedDiscountAmount(val)}
+                                            className={`py-3 rounded-xl text-xs font-bold border transition-all ${
+                                                fixedDiscountAmount === val
+                                                    ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981]"
+                                                    : "bg-white/3 border-white/5 text-zinc-400 hover:bg-white/5 hover:text-white"
+                                            }`}
+                                        >
+                                            CHF {val}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Schedule & Limits */}
+                    <div className="border-t border-white/5 pt-4 space-y-4">
                         {/* Days of Week */}
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">Claimable Days</label>
@@ -123,7 +407,7 @@ export default function EditDealModal({ deal, onClose, onSuccess }: EditDealModa
                                             }}
                                             className={`py-2 px-1 rounded-xl text-xs font-bold border transition-all ${
                                                 isSelected
-                                                    ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981] shadow-lg shadow-[#10B981]/5"
+                                                    ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981]"
                                                     : "bg-white/3 border-white/5 text-zinc-400 hover:text-white hover:bg-white/5"
                                             }`}
                                         >
@@ -150,7 +434,7 @@ export default function EditDealModal({ deal, onClose, onSuccess }: EditDealModa
                                     ))}
                                 </select>
                             </div>
-                            
+
                             {/* Max Claims */}
                             <div className="space-y-2">
                                 <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider block">Claims Limit</label>
@@ -164,33 +448,33 @@ export default function EditDealModal({ deal, onClose, onSuccess }: EditDealModa
                                 />
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        {/* Save Button */}
-                        <div className="pt-4 flex gap-3">
-                            <button
-                                type="submit"
-                                disabled={isLoading}
-                                className="flex-1 bg-[#10B981] text-white font-bold py-3.5 rounded-xl hover:bg-[#0da673] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#10B981]/15 disabled:opacity-50 disabled:cursor-not-allowed"
-                            >
-                                {isLoading ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
-                                ) : (
-                                    <>
-                                        <Save className="w-4 h-4" />
-                                        Save Changes
-                                    </>
-                                )}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={onClose}
-                                disabled={isLoading}
-                                className="px-5 py-3.5 rounded-xl bg-white/3 border border-white/5 text-zinc-400 hover:bg-white/5 hover:text-white transition-all font-bold text-sm"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </form>
+                {/* Footer */}
+                <div className="p-6 border-t border-white/5 bg-white/1 flex gap-3">
+                    <button
+                        onClick={handleSubmit}
+                        disabled={isLoading}
+                        className="flex-1 bg-[#10B981] text-white font-bold py-3.5 rounded-xl hover:bg-[#0da673] transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#10B981]/15 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isLoading ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                            <>
+                                <Save className="w-4 h-4" />
+                                Save Changes
+                            </>
+                        )}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={isLoading}
+                        className="px-5 py-3.5 rounded-xl bg-white/3 border border-white/5 text-zinc-400 hover:bg-white/5 hover:text-white transition-all font-bold text-sm"
+                    >
+                        Cancel
+                    </button>
                 </div>
             </div>
         </div>
