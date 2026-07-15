@@ -26,6 +26,36 @@ export default function RootLayout({
   return (
     <html lang="en" translate="no" suppressHydrationWarning className={cn("h-full", "antialiased", plusJakartaSans.variable, "font-sans", geist.variable)}>
       <body suppressHydrationWarning className={`${plusJakartaSans.className} min-h-full flex flex-col`}>
+        <script
+          id="hydration-fix"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                function cleanup() {
+                  const els = document.querySelectorAll('.translate-tooltip-mtz, [class*="translate-tooltip"], .hidden_translate');
+                  els.forEach(el => el.remove());
+                }
+                cleanup();
+                const observer = new MutationObserver((mutations) => {
+                  for (const mutation of mutations) {
+                    for (const node of mutation.addedNodes) {
+                      if (node.nodeType === 1) {
+                        if (
+                          node.classList?.contains('translate-tooltip-mtz') ||
+                          node.className?.includes?.('translate-tooltip') ||
+                          node.className?.includes?.('hidden_translate')
+                        ) {
+                          node.remove();
+                        }
+                      }
+                    }
+                  }
+                });
+                observer.observe(document.documentElement, { childList: true, subtree: true });
+              })();
+            `
+          }}
+        />
         <ReduxProvider>
           <main className="flex-1 flex flex-col">
             {children}
