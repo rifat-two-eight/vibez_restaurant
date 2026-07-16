@@ -50,37 +50,6 @@ export const dashboardApi = baseApi.injectEndpoints({
             }),
             invalidatesTags: ['Settings'],
         }),
-        getUserStats: builder.query({
-            query: () => '/users/stats',
-            providesTags: ['User'],
-        }),
-        getAllUsers: builder.query({
-            query: (params) => ({
-                url: '/users',
-                params
-            }),
-            providesTags: ['User'],
-        }),
-        getUserActivity: builder.query({
-            query: (id) => `/users/${id}/activity`,
-            providesTags: ['User'],
-        }),
-        toggleUserStatus: builder.mutation({
-            query: (id) => ({
-                url: `/users/${id}/toggle-status`,
-                method: 'PATCH',
-                body: {}
-            }),
-            invalidatesTags: ['User'],
-        }),
-        updateUser: builder.mutation({
-            query: ({ id, body }) => ({
-                url: `/users/${id}/edit`,
-                method: 'PATCH',
-                body
-            }),
-            invalidatesTags: ['User'],
-        }),
         getRestaurantStats: builder.query({
             query: () => '/dashboard/restaurant-stats',
             providesTags: ['Dashboard'],
@@ -118,11 +87,6 @@ export const {
     useRejectWithdrawalMutation,
     useGetSettingsQuery,
     useUpdateSettingsMutation,
-    useGetUserStatsQuery,
-    useGetAllUsersQuery,
-    useGetUserActivityQuery,
-    useToggleUserStatusMutation,
-    useUpdateUserMutation,
     useGetRestaurantStatsQuery,
     useGetRestaurantBookingsPerDayQuery,
     useGetRestaurantLunchVsDinnerQuery,

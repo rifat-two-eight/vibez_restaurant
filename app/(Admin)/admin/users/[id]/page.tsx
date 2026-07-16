@@ -3,16 +3,37 @@
 import React, { use } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Mail, Phone, MapPin, Calendar, CreditCard, ArrowUpRight, ArrowDownRight, UserCheck } from 'lucide-react';
-import { useGetUserActivityQuery } from '../../../../../redux/features/dashboard/dashboardApi';
+import { 
+    useGetUserActivityQuery,
+    useGetUserActivitySummaryQuery,
+    useGetUserReferralsQuery,
+    useGetUserCommissionsQuery,
+    useGetUserWithdrawalsQuery,
+    useGetUserSubscriptionsQuery
+} from '../../../../../redux/features/user/userApi';
 import { getImageUrl } from '@/lib/utils';
 import Image from 'next/image';
 
 export default function UserActivityPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
     const { id } = use(params);
-    const { data: activityRes, isLoading } = useGetUserActivityQuery(id);
 
-    if (isLoading) {
+    // Pagination states
+    const [referralsPage, setReferralsPage] = React.useState(1);
+    const [commissionsPage, setCommissionsPage] = React.useState(1);
+    const [withdrawalsPage, setWithdrawalsPage] = React.useState(1);
+    const [subscriptionsPage, setSubscriptionsPage] = React.useState(1);
+
+    // Queries
+    const { data: activityRes, isLoading: isUserLoading } = useGetUserActivityQuery(id);
+    const { data: summaryRes, isLoading: isSummaryLoading } = useGetUserActivitySummaryQuery(id);
+    
+    const { data: referralsRes, isLoading: isReferralsLoading } = useGetUserReferralsQuery({ id, page: referralsPage, limit: 5 });
+    const { data: commissionsRes, isLoading: isCommissionsLoading } = useGetUserCommissionsQuery({ id, page: commissionsPage, limit: 5 });
+    const { data: withdrawalsRes, isLoading: isWithdrawalsLoading } = useGetUserWithdrawalsQuery({ id, page: withdrawalsPage, limit: 5 });
+    const { data: subscriptionsRes, isLoading: isSubscriptionsLoading } = useGetUserSubscriptionsQuery({ id, page: subscriptionsPage, limit: 5 });
+
+    if (isUserLoading || isSummaryLoading) {
         return (
             <div className="flex h-[400px] items-center justify-center">
                 <p className="text-zinc-400 animate-pulse">Loading user activity...</p>
@@ -20,7 +41,8 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
         );
     }
 
-    const { user, referrals, commissions, withdrawals, subscriptions } = activityRes?.data || {};
+    const { user } = activityRes?.data || {};
+    const { totalReferrals, activeSubsFromReferrals, totalWithdrawals, totalSubscriptions } = summaryRes?.data || {};
 
     if (!user) {
         return (
@@ -30,6 +52,18 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
             </div>
         );
     }
+
+    const referrals = referralsRes?.data || [];
+    const referralsMeta = referralsRes?.meta || { page: 1, limit: 5, total: 0, totalPages: 1, hasNext: false, hasPrev: false };
+
+    const commissions = commissionsRes?.data || [];
+    const commissionsMeta = commissionsRes?.meta || { page: 1, limit: 5, total: 0, totalPages: 1, hasNext: false, hasPrev: false };
+
+    const withdrawals = withdrawalsRes?.data || [];
+    const withdrawalsMeta = withdrawalsRes?.meta || { page: 1, limit: 5, total: 0, totalPages: 1, hasNext: false, hasPrev: false };
+
+    const subscriptions = subscriptionsRes?.data || [];
+    const subscriptionsMeta = subscriptionsRes?.meta || { page: 1, limit: 5, total: 0, totalPages: 1, hasNext: false, hasPrev: false };
 
     return (
         <div className="space-y-8 pb-12">
@@ -122,152 +156,268 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="bg-[#171717] border border-white/5 rounded-2xl p-4">
                             <p className="text-zinc-500 text-xs font-medium mb-1">Total Referrals</p>
-                            <h3 className="text-xl font-bold text-white">{user.referralsTotalCount || 0}</h3>
+                            <h3 className="text-xl font-bold text-white">{totalReferrals ?? 0}</h3>
                         </div>
                         <div className="bg-[#171717] border border-white/5 rounded-2xl p-4">
                             <p className="text-zinc-500 text-xs font-medium mb-1">Active Subs from Referrals</p>
-                            <h3 className="text-xl font-bold text-[#10B981]">{user.activeSubscriptionFromHimTotal || 0}</h3>
+                            <h3 className="text-xl font-bold text-[#10B981]">{activeSubsFromReferrals ?? 0}</h3>
                         </div>
                         <div className="bg-[#171717] border border-white/5 rounded-2xl p-4">
                             <p className="text-zinc-500 text-xs font-medium mb-1">Total Subscriptions</p>
-                            <h3 className="text-xl font-bold text-white">{subscriptions?.length || 0}</h3>
+                            <h3 className="text-xl font-bold text-white">{totalSubscriptions ?? 0}</h3>
                         </div>
                         <div className="bg-[#171717] border border-white/5 rounded-2xl p-4">
                             <p className="text-zinc-500 text-xs font-medium mb-1">Total Withdrawals</p>
-                            <h3 className="text-xl font-bold text-white">{withdrawals?.length || 0}</h3>
+                            <h3 className="text-xl font-bold text-white">{totalWithdrawals ?? 0}</h3>
                         </div>
                     </div>
 
                     {/* Subscriptions */}
-                    <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
+                    <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden relative">
                         <div className="p-6 border-b border-white/5">
                             <h3 className="text-sm font-bold text-white flex items-center gap-2"><CreditCard className="w-4 h-4 text-purple-500" /> Subscription History</h3>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-white/2">
-                                    <tr>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Plan Name</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Start Date</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">End Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {subscriptions?.length > 0 ? subscriptions.map((sub: any, i: number) => (
-                                        <tr key={i} className="hover:bg-white/2">
-                                            <td className="px-6 py-4 text-sm font-bold text-white">{sub.subscriptionPlanId?.name}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${sub.status === 'ACTIVE' ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-red-500/10 text-red-500'}`}>{sub.status}</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-zinc-300">CHF {sub.subscriptionPlanId?.price}</td>
-                                            <td className="px-6 py-4 text-xs text-zinc-500">{new Date(sub.startDate).toLocaleDateString()}</td>
-                                            <td className="px-6 py-4 text-xs text-zinc-500">{new Date(sub.endDate).toLocaleDateString()}</td>
+                        <div className="overflow-x-auto min-h-[120px]">
+                            {isSubscriptionsLoading ? (
+                                <div className="flex h-24 items-center justify-center">
+                                    <p className="text-zinc-500 text-xs animate-pulse">Loading subscriptions...</p>
+                                </div>
+                            ) : (
+                                <table className="w-full text-left">
+                                    <thead className="bg-white/2">
+                                        <tr>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Plan Name</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Start Date</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">End Date</th>
                                         </tr>
-                                    )) : (
-                                        <tr><td colSpan={5} className="px-6 py-8 text-center text-zinc-500 text-sm">No subscriptions found</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {subscriptions.length > 0 ? subscriptions.map((sub: any, i: number) => (
+                                            <tr key={i} className="hover:bg-white/2">
+                                                <td className="px-6 py-4 text-sm font-bold text-white">{sub.subscriptionPlanId?.name}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${sub.status === 'ACTIVE' ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-red-500/10 text-red-500'}`}>{sub.status}</span>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-zinc-300">CHF {sub.subscriptionPlanId?.price}</td>
+                                                <td className="px-6 py-4 text-xs text-zinc-500">{new Date(sub.startDate).toLocaleDateString()}</td>
+                                                <td className="px-6 py-4 text-xs text-zinc-500">{new Date(sub.endDate).toLocaleDateString()}</td>
+                                            </tr>
+                                        )) : (
+                                            <tr><td colSpan={5} className="px-6 py-8 text-center text-zinc-500 text-sm">No subscriptions found</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
+                        {subscriptionsMeta.totalPages > 1 && (
+                            <div className="p-4 border-t border-white/5 flex items-center justify-between">
+                                <p className="text-xs text-zinc-500">
+                                    Page {subscriptionsMeta.page} of {subscriptionsMeta.totalPages}
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setSubscriptionsPage((p) => Math.max(1, p - 1))}
+                                        disabled={!subscriptionsMeta.hasPrev || isSubscriptionsLoading}
+                                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${subscriptionsMeta.hasPrev ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"}`}
+                                    >
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={() => setSubscriptionsPage((p) => p + 1)}
+                                        disabled={!subscriptionsMeta.hasNext || isSubscriptionsLoading}
+                                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${subscriptionsMeta.hasNext ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"}`}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Referrals */}
-                    <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
-                        <div className="p-6 border-b border-white/5 flex gap-4">
+                    <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden relative">
+                        <div className="p-6 border-b border-white/5">
                             <h3 className="text-sm font-bold text-white flex items-center gap-2"><UserCheck className="w-4 h-4 text-[#10B981]" /> Recent Referrals</h3>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-white/2">
-                                    <tr>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">User</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Plan</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Joined Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {referrals?.length > 0 ? referrals.map((ref: any, i: number) => (
-                                        <tr key={i} className="hover:bg-white/2">
-                                            <td className="px-6 py-4 text-sm font-bold text-white">{ref.name}</td>
-                                            <td className="px-6 py-4 text-sm text-zinc-300">{ref.planName || 'N/A'}</td>
-                                            <td className="px-6 py-4 text-sm text-zinc-300">{ref.status || 'Active'}</td>
-                                            <td className="px-6 py-4 text-xs text-zinc-500">{new Date(ref.createdAt).toLocaleDateString()}</td>
+                        <div className="overflow-x-auto min-h-[120px]">
+                            {isReferralsLoading ? (
+                                <div className="flex h-24 items-center justify-center">
+                                    <p className="text-zinc-500 text-xs animate-pulse">Loading referrals...</p>
+                                </div>
+                            ) : (
+                                <table className="w-full text-left">
+                                    <thead className="bg-white/2">
+                                        <tr>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">User</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Plan</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Joined Date</th>
                                         </tr>
-                                    )) : (
-                                        <tr><td colSpan={4} className="px-6 py-8 text-center text-zinc-500 text-sm">No referrals found</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {referrals.length > 0 ? referrals.map((ref: any, i: number) => (
+                                            <tr key={i} className="hover:bg-white/2">
+                                                <td className="px-6 py-4 text-sm font-bold text-white">{ref.name}</td>
+                                                <td className="px-6 py-4 text-sm text-zinc-300">{ref.planName || 'N/A'}</td>
+                                                <td className="px-6 py-4 text-sm text-zinc-300">{ref.status || 'Active'}</td>
+                                                <td className="px-6 py-4 text-xs text-zinc-500">{new Date(ref.createdAt).toLocaleDateString()}</td>
+                                            </tr>
+                                        )) : (
+                                            <tr><td colSpan={4} className="px-6 py-8 text-center text-zinc-500 text-sm">No referrals found</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
+                        {referralsMeta.totalPages > 1 && (
+                            <div className="p-4 border-t border-white/5 flex items-center justify-between">
+                                <p className="text-xs text-zinc-500">
+                                    Page {referralsMeta.page} of {referralsMeta.totalPages}
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setReferralsPage((p) => Math.max(1, p - 1))}
+                                        disabled={!referralsMeta.hasPrev || isReferralsLoading}
+                                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${referralsMeta.hasPrev ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"}`}
+                                    >
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={() => setReferralsPage((p) => p + 1)}
+                                        disabled={!referralsMeta.hasNext || isReferralsLoading}
+                                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${referralsMeta.hasNext ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"}`}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Commissions */}
-                    <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
+                    <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden relative">
                         <div className="p-6 border-b border-white/5 flex gap-4">
                             <h3 className="text-sm font-bold text-white flex items-center gap-2"><ArrowDownRight className="w-4 h-4 text-[#10B981]" /> Commission History</h3>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-white/2">
-                                    <tr>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Source User</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {commissions?.length > 0 ? commissions.map((c: any, i: number) => (
-                                        <tr key={i} className="hover:bg-white/2">
-                                            <td className="px-6 py-4 text-sm font-bold text-[#10B981]">CHF {c.amount}</td>
-                                            <td className="px-6 py-4 text-sm text-zinc-300">{c.sourceUser?.name || 'Unknown'}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${c.status === 'COMPLETED' ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-orange-500/10 text-orange-500'}`}>{c.status}</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-xs text-zinc-500">{new Date(c.createdAt).toLocaleDateString()}</td>
+                        <div className="overflow-x-auto min-h-[120px]">
+                            {isCommissionsLoading ? (
+                                <div className="flex h-24 items-center justify-center">
+                                    <p className="text-zinc-500 text-xs animate-pulse">Loading commissions...</p>
+                                </div>
+                            ) : (
+                                <table className="w-full text-left">
+                                    <thead className="bg-white/2">
+                                        <tr>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Source User</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Date</th>
                                         </tr>
-                                    )) : (
-                                        <tr><td colSpan={4} className="px-6 py-8 text-center text-zinc-500 text-sm">No commissions found</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {commissions.length > 0 ? commissions.map((c: any, i: number) => (
+                                            <tr key={i} className="hover:bg-white/2">
+                                                <td className="px-6 py-4 text-sm font-bold text-[#10B981]">CHF {c.amount}</td>
+                                                <td className="px-6 py-4 text-sm text-zinc-300">{c.commissionFrom?.name || c.sourceUser?.name || 'Unknown'}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${c.status === 'COMPLETED' ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-orange-500/10 text-orange-500'}`}>{c.status || 'COMPLETED'}</span>
+                                                </td>
+                                                <td className="px-6 py-4 text-xs text-zinc-500">{new Date(c.createdAt).toLocaleDateString()}</td>
+                                            </tr>
+                                        )) : (
+                                            <tr><td colSpan={4} className="px-6 py-8 text-center text-zinc-500 text-sm">No commissions found</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
+                        {commissionsMeta.totalPages > 1 && (
+                            <div className="p-4 border-t border-white/5 flex items-center justify-between">
+                                <p className="text-xs text-zinc-500">
+                                    Page {commissionsMeta.page} of {commissionsMeta.totalPages}
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setCommissionsPage((p) => Math.max(1, p - 1))}
+                                        disabled={!commissionsMeta.hasPrev || isCommissionsLoading}
+                                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${commissionsMeta.hasPrev ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"}`}
+                                    >
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={() => setCommissionsPage((p) => p + 1)}
+                                        disabled={!commissionsMeta.hasNext || isCommissionsLoading}
+                                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${commissionsMeta.hasNext ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"}`}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     {/* Withdrawals */}
-                    <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden">
+                    <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden relative">
                         <div className="p-6 border-b border-white/5">
                             <h3 className="text-sm font-bold text-white flex items-center gap-2"><ArrowUpRight className="w-4 h-4 text-orange-500" /> Withdrawal History</h3>
                         </div>
-                        <div className="overflow-x-auto">
-                            <table className="w-full text-left">
-                                <thead className="bg-white/2">
-                                    <tr>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Method</th>
-                                        <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Date</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-white/5">
-                                    {withdrawals?.length > 0 ? withdrawals.map((w: any, i: number) => (
-                                        <tr key={i} className="hover:bg-white/2">
-                                            <td className="px-6 py-4 text-sm font-bold text-white">CHF {w.amount}</td>
-                                            <td className="px-6 py-4">
-                                                <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${w.status === 'APPROVED' ? 'bg-[#10B981]/10 text-[#10B981]' : w.status === 'PENDING' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>{w.status}</span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-zinc-300">{w.paymentMethod}</td>
-                                            <td className="px-6 py-4 text-xs text-zinc-500">{new Date(w.createdAt).toLocaleDateString()}</td>
+                        <div className="overflow-x-auto min-h-[120px]">
+                            {isWithdrawalsLoading ? (
+                                <div className="flex h-24 items-center justify-center">
+                                    <p className="text-zinc-500 text-xs animate-pulse">Loading withdrawals...</p>
+                                </div>
+                            ) : (
+                                <table className="w-full text-left">
+                                    <thead className="bg-white/2">
+                                        <tr>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Method</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Date</th>
                                         </tr>
-                                    )) : (
-                                        <tr><td colSpan={4} className="px-6 py-8 text-center text-zinc-500 text-sm">No withdrawals found</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody className="divide-y divide-white/5">
+                                        {withdrawals.length > 0 ? withdrawals.map((w: any, i: number) => (
+                                            <tr key={i} className="hover:bg-white/2">
+                                                <td className="px-6 py-4 text-sm font-bold text-white">CHF {w.amount}</td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${w.status === 'APPROVED' ? 'bg-[#10B981]/10 text-[#10B981]' : w.status === 'PENDING' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>{w.status}</span>
+                                                </td>
+                                                <td className="px-6 py-4 text-sm text-zinc-300">{w.paymentMethod}</td>
+                                                <td className="px-6 py-4 text-xs text-zinc-500">{new Date(w.createdAt).toLocaleDateString()}</td>
+                                            </tr>
+                                        )) : (
+                                            <tr><td colSpan={4} className="px-6 py-8 text-center text-zinc-500 text-sm">No withdrawals found</td></tr>
+                                        )}
+                                    </tbody>
+                                </table>
+                            )}
                         </div>
+                        {withdrawalsMeta.totalPages > 1 && (
+                            <div className="p-4 border-t border-white/5 flex items-center justify-between">
+                                <p className="text-xs text-zinc-500">
+                                    Page {withdrawalsMeta.page} of {withdrawalsMeta.totalPages}
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setWithdrawalsPage((p) => Math.max(1, p - 1))}
+                                        disabled={!withdrawalsMeta.hasPrev || isWithdrawalsLoading}
+                                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${withdrawalsMeta.hasPrev ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"}`}
+                                    >
+                                        Previous
+                                    </button>
+                                    <button
+                                        onClick={() => setWithdrawalsPage((p) => p + 1)}
+                                        disabled={!withdrawalsMeta.hasNext || isWithdrawalsLoading}
+                                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold transition-all ${withdrawalsMeta.hasNext ? "bg-white/5 border-white/5 text-zinc-300 hover:bg-white/10" : "bg-transparent border-white/5 text-zinc-600 cursor-not-allowed"}`}
+                                    >
+                                        Next
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
