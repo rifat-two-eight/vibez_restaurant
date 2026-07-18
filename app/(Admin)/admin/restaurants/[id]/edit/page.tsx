@@ -9,8 +9,8 @@ import { toast } from "sonner";
 import Swal from "sweetalert2";
 
 // Constants & Types for Schedule Editor
-type Day = 'Mon' | 'Tue' | 'Wed' | 'Thu' | 'Fri' | 'Sat' | 'Sun';
-type Slot = 'Lunch' | 'Dinner';
+type Day = "Mon" | "Tue" | "Wed" | "Thu" | "Fri" | "Sat" | "Sun";
+type Slot = "Lunch" | "Dinner";
 
 interface SlotTimes {
     openTime: string;
@@ -24,24 +24,36 @@ interface DaySlotData {
 
 type DaySlotsState = Record<Day, Record<Slot, DaySlotData>>;
 
-const ALL_DAYS: Day[] = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const ALL_DAYS: Day[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DAY_MAP: Record<string, Day> = {
-    'MONDAY': 'Mon', 'TUESDAY': 'Tue', 'WEDNESDAY': 'Wed', 'THURSDAY': 'Thu', 'FRIDAY': 'Fri', 'SATURDAY': 'Sat', 'SUNDAY': 'Sun'
+    MONDAY: "Mon",
+    TUESDAY: "Tue",
+    WEDNESDAY: "Wed",
+    THURSDAY: "Thu",
+    FRIDAY: "Fri",
+    SATURDAY: "Sat",
+    SUNDAY: "Sun",
 };
 const DAY_REVERSE_MAP: Record<Day, string> = {
-    'Mon': 'MONDAY', 'Tue': 'TUESDAY', 'Wed': 'WEDNESDAY', 'Thu': 'THURSDAY', 'Fri': 'FRIDAY', 'Sat': 'SATURDAY', 'Sun': 'SUNDAY'
+    Mon: "MONDAY",
+    Tue: "TUESDAY",
+    Wed: "WEDNESDAY",
+    Thu: "THURSDAY",
+    Fri: "FRIDAY",
+    Sat: "SATURDAY",
+    Sun: "SUNDAY",
 };
 
 const SLOT_DEFAULTS: Record<Slot, { apiType: string; openTime: string; closeTime: string }> = {
-    'Lunch':  { apiType: 'LUNCH',  openTime: '11:00', closeTime: '15:00' },
-    'Dinner': { apiType: 'DINNER', openTime: '17:00', closeTime: '22:00' },
+    Lunch: { apiType: "LUNCH", openTime: "11:00", closeTime: "15:00" },
+    Dinner: { apiType: "DINNER", openTime: "17:00", closeTime: "22:00" },
 };
 
-const SLOT_NAMES: Slot[] = ['Lunch', 'Dinner'];
+const SLOT_NAMES: Slot[] = ["Lunch", "Dinner"];
 
 function createDefaultDaySlotsState(): DaySlotsState {
     const state: Partial<DaySlotsState> = {};
-    ALL_DAYS.forEach(day => {
+    ALL_DAYS.forEach((day) => {
         state[day] = {
             Lunch: { enabled: false, times: { openTime: SLOT_DEFAULTS.Lunch.openTime, closeTime: SLOT_DEFAULTS.Lunch.closeTime } },
             Dinner: { enabled: false, times: { openTime: SLOT_DEFAULTS.Dinner.openTime, closeTime: SLOT_DEFAULTS.Dinner.closeTime } },
@@ -117,9 +129,10 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
     const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+    const [removedImages, setRemovedImages] = useState<string[]>([]);
 
     // Schedule states
-    const [activeDay, setActiveDay] = useState<Day>('Mon');
+    const [activeDay, setActiveDay] = useState<Day>("Mon");
     const [daySlots, setDaySlots] = useState<DaySlotsState>(createDefaultDaySlotsState);
 
     // Pre-populate forms when restaurant details load
@@ -159,13 +172,13 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                     if (uiDay && oh.isOpen) {
                         if (!firstOpenDay) firstOpenDay = uiDay;
                         oh.slots?.forEach((s: any) => {
-                            if (s.type === 'LUNCH') {
+                            if (s.type === "LUNCH") {
                                 newState[uiDay].Lunch = {
                                     enabled: true,
                                     times: { openTime: s.openTime || SLOT_DEFAULTS.Lunch.openTime, closeTime: s.closeTime || SLOT_DEFAULTS.Lunch.closeTime },
                                 };
                             }
-                            if (s.type === 'DINNER') {
+                            if (s.type === "DINNER") {
                                 newState[uiDay].Dinner = {
                                     enabled: true,
                                     times: { openTime: s.openTime || SLOT_DEFAULTS.Dinner.openTime, closeTime: s.closeTime || SLOT_DEFAULTS.Dinner.closeTime },
@@ -176,7 +189,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                 });
 
                 setDaySlots(newState);
-                setActiveDay(firstOpenDay || 'Mon');
+                setActiveDay(firstOpenDay || "Mon");
             }
         }
     }, [restaurant]);
@@ -199,20 +212,36 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
 
     const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
-        setGalleryFiles(prev => [...prev, ...files]);
-        const newPreviews = files.map(file => URL.createObjectURL(file));
-        setGalleryPreviews(prev => [...prev, ...newPreviews]);
+        setGalleryFiles((prev) => [...prev, ...files]);
+        const newPreviews = files.map((file) => URL.createObjectURL(file));
+        setGalleryPreviews((prev) => [...prev, ...newPreviews]);
     };
 
     const handleRemoveGalleryPreview = (indexToRemove: number) => {
-        URL.revokeObjectURL(galleryPreviews[indexToRemove]);
-        setGalleryFiles(prev => prev.filter((_, i) => i !== indexToRemove));
-        setGalleryPreviews(prev => prev.filter((_, i) => i !== indexToRemove));
+        const previewUrl = galleryPreviews[indexToRemove];
+        if (previewUrl) {
+            if (!previewUrl.startsWith("blob:")) {
+                const baseUrl = process.env.NEXT_PUBLIC_PIC_URL || 'https://vibezapi.apponislam.top';
+                const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+                const originalPath = previewUrl.replace(cleanBase, "");
+                setRemovedImages((prev) => [...prev, originalPath]);
+            } else {
+                URL.revokeObjectURL(previewUrl);
+                let fileIndex = 0;
+                for (let i = 0; i < indexToRemove; i++) {
+                    if (galleryPreviews[i].startsWith("blob:")) {
+                        fileIndex++;
+                    }
+                }
+                setGalleryFiles((prev) => prev.filter((_, i) => i !== fileIndex));
+            }
+            setGalleryPreviews((prev) => prev.filter((_, i) => i !== indexToRemove));
+        }
     };
 
     // Toggle Slot for Schedule
     const toggleSlot = (day: Day, slot: Slot) => {
-        setDaySlots(prev => ({
+        setDaySlots((prev) => ({
             ...prev,
             [day]: {
                 ...prev[day],
@@ -225,8 +254,8 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
     };
 
     // Update Slot Time for Schedule
-    const updateSlotTime = (day: Day, slot: Slot, field: 'openTime' | 'closeTime', value: string) => {
-        setDaySlots(prev => ({
+    const updateSlotTime = (day: Day, slot: Slot, field: "openTime" | "closeTime", value: string) => {
+        setDaySlots((prev) => ({
             ...prev,
             [day]: {
                 ...prev[day],
@@ -242,14 +271,14 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
     };
 
     // Schedule Validations
-    const openDays = ALL_DAYS.filter(day => daySlots[day].Lunch.enabled || daySlots[day].Dinner.enabled);
+    const openDays = ALL_DAYS.filter((day) => daySlots[day].Lunch.enabled || daySlots[day].Dinner.enabled);
     const daysValid = openDays.length >= 1;
-    const timesValid = openDays.every(day =>
-        SLOT_NAMES.every(slot => {
+    const timesValid = openDays.every((day) =>
+        SLOT_NAMES.every((slot) => {
             const data = daySlots[day][slot];
             if (!data.enabled) return true;
             return isValid24hTime(data.times.openTime) && isValid24hTime(data.times.closeTime);
-        })
+        }),
     );
 
     // Save Primary Details Form
@@ -281,6 +310,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                         zipCode,
                         country,
                     },
+                    removedImages,
                 }),
             );
 
@@ -327,15 +357,13 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
             return;
         }
 
-        const restaurantOpenHours = ALL_DAYS.map(dayStr => {
+        const restaurantOpenHours = ALL_DAYS.map((dayStr) => {
             const isOpen = openDays.includes(dayStr);
-            const slotsToKeep = SLOT_NAMES
-                .filter(slot => daySlots[dayStr][slot].enabled)
-                .map(slot => ({
-                    type: SLOT_DEFAULTS[slot].apiType,
-                    openTime: daySlots[dayStr][slot].times.openTime,
-                    closeTime: daySlots[dayStr][slot].times.closeTime,
-                }));
+            const slotsToKeep = SLOT_NAMES.filter((slot) => daySlots[dayStr][slot].enabled).map((slot) => ({
+                type: SLOT_DEFAULTS[slot].apiType,
+                openTime: daySlots[dayStr][slot].times.openTime,
+                closeTime: daySlots[dayStr][slot].times.closeTime,
+            }));
 
             return {
                 day: DAY_REVERSE_MAP[dayStr],
@@ -358,8 +386,8 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                 customClass: {
                     popup: "border border-white/10 rounded-2xl",
                     confirmButton: "rounded-xl font-bold",
-                    cancelButton: "rounded-xl font-bold bg-white/5 hover:bg-white/10"
-                }
+                    cancelButton: "rounded-xl font-bold bg-white/5 hover:bg-white/10",
+                },
             });
 
             if (confirmResult.isConfirmed) {
@@ -604,25 +632,14 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                         <h3 className="text-base font-bold text-white">Restaurant Gallery</h3>
                         <div className="space-y-2">
                             <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Upload Gallery Images</label>
-                            <input
-                                type="file"
-                                multiple
-                                accept="image/*"
-                                onChange={handleGalleryChange}
-                                className="w-full bg-white/3 border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#10B981]/50 transition-all placeholder-zinc-600"
-                            />
+                            <input type="file" multiple accept="image/*" onChange={handleGalleryChange} className="w-full bg-white/3 border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#10B981]/50 transition-all placeholder-zinc-600" />
                         </div>
                         {galleryPreviews.length > 0 && (
                             <div className="grid grid-cols-3 gap-2">
                                 {galleryPreviews.map((url, index) => (
                                     <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group bg-white/3">
                                         <img src={url} alt={`Gallery preview ${index + 1}`} className="w-full h-full object-cover" />
-                                        <button
-                                            type="button"
-                                            onClick={() => handleRemoveGalleryPreview(index)}
-                                            className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-black transition-colors"
-                                            title="Remove image"
-                                        >
+                                        <button type="button" onClick={() => handleRemoveGalleryPreview(index)} className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-black transition-colors" title="Remove image">
                                             <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                                             </svg>
@@ -668,7 +685,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                         </div>
 
                         <div className="grid grid-cols-7 gap-3">
-                            {ALL_DAYS.map(day => {
+                            {ALL_DAYS.map((day) => {
                                 const isCurrent = activeDay === day;
                                 const hasActiveSlot = daySlots[day].Lunch.enabled || daySlots[day].Dinner.enabled;
                                 return (
@@ -676,14 +693,8 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                                         key={day}
                                         type="button"
                                         onClick={() => setActiveDay(day)}
-                                        className={`py-3 rounded-xl text-xs font-bold border transition-all ${
-                                            isCurrent
-                                                ? 'ring-2 ring-[#10B981] ring-offset-2 ring-offset-[#171717] border-transparent'
-                                                : ''
-                                        } ${
-                                            hasActiveSlot
-                                                ? 'bg-[#10B981] text-white border-transparent shadow-lg shadow-[#10B981]/15'
-                                                : 'bg-white/3 text-zinc-400 border-white/5 hover:border-white/20 hover:text-white hover:bg-white/5'
+                                        className={`py-3 rounded-xl text-xs font-bold border transition-all ${isCurrent ? "ring-2 ring-[#10B981] ring-offset-2 ring-offset-[#171717] border-transparent" : ""} ${
+                                            hasActiveSlot ? "bg-[#10B981] text-white border-transparent shadow-lg shadow-[#10B981]/15" : "bg-white/3 text-zinc-400 border-white/5 hover:border-white/20 hover:text-white hover:bg-white/5"
                                         }`}
                                     >
                                         {day}
@@ -708,49 +719,25 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                                     <h4 className="text-sm font-bold text-white">Operating Slots for {DAY_REVERSE_MAP[activeDay]}</h4>
                                     <p className="text-xs text-zinc-500 mt-1">Toggle and configure times for Lunch / Dinner slots</p>
                                 </div>
-                                {(daySlots[activeDay].Lunch.enabled || daySlots[activeDay].Dinner.enabled) ? (
-                                    <span className="bg-[#10B981]/10 text-[#10B981] text-xs font-bold px-3 py-1 rounded-full uppercase">
-                                        Open
-                                    </span>
+                                {daySlots[activeDay].Lunch.enabled || daySlots[activeDay].Dinner.enabled ? (
+                                    <span className="bg-[#10B981]/10 text-[#10B981] text-xs font-bold px-3 py-1 rounded-full uppercase">Open</span>
                                 ) : (
-                                    <span className="bg-white/5 text-zinc-400 text-xs font-bold px-3 py-1 rounded-full uppercase">
-                                        Closed
-                                    </span>
+                                    <span className="bg-white/5 text-zinc-400 text-xs font-bold px-3 py-1 rounded-full uppercase">Closed</span>
                                 )}
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {SLOT_NAMES.map(slotName => {
+                                {SLOT_NAMES.map((slotName) => {
                                     const slotData = daySlots[activeDay][slotName];
                                     const isEnabled = slotData.enabled;
                                     return (
-                                        <div
-                                            key={slotName}
-                                            className={`rounded-xl border transition-all overflow-hidden bg-[#171717] ${
-                                                isEnabled
-                                                    ? 'border-[#10B981] bg-[#10B981]/5'
-                                                    : 'border-white/5 hover:border-white/10'
-                                            }`}
-                                        >
-                                            <button
-                                                type="button"
-                                                onClick={() => toggleSlot(activeDay, slotName)}
-                                                className="flex items-center justify-between p-5 w-full text-left"
-                                            >
+                                        <div key={slotName} className={`rounded-xl border transition-all overflow-hidden bg-[#171717] ${isEnabled ? "border-[#10B981] bg-[#10B981]/5" : "border-white/5 hover:border-white/10"}`}>
+                                            <button type="button" onClick={() => toggleSlot(activeDay, slotName)} className="flex items-center justify-between p-5 w-full text-left">
                                                 <div>
                                                     <p className="text-sm font-bold text-white">{slotName}</p>
-                                                    <p className="text-xs text-zinc-500 mt-1">
-                                                        {isEnabled
-                                                            ? `${slotData.times.openTime} – ${slotData.times.closeTime}`
-                                                            : 'Disabled - Click to enable slot'
-                                                        }
-                                                    </p>
+                                                    <p className="text-xs text-zinc-500 mt-1">{isEnabled ? `${slotData.times.openTime} – ${slotData.times.closeTime}` : "Disabled - Click to enable slot"}</p>
                                                 </div>
-                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${
-                                                    isEnabled ? 'border-[#10B981]' : 'border-white/10'
-                                                }`}>
-                                                    {isEnabled && <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />}
-                                                </div>
+                                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isEnabled ? "border-[#10B981]" : "border-white/10"}`}>{isEnabled && <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />}</div>
                                             </button>
 
                                             {isEnabled && (
@@ -764,7 +751,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                                                             <input
                                                                 type="time"
                                                                 value={slotData.times.openTime}
-                                                                onChange={(e) => updateSlotTime(activeDay, slotName, 'openTime', e.target.value)}
+                                                                onChange={(e) => updateSlotTime(activeDay, slotName, "openTime", e.target.value)}
                                                                 className="w-full bg-white/3 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#10B981]/50 transition-all"
                                                             />
                                                         </div>
@@ -776,7 +763,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                                                             <input
                                                                 type="time"
                                                                 value={slotData.times.closeTime}
-                                                                onChange={(e) => updateSlotTime(activeDay, slotName, 'closeTime', e.target.value)}
+                                                                onChange={(e) => updateSlotTime(activeDay, slotName, "closeTime", e.target.value)}
                                                                 className="w-full bg-white/3 border border-white/5 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#10B981]/50 transition-all"
                                                             />
                                                         </div>
