@@ -37,20 +37,37 @@ const SLOT_DEFAULTS: Record<Slot, { apiType: string; openTime: string; closeTime
 
 const SLOT_NAMES: Slot[] = ['Lunch', 'Dinner'];
 
+const RESTAURANT_TYPES = [
+    { value: 'RESTAURANT', label: 'Restaurant' },
+    { value: 'BAR', label: 'Bar' },
+    { value: 'BISTRO', label: 'Bistro' },
+    { value: 'CAFE', label: 'Cafe' },
+    { value: 'BAKERY', label: 'Bakery' },
+];
+
 const CUISINE_TYPES = [
+    { value: 'AMERICAN', label: 'American' },
     { value: 'ITALIAN', label: 'Italian' },
-    { value: 'CHINESE', label: 'Chinese' },
-    { value: 'JAPANESE', label: 'Japanese' },
+    { value: 'SWISS_CUISINE', label: 'Swiss Cuisine' },
     { value: 'INDIAN', label: 'Indian' },
+    { value: 'CHINESE', label: 'Chinese' },
     { value: 'THAI', label: 'Thai' },
-    { value: 'FAST_FOOD', label: 'Fast Food' },
-    { value: 'BBQ', label: 'BBQ' },
+    { value: 'VIETNAMESE', label: 'Vietnamese' },
+    { value: 'TURKISH', label: 'Turkish' },
+    { value: 'MEXICAN', label: 'Mexican' },
+];
+
+const FOOD_TYPES = [
+    { value: 'PIZZA', label: 'Pizza' },
+    { value: 'BURGER', label: 'Burger' },
+    { value: 'SUSHI', label: 'Sushi' },
+    { value: 'PASTA', label: 'Pasta' },
+    { value: 'MEAT', label: 'Meat' },
+    { value: 'FISH', label: 'Fish' },
     { value: 'SEAFOOD', label: 'Seafood' },
+    { value: 'KEBAB', label: 'Kebab' },
     { value: 'VEGAN', label: 'Vegan' },
-    { value: 'DESSERTS', label: 'Desserts' },
-    { value: 'COFFEE_BAKERY', label: 'Coffee Bakery' },
-    { value: 'FINE_DINING', label: 'Fine Dining' },
-    { value: 'LOCAL_FOOD', label: 'Local Food' },
+    { value: 'VEGETARIAN', label: 'Vegetarian' },
 ];
 
 export default function Partner() {
@@ -58,13 +75,19 @@ export default function Partner() {
     const dispatch = useAppDispatch();
     const [activeDay, setActiveDay] = useState<Day>('Mon');
     const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
+    const [selectedFoodTypes, setSelectedFoodTypes] = useState<string[]>([]);
     const [isOpenCuisine, setIsOpenCuisine] = useState(false);
+    const [isOpenFoodType, setIsOpenFoodType] = useState(false);
     const cuisineDropdownRef = useRef<HTMLDivElement>(null);
+    const foodTypeDropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (cuisineDropdownRef.current && !cuisineDropdownRef.current.contains(event.target as Node)) {
                 setIsOpenCuisine(false);
+            }
+            if (foodTypeDropdownRef.current && !foodTypeDropdownRef.current.contains(event.target as Node)) {
+                setIsOpenFoodType(false);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
@@ -73,9 +96,8 @@ export default function Partner() {
     const [daySlots, setDaySlots] = useState<DaySlotsState>(() => {
         const state: Partial<DaySlotsState> = {};
         ALL_DAYS.forEach(day => {
-            const isWeekday = day !== 'Sat' && day !== 'Sun';
             state[day] = {
-                Lunch: { enabled: isWeekday, times: { openTime: SLOT_DEFAULTS.Lunch.openTime, closeTime: SLOT_DEFAULTS.Lunch.closeTime } },
+                Lunch: { enabled: false, times: { openTime: SLOT_DEFAULTS.Lunch.openTime, closeTime: SLOT_DEFAULTS.Lunch.closeTime } },
                 Dinner: { enabled: false, times: { openTime: SLOT_DEFAULTS.Dinner.openTime, closeTime: SLOT_DEFAULTS.Dinner.closeTime } },
             };
         });
@@ -272,6 +294,7 @@ export default function Partner() {
             restaurantDescription: formData.get('restaurantDescription'),
             restaurantType: formData.get('restaurantType'),
             cuisineType: selectedCuisines,
+            foodType: selectedFoodTypes,
             restaurantWebsite: formData.get('restaurantWebsite'),
             restaurantAddress: {
                 street: formData.get('street'),
@@ -444,12 +467,9 @@ export default function Partner() {
                                 <div className="space-y-2">
                                     <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Type of Restaurant</label>
                                     <select name="restaurantType" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all appearance-none cursor-pointer">
-                                        <option value="RESTAURANT">Restaurant</option>
-                                        <option value="CAFE">Cafe</option>
-                                        <option value="NIGHT_CLUB">Night Club</option>
-                                        <option value="STREET_FOOD">Street Food</option>
-                                        <option value="BAKERY">Bakery</option>
-                                        <option value="FINE_DINING">Fine Dining</option>
+                                        {RESTAURANT_TYPES.map(type => (
+                                            <option key={type.value} value={type.value}>{type.label}</option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div className="md:col-span-2">
@@ -498,6 +518,59 @@ export default function Partner() {
                                                                 className="accent-[#CF0738] w-3.5 h-3.5 rounded"
                                                             />
                                                             <span>{cuisine.label}</span>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="md:col-span-2">
+                                    <div className="space-y-2 relative" ref={foodTypeDropdownRef}>
+                                        <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Food Type</label>
+                                        
+                                        {/* Dropdown Trigger */}
+                                        <div
+                                            onClick={() => setIsOpenFoodType(!isOpenFoodType)}
+                                            className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus-within:border-[#CF0738] focus-within:ring-1 focus-within:ring-[#CF0738] outline-none transition-all cursor-pointer flex justify-between items-center select-none"
+                                        >
+                                            <span className={`truncate ${selectedFoodTypes.length === 0 ? 'text-zinc-400' : 'text-zinc-950 font-semibold'}`}>
+                                                {selectedFoodTypes.length === 0
+                                                    ? 'Select Food Type'
+                                                    : selectedFoodTypes.map(val => FOOD_TYPES.find(f => f.value === val)?.label).join(', ')
+                                                }
+                                            </span>
+                                            <span className="text-zinc-500 text-xs">▼</span>
+                                        </div>
+
+                                        {/* Dropdown Options Panel */}
+                                        {isOpenFoodType && (
+                                            <div className="absolute z-50 left-0 right-0 mt-1 bg-white border border-zinc-200 rounded-xl shadow-xl max-h-60 overflow-y-auto p-2 space-y-1">
+                                                {FOOD_TYPES.map(food => {
+                                                    const isSelected = selectedFoodTypes.includes(food.value);
+                                                    return (
+                                                        <div
+                                                            key={food.value}
+                                                            onClick={() => {
+                                                                if (isSelected) {
+                                                                    setSelectedFoodTypes(selectedFoodTypes.filter(f => f !== food.value));
+                                                                } else {
+                                                                    setSelectedFoodTypes([...selectedFoodTypes, food.value]);
+                                                                }
+                                                            }}
+                                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold cursor-pointer select-none transition-colors ${
+                                                                isSelected
+                                                                    ? 'bg-[#CF0738]/5 text-[#CF0738]'
+                                                                    : 'hover:bg-zinc-50 text-zinc-700'
+                                                            }`}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={isSelected}
+                                                                readOnly
+                                                                className="accent-[#CF0738] w-3.5 h-3.5 rounded"
+                                                            />
+                                                            <span>{food.label}</span>
                                                         </div>
                                                     );
                                                 })}
