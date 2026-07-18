@@ -1,34 +1,25 @@
-export enum RestaurantType {
-    RESTAURANT = "RESTAURANT",
-    BAR = "BAR",
-    BISTRO = "BISTRO",
-    CAFE = "CAFE",
-    BAKERY = "BAKERY",
+Method: PATCH
+URL: api/v1/restaurants/my/restaurant
+Here is the JSON payload structure for the body field in the restaurant update API, excluding restaurantOpenHours:
+Form-Data Payload Structure:
+body (Text / JSON string): See the JSON structure below.
+restaurantImage (File): The cover image file.
+restaurantImages (Files): Up to 10 gallery image files.
+JSON Structure inside body:
+{
+  "restaurantName": "The Vibez Bistro",
+  "restaurantDescription": "A premium dining experience with a modern aesthetic.",
+  "restaurantType": "BISTRO",
+  "cuisineType": ["ITALIAN", "AMERICAN"],
+  "foodType": ["PIZZA", "BURGER", "SEAFOOD"],
+  "restaurantWebsite": "https://www.vibezbistro.com",
+  "restaurantAddress": {
+    "street": "123 Gourmet Street",
+    "city": "Zürich",
+    "state": "Zürich",
+    "zipCode": "8001",
+    "country": "Switzerland"
+  }
 }
  
-export enum CuisineType {
-    AMERICAN = "AMERICAN",
-    ITALIAN = "ITALIAN",
-    SWISS_CUISINE = "SWISS_CUISINE",
-    INDIAN = "INDIAN",
-    CHINESE = "CHINESE",
-    THAI = "THAI",
-    VIETNAMESE = "VIETNAMESE",
-    TURKISH = "TURKISH",
-    MEXICAN = "MEXICAN",
-}
  
-export enum FoodType {
-    PIZZA = "PIZZA",
-    BURGER = "BURGER",
-    SUSHI = "SUSHI",
-    PASTA = "PASTA",
-    MEAT = "MEAT",
-    FISH = "FISH",
-    SEAFOOD = "SEAFOOD",
-    KEBAB = "KEBAB",
-    VEGAN = "VEGAN",
-    VEGETARIAN = "VEGETARIAN",
-}
- 
- foodType?: FoodType[];

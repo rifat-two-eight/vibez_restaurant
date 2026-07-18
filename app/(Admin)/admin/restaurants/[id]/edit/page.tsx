@@ -57,27 +57,35 @@ function isValid24hTime(time: string): boolean {
 // RESTAURANT TYPE & CUISINE CONSTANTS
 const RESTAURANT_TYPES = [
     { label: "Restaurant", value: "RESTAURANT" },
+    { label: "Bar", value: "BAR" },
+    { label: "Bistro", value: "BISTRO" },
     { label: "Cafe", value: "CAFE" },
-    { label: "Night Club", value: "NIGHT_CLUB" },
-    { label: "Street Food", value: "STREET_FOOD" },
     { label: "Bakery", value: "BAKERY" },
-    { label: "Fine Dining", value: "FINE_DINING" },
 ];
 
 const CUISINE_TYPES = [
+    { label: "American", value: "AMERICAN" },
     { label: "Italian", value: "ITALIAN" },
-    { label: "Chinese", value: "CHINESE" },
-    { label: "Japanese", value: "JAPANESE" },
+    { label: "Swiss Cuisine", value: "SWISS_CUISINE" },
     { label: "Indian", value: "INDIAN" },
+    { label: "Chinese", value: "CHINESE" },
     { label: "Thai", value: "THAI" },
-    { label: "Fast Food", value: "FAST_FOOD" },
-    { label: "BBQ", value: "BBQ" },
+    { label: "Vietnamese", value: "VIETNAMESE" },
+    { label: "Turkish", value: "TURKISH" },
+    { label: "Mexican", value: "MEXICAN" },
+];
+
+const FOOD_TYPES = [
+    { label: "Pizza", value: "PIZZA" },
+    { label: "Burger", value: "BURGER" },
+    { label: "Sushi", value: "SUSHI" },
+    { label: "Pasta", value: "PASTA" },
+    { label: "Meat", value: "MEAT" },
+    { label: "Fish", value: "FISH" },
     { label: "Seafood", value: "SEAFOOD" },
+    { label: "Kebab", value: "KEBAB" },
     { label: "Vegan", value: "VEGAN" },
-    { label: "Desserts", value: "DESSERTS" },
-    { label: "Coffee & Bakery", value: "COFFEE_BAKERY" },
-    { label: "Fine Dining", value: "FINE_DINING" },
-    { label: "Local Food", value: "LOCAL_FOOD" },
+    { label: "Vegetarian", value: "VEGETARIAN" },
 ];
 
 export default function EditRestaurantPage({ params }: { params: Promise<{ id: string }> }) {
@@ -94,6 +102,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
     const [restaurantDescription, setRestaurantDescription] = useState("");
     const [restaurantType, setRestaurantType] = useState("RESTAURANT");
     const [selectedCuisines, setSelectedCuisines] = useState<string[]>([]);
+    const [selectedFoodTypes, setSelectedFoodTypes] = useState<string[]>([]);
     const [restaurantWebsite, setRestaurantWebsite] = useState("");
 
     // Address states
@@ -106,6 +115,8 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
     // Image states
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+    const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
 
     // Schedule states
     const [activeDay, setActiveDay] = useState<Day>('Mon');
@@ -118,6 +129,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
             setRestaurantDescription(restaurant.restaurantDescription || "");
             setRestaurantType(restaurant.restaurantType || "RESTAURANT");
             setSelectedCuisines(restaurant.cuisineType || []);
+            setSelectedFoodTypes(restaurant.foodType || []);
             setRestaurantWebsite(restaurant.restaurantWebsite || "");
 
             const addr = restaurant.restaurantAddress || {};
@@ -129,6 +141,11 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
 
             if (restaurant.restaurantImage) {
                 setImagePreview(getImageUrl(restaurant.restaurantImage));
+            }
+
+            if (restaurant.restaurantImages?.length > 0) {
+                const previews = restaurant.restaurantImages.map((img: string) => getImageUrl(img));
+                setGalleryPreviews(previews);
             }
 
             // Populate schedule state
@@ -176,6 +193,23 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
         setSelectedCuisines((prev) => (prev.includes(cuisine) ? prev.filter((c) => c !== cuisine) : [...prev, cuisine]));
     };
 
+    const toggleFoodType = (foodType: string) => {
+        setSelectedFoodTypes((prev) => (prev.includes(foodType) ? prev.filter((f) => f !== foodType) : [...prev, foodType]));
+    };
+
+    const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        setGalleryFiles(prev => [...prev, ...files]);
+        const newPreviews = files.map(file => URL.createObjectURL(file));
+        setGalleryPreviews(prev => [...prev, ...newPreviews]);
+    };
+
+    const handleRemoveGalleryPreview = (indexToRemove: number) => {
+        URL.revokeObjectURL(galleryPreviews[indexToRemove]);
+        setGalleryFiles(prev => prev.filter((_, i) => i !== indexToRemove));
+        setGalleryPreviews(prev => prev.filter((_, i) => i !== indexToRemove));
+    };
+
     // Toggle Slot for Schedule
     const toggleSlot = (day: Day, slot: Slot) => {
         setDaySlots(prev => ({
@@ -209,7 +243,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
 
     // Schedule Validations
     const openDays = ALL_DAYS.filter(day => daySlots[day].Lunch.enabled || daySlots[day].Dinner.enabled);
-    const daysValid = openDays.length >= 5;
+    const daysValid = openDays.length >= 1;
     const timesValid = openDays.every(day =>
         SLOT_NAMES.every(slot => {
             const data = daySlots[day][slot];
@@ -238,6 +272,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                     restaurantDescription,
                     restaurantType,
                     cuisineType: selectedCuisines,
+                    foodType: selectedFoodTypes,
                     restaurantWebsite,
                     restaurantAddress: {
                         street,
@@ -252,6 +287,10 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
             if (imageFile) {
                 formData.append("restaurantImage", imageFile);
             }
+
+            galleryFiles.forEach((img) => {
+                formData.append("restaurantImages", img);
+            });
 
             const confirmResult = await Swal.fire({
                 title: "Save Details?",
@@ -443,6 +482,30 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                             })}
                         </div>
                     </div>
+
+                    {/* Food Types Picker */}
+                    <div className="bg-[#171717] border border-white/5 rounded-2xl p-6">
+                        <div className="mb-4">
+                            <h3 className="text-base font-bold text-white">Food Types</h3>
+                            <p className="text-xs text-zinc-500 mt-1">Select one or more food type tags matching the menu.</p>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2.5">
+                            {FOOD_TYPES.map((f) => {
+                                const isSelected = selectedFoodTypes.includes(f.value);
+                                return (
+                                    <button
+                                        type="button"
+                                        key={f.value}
+                                        onClick={() => toggleFoodType(f.value)}
+                                        className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all border ${isSelected ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981] shadow-lg shadow-[#10B981]/5" : "bg-white/3 border-white/5 text-zinc-400 hover:text-white hover:bg-white/5"}`}
+                                    >
+                                        {f.label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
                 </div>
 
                 {/* Right Column: Image & Address */}
@@ -536,6 +599,40 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                         </div>
                     </div>
 
+                    {/* Gallery Images */}
+                    <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 space-y-4">
+                        <h3 className="text-base font-bold text-white">Restaurant Gallery</h3>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Upload Gallery Images</label>
+                            <input
+                                type="file"
+                                multiple
+                                accept="image/*"
+                                onChange={handleGalleryChange}
+                                className="w-full bg-white/3 border border-white/5 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-[#10B981]/50 transition-all placeholder-zinc-600"
+                            />
+                        </div>
+                        {galleryPreviews.length > 0 && (
+                            <div className="grid grid-cols-3 gap-2">
+                                {galleryPreviews.map((url, index) => (
+                                    <div key={index} className="relative aspect-square rounded-xl overflow-hidden border border-white/10 group bg-white/3">
+                                        <img src={url} alt={`Gallery preview ${index + 1}`} className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRemoveGalleryPreview(index)}
+                                            className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-black transition-colors"
+                                            title="Remove image"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
                     {/* Actions Panel */}
                     <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 flex flex-col gap-3">
                         <button type="submit" disabled={isUpdating} className="w-full py-3.5 rounded-xl bg-[#10B981] hover:bg-[#0da673] text-white text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-[#10B981]/10 disabled:opacity-50 disabled:cursor-not-allowed">
@@ -598,7 +695,7 @@ export default function EditRestaurantPage({ params }: { params: Promise<{ id: s
                         {!daysValid && (
                             <p className="flex items-center gap-1.5 text-xs text-red-500 font-medium">
                                 <AlertCircle className="w-4 h-4" />
-                                Minimum 5 working days required (currently {openDays.length} selected)
+                                Minimum 1 working days required (currently {openDays.length} selected)
                             </p>
                         )}
                     </div>

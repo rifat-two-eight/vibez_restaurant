@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { useAppSelector, useAppDispatch } from '@/redux/hooks';
 import { currentUser, logOut } from '@/redux/features/auth/authSlice';
 import { LogOut, LayoutDashboard } from 'lucide-react';
+import { getImageUrl } from '@/lib/utils';
 
 export default function Header() {
   const pathname = usePathname();
@@ -76,7 +77,7 @@ export default function Header() {
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-zinc-100 border border-zinc-200 overflow-hidden hover:ring-2 hover:ring-[#CF0738] transition-all"
               >
                 {user.profileImage ? (
-                  <Image src={user.profileImage} alt={user.name} width={40} height={40} className="w-full h-full object-cover" />
+                  <Image src={getImageUrl(user.profileImage)} alt={user.name} width={40} height={40} className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-zinc-600 font-bold text-lg">{user.name?.charAt(0).toUpperCase()}</span>
                 )}

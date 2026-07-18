@@ -131,7 +131,7 @@ export default function SchedulePage() {
     };
 
     const openDays = ALL_DAYS.filter(day => daySlots[day].Lunch.enabled || daySlots[day].Dinner.enabled);
-    const daysValid = openDays.length >= 5;
+    const daysValid = openDays.length >= 1;
     const slotsValid = true;
     const timesValid = openDays.every(day =>
         SLOT_NAMES.every(slot => {
@@ -228,7 +228,7 @@ export default function SchedulePage() {
                     {!daysValid && (
                         <p className="flex items-center gap-1.5 text-xs text-red-500 font-medium">
                             <AlertCircle className="w-3.5 h-3.5" />
-                            Minimum 5 working days required (currently {openDays.length} selected)
+                            Minimum 1 working days required (currently {openDays.length} selected)
                         </p>
                     )}
                 </div>
