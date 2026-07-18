@@ -94,6 +94,31 @@ export default function Partner() {
     const [lat, setLat] = useState('');
     const [lng, setLng] = useState('');
 
+    const [galleryImages, setGalleryImages] = useState<File[]>([]);
+    const [galleryPreviews, setGalleryPreviews] = useState<string[]>([]);
+
+    const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        setGalleryImages(prev => [...prev, ...files]);
+
+        const newPreviews = files.map(file => URL.createObjectURL(file));
+        setGalleryPreviews(prev => [...prev, ...newPreviews]);
+    };
+
+    const handleRemovePreview = (indexToRemove: number) => {
+        URL.revokeObjectURL(galleryPreviews[indexToRemove]);
+        setGalleryImages(prev => prev.filter((_, i) => i !== indexToRemove));
+        setGalleryPreviews(prev => prev.filter((_, i) => i !== indexToRemove));
+    };
+
+    const previewsRef = useRef<string[]>([]);
+    previewsRef.current = galleryPreviews;
+    useEffect(() => {
+        return () => {
+            previewsRef.current.forEach(url => URL.revokeObjectURL(url));
+        };
+    }, []);
+
     const [registerRestaurant, { isLoading }] = useRegisterRestaurantMutation();
 
     const initAutocomplete = () => {
@@ -273,8 +298,12 @@ export default function Partner() {
             submissionData.append('restaurantImage', restaurantImage);
         }
 
+        galleryImages.forEach((img) => {
+            submissionData.append('restaurantImages', img);
+        });
+
         try {
-            const response = await registerRestaurant(payload).unwrap();
+            const response = await registerRestaurant(submissionData).unwrap();
             toast.success("Restaurant application submitted successfully!");
 
             if (response.data?.user && response.data?.accessToken) {
@@ -477,8 +506,37 @@ export default function Partner() {
                                     </div>
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
-                                    <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Restaurant Image</label>
+                                    <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Restaurant Image (Cover/Banner)</label>
                                     <input type="file" name="restaurantImage" accept="image/*" className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all" />
+                                </div>
+                                <div className="space-y-2 md:col-span-2">
+                                    <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Restaurant Gallery Images (Multiple)</label>
+                                    <input 
+                                        type="file" 
+                                        multiple 
+                                        accept="image/*" 
+                                        onChange={handleGalleryChange}
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all" 
+                                    />
+                                    {galleryPreviews.length > 0 && (
+                                        <div className="grid grid-cols-4 md:grid-cols-6 gap-3 mt-3">
+                                            {galleryPreviews.map((url, index) => (
+                                                <div key={index} className="relative aspect-square w-full rounded-xl overflow-hidden border border-zinc-200 group bg-zinc-50">
+                                                    <img src={url} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemovePreview(index)}
+                                                        className="absolute top-1.5 right-1.5 bg-black/60 text-white rounded-full p-1 hover:bg-black transition-colors"
+                                                        title="Remove Image"
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </section>
