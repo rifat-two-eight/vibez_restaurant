@@ -779,10 +779,10 @@ export default function Partner() {
                             )}
 
                             {/* Validation warning for number of active days */}
-                            {ALL_DAYS.filter(d => daySlots[d].Lunch.enabled || daySlots[d].Dinner.enabled).length < 5 && (
+                            {ALL_DAYS.filter(d => daySlots[d].Lunch.enabled || daySlots[d].Dinner.enabled).length < 1 && (
                                 <p className="flex items-center gap-1.5 text-xs text-red-500 font-semibold mt-2">
                                     <AlertCircle className="w-3.5 h-3.5" />
-                                    Minimum 5 open days required (currently {ALL_DAYS.filter(d => daySlots[d].Lunch.enabled || daySlots[d].Dinner.enabled).length} selected)
+                                    Minimum 1 open days required (currently {ALL_DAYS.filter(d => daySlots[d].Lunch.enabled || daySlots[d].Dinner.enabled).length} selected)
                                 </p>
                             )}
                         </section>
