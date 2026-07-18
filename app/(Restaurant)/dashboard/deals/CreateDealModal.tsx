@@ -77,7 +77,8 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
     const [percentDiscountValue, setPercentDiscountValue] = useState<10 | 15 | 20 | 30>(10);
     const [percentDiscountAppliesTo, setPercentDiscountAppliesTo] = useState<PercentDiscountAppliesTo>(PercentDiscountAppliesTo.ENTIRE_ORDER);
     const [percentDiscountCategory, setPercentDiscountCategory] = useState<PercentDiscountCategory>(PercentDiscountCategory.MAIN_COURSE);
-    const [fixedDiscountAmount, setFixedDiscountAmount] = useState<number>(5);
+    const [fixedDiscountAmount, setFixedDiscountAmount] = useState<number>(10);
+    const [fixedDiscountMinSpend, setFixedDiscountMinSpend] = useState<number>(0);
 
     // Step 3 State
     const [selectedDays, setSelectedDays] = useState<DayOfWeek[]>([DayOfWeek.FRIDAY]);
@@ -93,7 +94,7 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
             case DealType.PERCENT_DISCOUNT:
                 return `${percentDiscountValue}% Off ${percentDiscountAppliesTo === PercentDiscountAppliesTo.CATEGORY ? percentDiscountCategory.replace('_', ' ') : 'Entire Order'}`;
             case DealType.FIXED_DISCOUNT:
-                return `CHF${fixedDiscountAmount} Off`;
+                return `CHF ${fixedDiscountAmount} Off (Min Spend CHF ${fixedDiscountMinSpend})`;
             default:
                 return "New Deal";
         }
@@ -129,7 +130,16 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                 category: percentDiscountAppliesTo === PercentDiscountAppliesTo.CATEGORY ? percentDiscountCategory : undefined
             };
         } else if (dealType === DealType.FIXED_DISCOUNT) {
-            payload.fixedDiscount = { amount: fixedDiscountAmount };
+            if (fixedDiscountMinSpend < 0 || fixedDiscountMinSpend > 100) {
+                return toast.error("Minimum spending amount must be from CHF 0 to CHF 100");
+            }
+            if (fixedDiscountAmount < 10) {
+                return toast.error("The minimum discount should be CHF 10.");
+            }
+            payload.fixedDiscount = {
+                minSpend: fixedDiscountMinSpend,
+                amount: fixedDiscountAmount,
+            };
         }
 
         try {
@@ -312,20 +322,32 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                             )}
 
                             {dealType === DealType.FIXED_DISCOUNT && (
-                                <div className="space-y-3">
-                                    <label className="block text-sm font-bold text-zinc-800">Fixed Discount Amount (CHF)</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {[5, 10, 15, 20, 25, 30].map(val => (
-                                            <button
-                                                key={val}
-                                                onClick={() => setFixedDiscountAmount(val)}
-                                                className={`py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
-                                                    fixedDiscountAmount === val ? 'border-[#013622] bg-[#013622]/5 text-[#013622]' : 'border-zinc-100 text-zinc-600 hover:bg-zinc-50'
-                                                }`}
-                                            >
-                                                CHF {val}
-                                            </button>
-                                        ))}
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-zinc-800">Minimum Spending Amount (CHF)</label>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="100"
+                                            value={fixedDiscountMinSpend}
+                                            onChange={(e) => setFixedDiscountMinSpend(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                                            className="w-full py-3 px-4 rounded-xl border border-zinc-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#013622]"
+                                            placeholder="Enter minimum spending (0 to 100)"
+                                        />
+                                        <p className="text-xs text-zinc-500">Allowed range: CHF 0 to CHF 100</p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="block text-sm font-bold text-zinc-800">Fixed Discount Amount (CHF)</label>
+                                        <input
+                                            type="number"
+                                            min="10"
+                                            value={fixedDiscountAmount}
+                                            onChange={(e) => setFixedDiscountAmount(Math.max(10, Number(e.target.value) || 10))}
+                                            className="w-full py-3 px-4 rounded-xl border border-zinc-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#013622]"
+                                            placeholder="Minimum CHF 10"
+                                        />
+                                        <p className="text-xs text-zinc-500">Must be CHF 10 or more</p>
                                     </div>
                                 </div>
                             )}
