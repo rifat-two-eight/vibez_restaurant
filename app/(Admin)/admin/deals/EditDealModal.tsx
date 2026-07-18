@@ -87,7 +87,10 @@ export default function EditDealModal({ deal, onClose, onSuccess }: EditDealModa
         deal.percentDiscount?.category || PercentDiscountCategory.MAIN_COURSE
     );
     const [fixedDiscountAmount, setFixedDiscountAmount] = useState<number>(
-        deal.fixedDiscount?.amount || 5
+        deal.fixedDiscount?.amount || 10
+    );
+    const [fixedDiscountMinSpend, setFixedDiscountMinSpend] = useState<number>(
+        deal.fixedDiscount?.minSpend || 0
     );
 
     // Schedule & Claim States
@@ -111,7 +114,7 @@ export default function EditDealModal({ deal, onClose, onSuccess }: EditDealModa
                         : "Entire Order"
                 }`;
             case DealType.FIXED_DISCOUNT:
-                return `CHF${fixedDiscountAmount} Off`;
+                return `CHF ${fixedDiscountAmount} Off (Min Spend CHF ${fixedDiscountMinSpend})`;
             default:
                 return "New Deal";
         }
@@ -160,7 +163,16 @@ export default function EditDealModal({ deal, onClose, onSuccess }: EditDealModa
             payload.freeItem = null;
             payload.fixedDiscount = null;
         } else if (dealType === DealType.FIXED_DISCOUNT) {
-            payload.fixedDiscount = { amount: fixedDiscountAmount };
+            if (fixedDiscountMinSpend < 0 || fixedDiscountMinSpend > 100) {
+                return toast.error("Minimum spending amount must be from CHF 0 to CHF 100");
+            }
+            if (fixedDiscountAmount < 10) {
+                return toast.error("The minimum discount should be CHF 10.");
+            }
+            payload.fixedDiscount = {
+                minSpend: fixedDiscountMinSpend,
+                amount: fixedDiscountAmount,
+            };
             payload.twoForOne = null;
             payload.freeItem = null;
             payload.percentDiscount = null;
@@ -359,23 +371,32 @@ export default function EditDealModal({ deal, onClose, onSuccess }: EditDealModa
                         )}
 
                         {dealType === DealType.FIXED_DISCOUNT && (
-                            <div className="space-y-3">
-                                <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">Fixed Discount Amount (CHF)</label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {[5, 10, 15, 20, 25, 30].map((val) => (
-                                        <button
-                                            key={val}
-                                            type="button"
-                                            onClick={() => setFixedDiscountAmount(val)}
-                                            className={`py-3 rounded-xl text-xs font-bold border transition-all ${
-                                                fixedDiscountAmount === val
-                                                    ? "bg-[#10B981]/15 border-[#10B981]/50 text-[#10B981]"
-                                                    : "bg-white/3 border-white/5 text-zinc-400 hover:bg-white/5 hover:text-white"
-                                            }`}
-                                        >
-                                            CHF {val}
-                                        </button>
-                                    ))}
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">Minimum Spending Amount (CHF)</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="100"
+                                        value={fixedDiscountMinSpend}
+                                        onChange={(e) => setFixedDiscountMinSpend(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                                        className="w-full py-3 px-4 rounded-xl bg-white/3 border border-white/5 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-[#10B981]"
+                                        placeholder="Enter minimum spending (0 to 100)"
+                                    />
+                                    <p className="text-[10px] text-zinc-500">Allowed range: CHF 0 to CHF 100</p>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-xs font-bold text-zinc-400 uppercase tracking-wider">Fixed Discount Amount (CHF)</label>
+                                    <input
+                                        type="number"
+                                        min="10"
+                                        value={fixedDiscountAmount}
+                                        onChange={(e) => setFixedDiscountAmount(Math.max(10, Number(e.target.value) || 10))}
+                                        className="w-full py-3 px-4 rounded-xl bg-white/3 border border-white/5 text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-[#10B981]"
+                                        placeholder="Minimum CHF 10"
+                                    />
+                                    <p className="text-[10px] text-zinc-500">Must be CHF 10 or more</p>
                                 </div>
                             </div>
                         )}
