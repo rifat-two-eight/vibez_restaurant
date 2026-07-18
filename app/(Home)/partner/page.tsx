@@ -91,6 +91,8 @@ export default function Partner() {
     const [zipCode, setZipCode] = useState('');
     const [country, setCountry] = useState('');
     const [restaurantDescription, setRestaurantDescription] = useState('');
+    const [lat, setLat] = useState('');
+    const [lng, setLng] = useState('');
 
     const [registerRestaurant, { isLoading }] = useRegisterRestaurantMutation();
 
@@ -132,6 +134,11 @@ export default function Partner() {
                 if (stateName) setState(stateName);
                 if (zip) setZipCode(zip);
                 if (countryName) setCountry(countryName);
+
+                if (place.geometry && place.geometry.location) {
+                    setLat(place.geometry.location.lat().toString());
+                    setLng(place.geometry.location.lng().toString());
+                }
 
                 if (place.editorial_summary && place.editorial_summary.overview) {
                     setRestaurantDescription(place.editorial_summary.overview);
@@ -246,7 +253,9 @@ export default function Partner() {
                 city: formData.get('city'),
                 state: formData.get('state') || "NY",
                 zipCode: formData.get('zipCode') || "10001",
-                country: formData.get('country') || "USA"
+                country: formData.get('country') || "USA",
+                lat: lat,
+                lng: lng
             },
             restaurantOpenHours
         };
@@ -284,7 +293,7 @@ export default function Partner() {
     return (
         <div className="container mx-auto px-4 py-20">
             <Script
-                src={`https://maps.googleapis.com/maps/api/js?key=AIzaSyDJXC1_hT7bYHo1qQU56OOAQTjz4FPq0Ks&libraries=places`}
+                src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_MAPS_API_KEY || 'AIzaSyDJXC1_hT7bYHo1qQU56OOAQTjz4FPq0Ks'}&libraries=places`}
                 strategy="afterInteractive"
                 onLoad={initAutocomplete}
             />

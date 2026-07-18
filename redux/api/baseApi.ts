@@ -14,12 +14,12 @@ const baseQuery = fetchBaseQuery({
     credentials: "include",
     prepareHeaders: (headers, { getState }) => {
         let token = (getState() as RootState)?.auth?.token;
-        if (!token && typeof window !== 'undefined') {
-            token = localStorage.getItem('accessToken');
+        if (!token && typeof window !== "undefined") {
+            token = localStorage.getItem("accessToken");
         }
-        
-        console.log("prepareHeaders - Token being used:", token);
-        
+
+        // console.log("prepareHeaders - Token being used:", token);
+
         if (token && token !== "undefined" && token !== "null") {
             headers.set("Authorization", `Bearer ${token}`);
         } else {
@@ -32,9 +32,7 @@ const baseQuery = fetchBaseQuery({
 export const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQueryError> = async (args, api, extraOptions) => {
     let result = await baseQuery(args, api, extraOptions);
 
-    const isAuthEndpoint = typeof args === 'string' 
-        ? args.includes('/auth/login') || args.includes('/auth/refresh-token')
-        : args.url?.includes('/auth/login') || args.url?.includes('/auth/refresh-token');
+    const isAuthEndpoint = typeof args === "string" ? args.includes("/auth/login") || args.includes("/auth/refresh-token") : args.url?.includes("/auth/login") || args.url?.includes("/auth/refresh-token");
 
     if ((result?.error?.status === 401 || result?.error?.status === 403) && !isAuthEndpoint) {
         const refreshResult = await baseQuery({ url: "/auth/refresh-token", method: "POST", credentials: "include" }, api, extraOptions);
@@ -48,12 +46,12 @@ export const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, Fetch
                 result = await baseQuery(args, api, extraOptions);
             } else {
                 api.dispatch(logOut());
-                if (typeof window !== 'undefined') window.location.href = '/login';
+                if (typeof window !== "undefined") window.location.href = "/login";
                 return { error: { status: 401, data: "Session expired" } };
             }
         } else {
             api.dispatch(logOut());
-            if (typeof window !== 'undefined') window.location.href = '/login';
+            if (typeof window !== "undefined") window.location.href = "/login";
             return { error: { status: 401, data: "Session expired" } };
         }
     }

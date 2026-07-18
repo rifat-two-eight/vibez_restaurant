@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Users, UserCheck, Award, Crown, Search, Filter, Edit3, Eye, Ban, CheckCircle, X, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useGetUserStatsQuery, useGetAllUsersQuery, useToggleUserStatusMutation, useUpdateUserMutation } from "../../../../redux/features/dashboard/dashboardApi";
+import { useGetUserStatsQuery, useGetAllUsersQuery, useToggleUserStatusMutation, useUpdateUserMutation } from "../../../../redux/features/user/userApi";
 
 const userData = [
     { name: "Sarah Johnson", email: "sarah.j@email.com", type: "Influencer", code: "SARAH2024", referrals: 142, subs: 98, earnings: "CHF 4,260", commission: "15%", plan: "Annual" },
