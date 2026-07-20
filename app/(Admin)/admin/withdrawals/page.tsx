@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import {
     useGetAllWithdrawalsQuery,
+    useGetWithdrawalStatsQuery,
     useApproveWithdrawalMutation,
     useRejectWithdrawalMutation,
 } from "@/redux/features/dashboard/dashboardApi";
@@ -59,7 +60,8 @@ export default function AdminWithdrawalsPage() {
     const [rejectFeedback, setRejectFeedback] = useState<string>("");
     const [processingId, setProcessingId] = useState<string | null>(null);
 
-    // Query Withdrawals from Backend
+    // Query Stats & Withdrawals from Backend
+    const { data: statsResponse, refetch: refetchStats } = useGetWithdrawalStatsQuery();
     const queryStatus = selectedStatus === "ALL" ? undefined : selectedStatus;
     const { data: responseData, isLoading, isFetching, refetch } = useGetAllWithdrawalsQuery({
         status: queryStatus,
@@ -72,17 +74,20 @@ export default function AdminWithdrawalsPage() {
 
     const rawWithdrawals: IWithdrawalItem[] = responseData?.data || [];
     const meta = responseData?.meta || { page: 1, limit: 10, total: 0, totalPages: 1 };
+    const stats = statsResponse?.data;
 
-    // Calculate Summary Metrics from fetched data
-    const totalCount = meta.total || rawWithdrawals.length;
-    const pendingItems = rawWithdrawals.filter((w) => w.status === "PENDING");
-    const approvedItems = rawWithdrawals.filter((w) => w.status === "APPROVED");
-    const rejectedItems = rawWithdrawals.filter((w) => w.status === "REJECTED");
+    // Use Backend Stats data
+    const totalCount = stats?.totalCount ?? meta.total ?? rawWithdrawals.length;
+    const overallTotalAmount = stats?.totalAmount ?? rawWithdrawals.reduce((acc, curr) => acc + (curr.amount || 0), 0);
 
-    const pendingTotalAmount = pendingItems.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-    const approvedTotalAmount = approvedItems.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-    const rejectedTotalAmount = rejectedItems.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-    const overallTotalAmount = rawWithdrawals.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+    const pendingCount = stats?.pendingCount ?? rawWithdrawals.filter((w) => w.status === "PENDING").length;
+    const pendingTotalAmount = stats?.pendingAmount ?? rawWithdrawals.filter((w) => w.status === "PENDING").reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+    const approvedCount = stats?.approvedCount ?? rawWithdrawals.filter((w) => w.status === "APPROVED").length;
+    const approvedTotalAmount = stats?.approvedAmount ?? rawWithdrawals.filter((w) => w.status === "APPROVED").reduce((acc, curr) => acc + (curr.amount || 0), 0);
+
+    const rejectedCount = stats?.rejectedCount ?? rawWithdrawals.filter((w) => w.status === "REJECTED").length;
+    const rejectedTotalAmount = stats?.rejectedAmount ?? rawWithdrawals.filter((w) => w.status === "REJECTED").reduce((acc, curr) => acc + (curr.amount || 0), 0);
 
     // Client-side search filtering (by user name, email, or withdrawal ID)
     const filteredWithdrawals = rawWithdrawals.filter((item) => {
@@ -150,7 +155,10 @@ export default function AdminWithdrawalsPage() {
                 </div>
 
                 <button
-                    onClick={() => refetch()}
+                    onClick={() => {
+                        refetch();
+                        refetchStats();
+                    }}
                     disabled={isFetching}
                     className="self-start md:self-auto flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#171717] border border-white/10 hover:border-white/20 text-zinc-300 hover:text-white text-xs font-semibold transition-all shadow-sm active:scale-95 disabled:opacity-50"
                 >
@@ -193,7 +201,7 @@ export default function AdminWithdrawalsPage() {
                         CHF {pendingTotalAmount.toFixed(2)}
                     </h3>
                     <p className="text-xs text-amber-400/80 font-medium">
-                        {pendingItems.length} request{pendingItems.length !== 1 ? "s" : ""} awaiting action
+                        {pendingCount} request{pendingCount !== 1 ? "s" : ""} awaiting action
                     </p>
                 </div>
 
@@ -211,7 +219,7 @@ export default function AdminWithdrawalsPage() {
                         CHF {approvedTotalAmount.toFixed(2)}
                     </h3>
                     <p className="text-xs text-emerald-400/80 font-medium">
-                        {approvedItems.length} payout{approvedItems.length !== 1 ? "s" : ""} completed
+                        {approvedCount} payout{approvedCount !== 1 ? "s" : ""} completed
                     </p>
                 </div>
 
@@ -229,7 +237,7 @@ export default function AdminWithdrawalsPage() {
                         CHF {rejectedTotalAmount.toFixed(2)}
                     </h3>
                     <p className="text-xs text-rose-400/80 font-medium">
-                        {rejectedItems.length} request{rejectedItems.length !== 1 ? "s" : ""} refunded
+                        {rejectedCount} request{rejectedCount !== 1 ? "s" : ""} refunded
                     </p>
                 </div>
             </div>

@@ -18,6 +18,10 @@ export const dashboardApi = baseApi.injectEndpoints({
             query: () => '/user-subscriptions/admin/monthly-commission-graph',
             providesTags: ['Dashboard'],
         }),
+        getWithdrawalStats: builder.query<any, void>({
+            query: () => "/withdrawals/stats",
+            providesTags: ["Dashboard", "Withdrawal"],
+        }),
         getAllWithdrawals: builder.query<any, { status?: string; page?: number; limit?: number } | void>({
             query: (params) => {
                 const searchParams = new URLSearchParams();
@@ -93,6 +97,7 @@ export const {
     useGetRevenueBreakdownQuery, 
     useGetAffiliateDashboardStatsQuery,
     useGetMonthlyCommissionGraphQuery,
+    useGetWithdrawalStatsQuery,
     useGetAllWithdrawalsQuery,
     useApproveWithdrawalMutation,
     useRejectWithdrawalMutation,
