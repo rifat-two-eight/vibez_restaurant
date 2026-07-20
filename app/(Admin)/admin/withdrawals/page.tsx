@@ -1,30 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-    Wallet,
-    Search,
-    RefreshCw,
-    CheckCircle2,
-    XCircle,
-    Eye,
-    Clock,
-    DollarSign,
-    User,
-    CreditCard,
-    AlertCircle,
-    Building2,
-    Send,
-    ChevronLeft,
-    ChevronRight,
-    ArrowUpRight,
-} from "lucide-react";
-import {
-    useGetAllWithdrawalsQuery,
-    useGetWithdrawalStatsQuery,
-    useApproveWithdrawalMutation,
-    useRejectWithdrawalMutation,
-} from "@/redux/features/dashboard/dashboardApi";
+import { Wallet, Search, RefreshCw, CheckCircle2, XCircle, Eye, Clock, DollarSign, User, CreditCard, AlertCircle, Building2, Send, ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react";
+import { useGetAllWithdrawalsQuery, useGetWithdrawalStatsQuery, useApproveWithdrawalMutation, useRejectWithdrawalMutation } from "@/redux/features/dashboard/dashboardApi";
 import { toast } from "sonner";
 
 interface IWithdrawalItem {
@@ -63,7 +41,12 @@ export default function AdminWithdrawalsPage() {
     // Query Stats & Withdrawals from Backend
     const { data: statsResponse, refetch: refetchStats } = useGetWithdrawalStatsQuery();
     const queryStatus = selectedStatus === "ALL" ? undefined : selectedStatus;
-    const { data: responseData, isLoading, isFetching, refetch } = useGetAllWithdrawalsQuery({
+    const {
+        data: responseData,
+        isLoading,
+        isFetching,
+        refetch,
+    } = useGetAllWithdrawalsQuery({
         status: queryStatus,
         page: currentPage,
         limit,
@@ -145,13 +128,9 @@ export default function AdminWithdrawalsPage() {
                         <div className="w-10 h-10 rounded-xl bg-[#1447E6]/10 border border-[#1447E6]/30 flex items-center justify-center">
                             <Wallet className="w-5 h-5 text-[#1447E6]" />
                         </div>
-                        <h1 className="text-2xl font-bold text-white tracking-tight">
-                            Withdrawal Requests
-                        </h1>
+                        <h1 className="text-2xl font-bold text-white tracking-tight">Withdrawal Requests</h1>
                     </div>
-                    <p className="text-zinc-400 text-sm">
-                        Review, process, and manage user payout requests securely.
-                    </p>
+                    <p className="text-zinc-400 text-sm">Review, process, and manage user payout requests securely.</p>
                 </div>
 
                 <button
@@ -172,16 +151,12 @@ export default function AdminWithdrawalsPage() {
                 {/* Total Requests Card */}
                 <div className="bg-[#171717] border border-white/5 rounded-2xl p-6 relative overflow-hidden group hover:border-white/10 transition-all">
                     <div className="flex items-center justify-between mb-4">
-                        <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                            Total Requests
-                        </span>
+                        <span className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Total Requests</span>
                         <div className="w-9 h-9 rounded-xl bg-white/5 flex items-center justify-center text-zinc-300">
                             <Wallet className="w-4.5 h-4.5" />
                         </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-white tracking-tight mb-1">
-                        {totalCount}
-                    </h3>
+                    <h3 className="text-2xl font-bold text-white tracking-tight mb-1">{totalCount}</h3>
                     <p className="text-xs text-zinc-500 font-medium">
                         Sum: <span className="text-zinc-300 font-semibold">CHF {overallTotalAmount.toFixed(2)}</span>
                     </p>
@@ -190,16 +165,12 @@ export default function AdminWithdrawalsPage() {
                 {/* Pending Payouts Card */}
                 <div className="bg-[#171717] border border-amber-500/20 rounded-2xl p-6 relative overflow-hidden group hover:border-amber-500/40 transition-all">
                     <div className="flex items-center justify-between mb-4">
-                        <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">
-                            Pending Payouts
-                        </span>
+                        <span className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Pending Payouts</span>
                         <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center text-amber-400">
                             <Clock className="w-4.5 h-4.5" />
                         </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-white tracking-tight mb-1">
-                        CHF {pendingTotalAmount.toFixed(2)}
-                    </h3>
+                    <h3 className="text-2xl font-bold text-white tracking-tight mb-1">CHF {pendingTotalAmount.toFixed(2)}</h3>
                     <p className="text-xs text-amber-400/80 font-medium">
                         {pendingCount} request{pendingCount !== 1 ? "s" : ""} awaiting action
                     </p>
@@ -208,16 +179,12 @@ export default function AdminWithdrawalsPage() {
                 {/* Approved Payouts Card */}
                 <div className="bg-[#171717] border border-emerald-500/20 rounded-2xl p-6 relative overflow-hidden group hover:border-emerald-500/40 transition-all">
                     <div className="flex items-center justify-between mb-4">
-                        <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
-                            Approved Payouts
-                        </span>
+                        <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Approved Payouts</span>
                         <div className="w-9 h-9 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-400">
                             <CheckCircle2 className="w-4.5 h-4.5" />
                         </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-white tracking-tight mb-1">
-                        CHF {approvedTotalAmount.toFixed(2)}
-                    </h3>
+                    <h3 className="text-2xl font-bold text-white tracking-tight mb-1">CHF {approvedTotalAmount.toFixed(2)}</h3>
                     <p className="text-xs text-emerald-400/80 font-medium">
                         {approvedCount} payout{approvedCount !== 1 ? "s" : ""} completed
                     </p>
@@ -226,16 +193,12 @@ export default function AdminWithdrawalsPage() {
                 {/* Rejected Payouts Card */}
                 <div className="bg-[#171717] border border-rose-500/20 rounded-2xl p-6 relative overflow-hidden group hover:border-rose-500/40 transition-all">
                     <div className="flex items-center justify-between mb-4">
-                        <span className="text-xs font-semibold text-rose-400 uppercase tracking-wider">
-                            Rejected Payouts
-                        </span>
+                        <span className="text-xs font-semibold text-rose-400 uppercase tracking-wider">Rejected Payouts</span>
                         <div className="w-9 h-9 rounded-xl bg-rose-500/10 flex items-center justify-center text-rose-400">
                             <XCircle className="w-4.5 h-4.5" />
                         </div>
                     </div>
-                    <h3 className="text-2xl font-bold text-white tracking-tight mb-1">
-                        CHF {rejectedTotalAmount.toFixed(2)}
-                    </h3>
+                    <h3 className="text-2xl font-bold text-white tracking-tight mb-1">CHF {rejectedTotalAmount.toFixed(2)}</h3>
                     <p className="text-xs text-rose-400/80 font-medium">
                         {rejectedCount} request{rejectedCount !== 1 ? "s" : ""} refunded
                     </p>
@@ -258,11 +221,7 @@ export default function AdminWithdrawalsPage() {
                                 setSelectedStatus(tab.key);
                                 setCurrentPage(1);
                             }}
-                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                                selectedStatus === tab.key
-                                    ? "bg-[#1447E6] text-white shadow-md shadow-[#1447E6]/25"
-                                    : "text-zinc-400 hover:text-white hover:bg-white/5"
-                            }`}
+                            className={`px-4 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${selectedStatus === tab.key ? "bg-[#1447E6] text-white shadow-md shadow-[#1447E6]/25" : "text-zinc-400 hover:text-white hover:bg-white/5"}`}
                         >
                             {tab.label}
                         </button>
@@ -280,10 +239,7 @@ export default function AdminWithdrawalsPage() {
                         className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-zinc-500 text-xs focus:outline-none focus:border-[#1447E6] transition-all"
                     />
                     {searchTerm && (
-                        <button
-                            onClick={() => setSearchTerm("")}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500 hover:text-white"
-                        >
+                        <button onClick={() => setSearchTerm("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500 hover:text-white">
                             Clear
                         </button>
                     )}
@@ -304,11 +260,7 @@ export default function AdminWithdrawalsPage() {
                         </div>
                         <h4 className="text-white font-bold text-base mb-1">No Withdrawal Requests Found</h4>
                         <p className="text-zinc-500 text-xs max-w-sm mx-auto">
-                            {searchTerm
-                                ? `No withdrawal matching "${searchTerm}". Try clearing your search.`
-                                : selectedStatus !== "ALL"
-                                ? `There are currently no withdrawal requests marked as ${selectedStatus.toLowerCase()}.`
-                                : "No withdrawal requests exist in the system yet."}
+                            {searchTerm ? `No withdrawal matching "${searchTerm}". Try clearing your search.` : selectedStatus !== "ALL" ? `There are currently no withdrawal requests marked as ${selectedStatus.toLowerCase()}.` : "No withdrawal requests exist in the system yet."}
                         </p>
                     </div>
                 ) : (
@@ -335,87 +287,50 @@ export default function AdminWithdrawalsPage() {
                                     const isProcessingThis = processingId === item._id;
 
                                     return (
-                                        <tr
-                                            key={item._id}
-                                            className="hover:bg-white/[0.02] transition-colors group"
-                                        >
+                                        <tr key={item._id} className="hover:bg-white/2 transition-colors group">
                                             {/* User Info */}
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-10 h-10 rounded-full bg-white/10 border border-white/10 overflow-hidden flex items-center justify-center shrink-0">
-                                                        {avatar ? (
-                                                            <img
-                                                                src={avatar}
-                                                                alt={user?.name || "User Avatar"}
-                                                                className="w-full h-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <User className="w-5 h-5 text-zinc-400" />
-                                                        )}
+                                                        {avatar ? <img src={avatar} alt={user?.name || "User Avatar"} className="w-full h-full object-cover" /> : <User className="w-5 h-5 text-zinc-400" />}
                                                     </div>
                                                     <div>
-                                                        <p className="text-sm font-bold text-white group-hover:text-[#1447E6] transition-colors">
-                                                            {user?.name || "Unknown User"}
-                                                        </p>
-                                                        <p className="text-xs text-zinc-400">
-                                                            {user?.email || "No email available"}
-                                                        </p>
+                                                        <p className="text-sm font-bold text-white group-hover:text-[#1447E6] transition-colors">{user?.name || "Unknown User"}</p>
+                                                        <p className="text-xs text-zinc-400">{user?.email || "No email available"}</p>
                                                     </div>
                                                 </div>
                                             </td>
 
                                             {/* Requested Amount */}
                                             <td className="px-6 py-4">
-                                                <span className="text-sm font-bold text-white tracking-tight">
-                                                    CHF {item.amount?.toFixed(2)}
-                                                </span>
+                                                <span className="text-sm font-bold text-white tracking-tight">CHF {item.amount?.toFixed(2)}</span>
                                             </td>
 
                                             {/* Payment Method */}
                                             <td className="px-6 py-4">
                                                 <span
                                                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
-                                                        item.paymentMethod === "STRIPE"
-                                                            ? "bg-purple-500/10 text-purple-400 border border-purple-500/20"
-                                                            : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                                                        item.paymentMethod === "STRIPE" ? "bg-purple-500/10 text-purple-400 border border-purple-500/20" : "bg-blue-500/10 text-blue-400 border border-blue-500/20"
                                                     }`}
                                                 >
-                                                    {item.paymentMethod === "STRIPE" ? (
-                                                        <CreditCard className="w-3 h-3" />
-                                                    ) : (
-                                                        <Building2 className="w-3 h-3" />
-                                                    )}
+                                                    {item.paymentMethod === "STRIPE" ? <CreditCard className="w-3 h-3" /> : <Building2 className="w-3 h-3" />}
                                                     {item.paymentMethod}
                                                 </span>
                                             </td>
 
                                             {/* User Current Balance */}
                                             <td className="px-6 py-4">
-                                                <span className="text-xs font-semibold text-zinc-300">
-                                                    CHF {user?.balance !== undefined ? user.balance.toFixed(2) : "0.00"}
-                                                </span>
+                                                <span className="text-xs font-semibold text-zinc-300">CHF {user?.balance !== undefined ? user.balance.toFixed(2) : "0.00"}</span>
                                             </td>
 
                                             {/* Status Badge */}
                                             <td className="px-6 py-4">
                                                 <span
                                                     className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                                        isPending
-                                                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                                                            : isApproved
-                                                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                                            : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                                                        isPending ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : isApproved ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
                                                     }`}
                                                 >
-                                                    <div
-                                                        className={`w-1.5 h-1.5 rounded-full ${
-                                                            isPending
-                                                                ? "bg-amber-400 animate-pulse"
-                                                                : isApproved
-                                                                ? "bg-emerald-400"
-                                                                : "bg-rose-400"
-                                                        }`}
-                                                    />
+                                                    <div className={`w-1.5 h-1.5 rounded-full ${isPending ? "bg-amber-400 animate-pulse" : isApproved ? "bg-emerald-400" : "bg-rose-400"}`} />
                                                     {item.status}
                                                 </span>
                                             </td>
@@ -435,11 +350,7 @@ export default function AdminWithdrawalsPage() {
                                             <td className="px-6 py-4 text-right">
                                                 <div className="flex items-center justify-end gap-2">
                                                     {/* View Detail Button */}
-                                                    <button
-                                                        onClick={() => setDetailModalItem(item)}
-                                                        title="View Details"
-                                                        className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition-all"
-                                                    >
+                                                    <button onClick={() => setDetailModalItem(item)} title="View Details" className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition-all">
                                                         <Eye className="w-4 h-4" />
                                                     </button>
 
@@ -450,11 +361,7 @@ export default function AdminWithdrawalsPage() {
                                                             disabled={isProcessingThis}
                                                             className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-md shadow-emerald-600/20 disabled:opacity-50 flex items-center gap-1.5"
                                                         >
-                                                            {isProcessingThis ? (
-                                                                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                                            ) : (
-                                                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                                            )}
+                                                            {isProcessingThis ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                                                             <span>Approve</span>
                                                         </button>
                                                     )}
@@ -488,8 +395,7 @@ export default function AdminWithdrawalsPage() {
                     <div className="p-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400 bg-black/20">
                         <div className="flex items-center gap-3">
                             <span>
-                                Showing Page <strong className="text-white">{meta.page}</strong> of{" "}
-                                <strong className="text-white">{meta.totalPages}</strong> ({meta.total} total requests)
+                                Showing Page <strong className="text-white">{meta.page}</strong> of <strong className="text-white">{meta.totalPages}</strong> ({meta.total} total requests)
                             </span>
                         </div>
 
@@ -517,11 +423,7 @@ export default function AdminWithdrawalsPage() {
                                                 {showEllipsis && <span className="px-1 text-zinc-600">...</span>}
                                                 <button
                                                     onClick={() => setCurrentPage(pageNum)}
-                                                    className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
-                                                        currentPage === pageNum
-                                                            ? "bg-[#1447E6] text-white shadow-sm shadow-[#1447E6]/30"
-                                                            : "bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10"
-                                                    }`}
+                                                    className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${currentPage === pageNum ? "bg-[#1447E6] text-white shadow-sm shadow-[#1447E6]/30" : "bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10"}`}
                                                 >
                                                     {pageNum}
                                                 </button>
@@ -559,10 +461,7 @@ export default function AdminWithdrawalsPage() {
                                     <p className="text-xs text-zinc-400">ID: {detailModalItem._id}</p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setDetailModalItem(null)}
-                                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center transition-all"
-                            >
+                            <button onClick={() => setDetailModalItem(null)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center transition-all">
                                 ✕
                             </button>
                         </div>
@@ -573,43 +472,29 @@ export default function AdminWithdrawalsPage() {
                             <div className="bg-black/40 border border-white/5 rounded-xl p-4 flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="w-12 h-12 rounded-full bg-white/10 overflow-hidden flex items-center justify-center shrink-0 border border-white/10">
-                                        {detailModalItem.userId?.profileImage || detailModalItem.userId?.image ? (
-                                            <img
-                                                src={detailModalItem.userId?.profileImage || detailModalItem.userId?.image}
-                                                alt="User Profile"
-                                                className="w-full h-full object-cover"
-                                            />
-                                        ) : (
-                                            <User className="w-6 h-6 text-zinc-400" />
-                                        )}
+                                        {detailModalItem.userId?.profileImage || detailModalItem.userId?.image ? <img src={detailModalItem.userId?.profileImage || detailModalItem.userId?.image} alt="User Profile" className="w-full h-full object-cover" /> : <User className="w-6 h-6 text-zinc-400" />}
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-bold text-white">
-                                            {detailModalItem.userId?.name || "Unknown User"}
-                                        </h4>
+                                        <h4 className="text-sm font-bold text-white">{detailModalItem.userId?.name || "Unknown User"}</h4>
                                         <p className="text-xs text-zinc-400">{detailModalItem.userId?.email}</p>
-                                        <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-white/10 text-zinc-300 uppercase">
-                                            Role: {detailModalItem.userId?.role || "USER"}
-                                        </span>
+                                        <span className="inline-block mt-1 px-2 py-0.5 rounded text-[9px] font-bold bg-white/10 text-zinc-300 uppercase">Role: {detailModalItem.userId?.role || "USER"}</span>
                                     </div>
                                 </div>
 
                                 <div className="text-right">
                                     <p className="text-[10px] text-zinc-400 font-semibold uppercase">Current Balance</p>
-                                    <p className="text-sm font-bold text-emerald-400">
-                                        CHF {detailModalItem.userId?.balance !== undefined ? detailModalItem.userId.balance.toFixed(2) : "0.00"}
-                                    </p>
+                                    <p className="text-sm font-bold text-emerald-400">CHF {detailModalItem.userId?.balance !== undefined ? detailModalItem.userId.balance.toFixed(2) : "0.00"}</p>
                                 </div>
                             </div>
 
                             {/* Payout Data Grid */}
                             <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3.5">
+                                <div className="bg-white/2 border border-white/5 rounded-xl p-3.5">
                                     <p className="text-[10px] font-semibold text-zinc-400 uppercase mb-1">Requested Amount</p>
                                     <p className="text-lg font-bold text-white">CHF {detailModalItem.amount?.toFixed(2)}</p>
                                 </div>
 
-                                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3.5">
+                                <div className="bg-white/2 border border-white/5 rounded-xl p-3.5">
                                     <p className="text-[10px] font-semibold text-zinc-400 uppercase mb-1">Payment Method</p>
                                     <p className="text-sm font-bold text-purple-400 uppercase flex items-center gap-1.5 mt-1">
                                         <CreditCard className="w-4 h-4" />
@@ -617,40 +502,28 @@ export default function AdminWithdrawalsPage() {
                                     </p>
                                 </div>
 
-                                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3.5">
+                                <div className="bg-white/2 border border-white/5 rounded-xl p-3.5">
                                     <p className="text-[10px] font-semibold text-zinc-400 uppercase mb-1">Status</p>
                                     <span
                                         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase mt-1 ${
-                                            detailModalItem.status === "PENDING"
-                                                ? "bg-amber-500/10 text-amber-400"
-                                                : detailModalItem.status === "APPROVED"
-                                                ? "bg-emerald-500/10 text-emerald-400"
-                                                : "bg-rose-500/10 text-rose-400"
+                                            detailModalItem.status === "PENDING" ? "bg-amber-500/10 text-amber-400" : detailModalItem.status === "APPROVED" ? "bg-emerald-500/10 text-emerald-400" : "bg-rose-500/10 text-rose-400"
                                         }`}
                                     >
                                         {detailModalItem.status}
                                     </span>
                                 </div>
 
-                                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-3.5">
+                                <div className="bg-white/2 border border-white/5 rounded-xl p-3.5">
                                     <p className="text-[10px] font-semibold text-zinc-400 uppercase mb-1">Date Requested</p>
-                                    <p className="text-xs font-semibold text-zinc-300 mt-1">
-                                        {detailModalItem.createdAt
-                                            ? new Date(detailModalItem.createdAt).toLocaleString()
-                                            : "N/A"}
-                                    </p>
+                                    <p className="text-xs font-semibold text-zinc-300 mt-1">{detailModalItem.createdAt ? new Date(detailModalItem.createdAt).toLocaleString() : "N/A"}</p>
                                 </div>
                             </div>
 
                             {/* Additional Payment Details */}
                             {detailModalItem.paymentDetails && Object.keys(detailModalItem.paymentDetails).length > 0 && (
-                                <div className="bg-white/[0.02] border border-white/5 rounded-xl p-4 space-y-2">
-                                    <p className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
-                                        Provided Payment Details
-                                    </p>
-                                    <pre className="text-xs text-zinc-400 bg-black/40 p-3 rounded-lg overflow-x-auto font-mono">
-                                        {JSON.stringify(detailModalItem.paymentDetails, null, 2)}
-                                    </pre>
+                                <div className="bg-white/2 border border-white/5 rounded-xl p-4 space-y-2">
+                                    <p className="text-xs font-bold text-zinc-300 uppercase tracking-wider">Provided Payment Details</p>
+                                    <pre className="text-xs text-zinc-400 bg-black/40 p-3 rounded-lg overflow-x-auto font-mono">{JSON.stringify(detailModalItem.paymentDetails, null, 2)}</pre>
                                 </div>
                             )}
 
@@ -673,10 +546,7 @@ export default function AdminWithdrawalsPage() {
 
                         {/* Modal Footer */}
                         <div className="p-4 border-t border-white/10 bg-black/30 flex justify-end">
-                            <button
-                                onClick={() => setDetailModalItem(null)}
-                                className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-all"
-                            >
+                            <button onClick={() => setDetailModalItem(null)} className="px-5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs transition-all">
                                 Close
                             </button>
                         </div>
@@ -701,10 +571,7 @@ export default function AdminWithdrawalsPage() {
                                     </p>
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setRejectModalItem(null)}
-                                className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center transition-all"
-                            >
+                            <button onClick={() => setRejectModalItem(null)} className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white flex items-center justify-center transition-all">
                                 ✕
                             </button>
                         </div>
@@ -716,9 +583,7 @@ export default function AdminWithdrawalsPage() {
                             </p>
 
                             <div>
-                                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">
-                                    Rejection Reason / Admin Feedback (Optional)
-                                </label>
+                                <label className="block text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-2">Rejection Reason / Admin Feedback (Optional)</label>
                                 <textarea
                                     value={rejectFeedback}
                                     onChange={(e) => setRejectFeedback(e.target.value)}
@@ -731,22 +596,11 @@ export default function AdminWithdrawalsPage() {
 
                         {/* Footer */}
                         <div className="p-4 border-t border-white/10 bg-black/30 flex items-center justify-end gap-3">
-                            <button
-                                onClick={() => setRejectModalItem(null)}
-                                className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white font-semibold text-xs transition-all"
-                            >
+                            <button onClick={() => setRejectModalItem(null)} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white font-semibold text-xs transition-all">
                                 Cancel
                             </button>
-                            <button
-                                onClick={handleRejectSubmit}
-                                disabled={processingId === rejectModalItem._id}
-                                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all shadow-md shadow-rose-600/20 disabled:opacity-50 flex items-center gap-1.5"
-                            >
-                                {processingId === rejectModalItem._id ? (
-                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                                ) : (
-                                    <Send className="w-3.5 h-3.5" />
-                                )}
+                            <button onClick={handleRejectSubmit} disabled={processingId === rejectModalItem._id} className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs transition-all shadow-md shadow-rose-600/20 disabled:opacity-50 flex items-center gap-1.5">
+                                {processingId === rejectModalItem._id ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
                                 <span>Confirm Rejection</span>
                             </button>
                         </div>
