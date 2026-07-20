@@ -19,6 +19,7 @@ import {
     ShieldAlert,
     Settings,
     LogOut,
+    Wallet,
 } from 'lucide-react';
 
 const menuItems = [
@@ -52,6 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     {[
                         { name: 'Dashboard', icon: LayoutDashboard, href: '/admin' },
                         { name: 'Referral & Affiliate System', icon: GitBranch, href: '/admin/referrals' },
+                        { name: 'Withdraw Requests', icon: Wallet, href: '/admin/withdrawals' },
                         { name: 'Restaurants', icon: UtensilsCrossed, href: '/admin/restaurants' },
                         { name: 'Deals Management', icon: Tag, href: '/admin/deals' },
                         { name: 'Coupons Management', icon: Ticket, href: '/admin/coupons' },

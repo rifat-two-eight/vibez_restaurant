@@ -18,25 +18,36 @@ export const dashboardApi = baseApi.injectEndpoints({
             query: () => '/user-subscriptions/admin/monthly-commission-graph',
             providesTags: ['Dashboard'],
         }),
-        getAllWithdrawals: builder.query({
-            query: () => '/withdrawals/all',
-            providesTags: ['Dashboard'],
+        getAllWithdrawals: builder.query<any, { status?: string; page?: number; limit?: number } | void>({
+            query: (params) => {
+                const searchParams = new URLSearchParams();
+                if (params && params.status && params.status !== "ALL") searchParams.append("status", params.status);
+                if (params && params.page) searchParams.append("page", params.page.toString());
+                if (params && params.limit) searchParams.append("limit", params.limit.toString());
+                const queryString = searchParams.toString();
+                return `/withdrawals/all${queryString ? `?${queryString}` : ""}`;
+            },
+            providesTags: ["Dashboard", "Withdrawal"],
         }),
-        approveWithdrawal: builder.mutation({
+        approveWithdrawal: builder.mutation<any, string>({
             query: (id) => ({
                 url: `/withdrawals/${id}/approve`,
-                method: 'PATCH',
-                body: {}
+                method: "PATCH",
+                body: {},
             }),
-            invalidatesTags: ['Dashboard'],
+            invalidatesTags: ["Dashboard", "Withdrawal"],
         }),
-        rejectWithdrawal: builder.mutation({
-            query: (id) => ({
-                url: `/withdrawals/${id}/reject`,
-                method: 'PATCH',
-                body: {}
-            }),
-            invalidatesTags: ['Dashboard'],
+        rejectWithdrawal: builder.mutation<any, string | { id: string; adminFeedback?: string }>({
+            query: (arg) => {
+                const id = typeof arg === "string" ? arg : arg.id;
+                const adminFeedback = typeof arg === "string" ? undefined : arg.adminFeedback;
+                return {
+                    url: `/withdrawals/${id}/reject`,
+                    method: "PATCH",
+                    body: { adminFeedback },
+                };
+            },
+            invalidatesTags: ["Dashboard", "Withdrawal"],
         }),
         getSettings: builder.query({
             query: () => '/settings',
