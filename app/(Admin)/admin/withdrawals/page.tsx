@@ -485,26 +485,56 @@ export default function AdminWithdrawalsPage() {
 
                 {/* Pagination Footer */}
                 {meta.totalPages > 1 && (
-                    <div className="p-4 border-t border-white/5 flex items-center justify-between text-xs text-zinc-400 bg-black/20">
-                        <span>
-                            Showing Page <strong className="text-white">{meta.page}</strong> of{" "}
-                            <strong className="text-white">{meta.totalPages}</strong> ({meta.total} total requests)
-                        </span>
+                    <div className="p-4 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-zinc-400 bg-black/20">
+                        <div className="flex items-center gap-3">
+                            <span>
+                                Showing Page <strong className="text-white">{meta.page}</strong> of{" "}
+                                <strong className="text-white">{meta.totalPages}</strong> ({meta.total} total requests)
+                            </span>
+                        </div>
 
                         <div className="flex items-center gap-2">
+                            {/* Previous Button */}
                             <button
                                 onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
                                 disabled={!meta.hasPrev || isFetching}
-                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-1 font-semibold"
                             >
                                 <ChevronLeft className="w-3.5 h-3.5" />
                                 Previous
                             </button>
 
+                            {/* Page Number Buttons */}
+                            <div className="hidden md:flex items-center gap-1">
+                                {Array.from({ length: meta.totalPages }, (_, i) => i + 1)
+                                    .filter((p) => p === 1 || p === meta.totalPages || Math.abs(p - meta.page) <= 1)
+                                    .map((pageNum, idx, arr) => {
+                                        const prevPage = arr[idx - 1];
+                                        const showEllipsis = prevPage && pageNum - prevPage > 1;
+
+                                        return (
+                                            <React.Fragment key={pageNum}>
+                                                {showEllipsis && <span className="px-1 text-zinc-600">...</span>}
+                                                <button
+                                                    onClick={() => setCurrentPage(pageNum)}
+                                                    className={`w-7 h-7 rounded-lg text-xs font-bold transition-all ${
+                                                        currentPage === pageNum
+                                                            ? "bg-[#1447E6] text-white shadow-sm shadow-[#1447E6]/30"
+                                                            : "bg-white/5 text-zinc-400 hover:text-white hover:bg-white/10"
+                                                    }`}
+                                                >
+                                                    {pageNum}
+                                                </button>
+                                            </React.Fragment>
+                                        );
+                                    })}
+                            </div>
+
+                            {/* Next Button */}
                             <button
                                 onClick={() => setCurrentPage((prev) => Math.min(prev + 1, meta.totalPages))}
                                 disabled={!meta.hasNext || isFetching}
-                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-1"
+                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all flex items-center gap-1 font-semibold"
                             >
                                 Next
                                 <ChevronRight className="w-3.5 h-3.5" />
