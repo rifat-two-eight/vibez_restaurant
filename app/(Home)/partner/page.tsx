@@ -31,7 +31,7 @@ const DAY_REVERSE_MAP: Record<Day, string> = {
 };
 
 const SLOT_DEFAULTS: Record<Slot, { apiType: string; openTime: string; closeTime: string }> = {
-    'Lunch':  { apiType: 'LUNCH',  openTime: '11:00', closeTime: '15:00' },
+    'Lunch': { apiType: 'LUNCH', openTime: '11:00', closeTime: '15:00' },
     'Dinner': { apiType: 'DINNER', openTime: '17:00', closeTime: '22:00' },
 };
 
@@ -148,7 +148,7 @@ export default function Partner() {
             const autocomplete = new (window as any).google.maps.places.Autocomplete(autocompleteInputRef.current, {
                 types: ['establishment']
             });
-            
+
             autocompleteInstance.current = autocomplete;
 
             autocomplete.addListener('place_changed', () => {
@@ -237,7 +237,7 @@ export default function Partner() {
         const formData = new FormData(e.currentTarget);
 
         const openDays = ALL_DAYS.filter(day => daySlots[day].Lunch.enabled || daySlots[day].Dinner.enabled);
-        const daysValid = openDays.length >= 5;
+        const daysValid = openDays.length >= 1;
 
         if (selectedCuisines.length === 0) {
             toast.error("Please select at least one cuisine type.");
@@ -245,7 +245,7 @@ export default function Partner() {
         }
 
         if (!daysValid) {
-            toast.error("Please configure at least one active slot (Lunch or Dinner) for at least 5 days.");
+            toast.error("Please configure at least one active slot (Lunch or Dinner) for at least 1 days.");
             return;
         }
 
@@ -475,7 +475,7 @@ export default function Partner() {
                                 <div className="md:col-span-2">
                                     <div className="space-y-2 relative" ref={cuisineDropdownRef}>
                                         <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Cuisine Type</label>
-                                        
+
                                         {/* Dropdown Trigger */}
                                         <div
                                             onClick={() => setIsOpenCuisine(!isOpenCuisine)}
@@ -505,11 +505,10 @@ export default function Partner() {
                                                                     setSelectedCuisines([...selectedCuisines, cuisine.value]);
                                                                 }
                                                             }}
-                                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold cursor-pointer select-none transition-colors ${
-                                                                isSelected
-                                                                    ? 'bg-[#CF0738]/5 text-[#CF0738]'
-                                                                    : 'hover:bg-zinc-50 text-zinc-700'
-                                                            }`}
+                                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold cursor-pointer select-none transition-colors ${isSelected
+                                                                ? 'bg-[#CF0738]/5 text-[#CF0738]'
+                                                                : 'hover:bg-zinc-50 text-zinc-700'
+                                                                }`}
                                                         >
                                                             <input
                                                                 type="checkbox"
@@ -528,7 +527,7 @@ export default function Partner() {
                                 <div className="md:col-span-2">
                                     <div className="space-y-2 relative" ref={foodTypeDropdownRef}>
                                         <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Food Type</label>
-                                        
+
                                         {/* Dropdown Trigger */}
                                         <div
                                             onClick={() => setIsOpenFoodType(!isOpenFoodType)}
@@ -558,11 +557,10 @@ export default function Partner() {
                                                                     setSelectedFoodTypes([...selectedFoodTypes, food.value]);
                                                                 }
                                                             }}
-                                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold cursor-pointer select-none transition-colors ${
-                                                                isSelected
-                                                                    ? 'bg-[#CF0738]/5 text-[#CF0738]'
-                                                                    : 'hover:bg-zinc-50 text-zinc-700'
-                                                            }`}
+                                                            className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-xs font-semibold cursor-pointer select-none transition-colors ${isSelected
+                                                                ? 'bg-[#CF0738]/5 text-[#CF0738]'
+                                                                : 'hover:bg-zinc-50 text-zinc-700'
+                                                                }`}
                                                         >
                                                             <input
                                                                 type="checkbox"
@@ -584,12 +582,12 @@ export default function Partner() {
                                 </div>
                                 <div className="space-y-2 md:col-span-2">
                                     <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight">Restaurant Gallery Images (Multiple)</label>
-                                    <input 
-                                        type="file" 
-                                        multiple 
-                                        accept="image/*" 
+                                    <input
+                                        type="file"
+                                        multiple
+                                        accept="image/*"
                                         onChange={handleGalleryChange}
-                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all" 
+                                        className="w-full bg-zinc-50 border border-zinc-200 rounded-xl px-4 py-3 text-sm focus:border-[#CF0738] focus:ring-1 focus:ring-[#CF0738] outline-none transition-all"
                                     />
                                     {galleryPreviews.length > 0 && (
                                         <div className="grid grid-cols-4 md:grid-cols-6 gap-3 mt-3">
@@ -617,7 +615,7 @@ export default function Partner() {
                         {/* Operational Details */}
                         <section className="space-y-6">
                             <h2 className="text-lg font-bold text-[#005C2C] tracking-wide border-b pb-2 uppercase">Operational Details</h2>
-                            
+
                             {/* Day Selection Grid */}
                             <div className="space-y-4">
                                 <label className="text-[13px] font-bold text-zinc-700 uppercase tracking-tight block">Select Opening Days & Configure Hours</label>
@@ -630,15 +628,13 @@ export default function Partner() {
                                                 key={day}
                                                 type="button"
                                                 onClick={() => setActiveDay(day)}
-                                                className={`py-3 rounded-xl text-xs font-bold border transition-all ${
-                                                    isCurrent
-                                                        ? 'ring-2 ring-[#CF0738] ring-offset-2 border-transparent'
-                                                        : ''
-                                                } ${
-                                                    hasActiveSlot
+                                                className={`py-3 rounded-xl text-xs font-bold border transition-all ${isCurrent
+                                                    ? 'ring-2 ring-[#CF0738] ring-offset-2 border-transparent'
+                                                    : ''
+                                                    } ${hasActiveSlot
                                                         ? 'bg-[#CF0738] text-white border-transparent shadow-md'
                                                         : 'bg-zinc-50 text-zinc-700 border-zinc-200 hover:bg-zinc-100 hover:border-zinc-300'
-                                                }`}
+                                                    }`}
                                             >
                                                 {day}
                                             </button>
@@ -667,15 +663,14 @@ export default function Partner() {
                                             </span>
                                         )}
                                     </div>
-                                    
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         {/* Lunch Card */}
                                         <div
-                                            className={`p-5 rounded-2xl border transition-all ${
-                                                daySlots[activeDay].Lunch.enabled
-                                                    ? 'border-[#CF0738] bg-[#CF0738]/5'
-                                                    : 'border-zinc-200 bg-white hover:border-zinc-300'
-                                            }`}
+                                            className={`p-5 rounded-2xl border transition-all ${daySlots[activeDay].Lunch.enabled
+                                                ? 'border-[#CF0738] bg-[#CF0738]/5'
+                                                : 'border-zinc-200 bg-white hover:border-zinc-300'
+                                                }`}
                                         >
                                             <div
                                                 className="flex items-center justify-between cursor-pointer"
@@ -724,11 +719,10 @@ export default function Partner() {
 
                                         {/* Dinner Card */}
                                         <div
-                                            className={`p-5 rounded-2xl border transition-all ${
-                                                daySlots[activeDay].Dinner.enabled
-                                                    ? 'border-[#CF0738] bg-[#CF0738]/5'
-                                                    : 'border-zinc-200 bg-white hover:border-zinc-300'
-                                            }`}
+                                            className={`p-5 rounded-2xl border transition-all ${daySlots[activeDay].Dinner.enabled
+                                                ? 'border-[#CF0738] bg-[#CF0738]/5'
+                                                : 'border-zinc-200 bg-white hover:border-zinc-300'
+                                                }`}
                                         >
                                             <div
                                                 className="flex items-center justify-between cursor-pointer"
