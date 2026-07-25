@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { X, ChevronLeft } from 'lucide-react';
+import React, { useState } from "react";
+import { X, ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
-import { useCreateDealMutation } from '@/redux/features/deals/dealsApi';
+import { useCreateDealMutation } from "@/redux/features/deals/dealsApi";
 
 export enum DealType {
     TWO_FOR_ONE = "TWO_FOR_ONE",
@@ -68,7 +68,7 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
 
     // Form State
     const [dealType, setDealType] = useState<DealType | null>(null);
-    
+
     // Step 2 State
     const [twoForOneAppliesTo, setTwoForOneAppliesTo] = useState<TwoForOneCategory>(TwoForOneCategory.MAIN_COURSE);
     const [freeItemBuy, setFreeItemBuy] = useState<FreeItemBuy>(FreeItemBuy.MAIN_COURSE);
@@ -87,11 +87,11 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
     const generateTitle = () => {
         switch (dealType) {
             case DealType.TWO_FOR_ONE:
-                return `2 for 1 ${twoForOneAppliesTo.replace('_', ' ')}`;
+                return `2 for 1 ${twoForOneAppliesTo.replace("_", " ")}`;
             case DealType.FREE_ITEM:
-                return `Buy ${freeItemBuy.replace(/_/g, ' ')}, Get Free ${freeItemGet.replace(/_/g, ' ')}`;
+                return `Buy ${freeItemBuy.replace(/_/g, " ")}, Get Free ${freeItemGet.replace(/_/g, " ")}`;
             case DealType.PERCENT_DISCOUNT:
-                return `${percentDiscountValue}% Off ${percentDiscountAppliesTo === PercentDiscountAppliesTo.CATEGORY ? percentDiscountCategory.replace('_', ' ') : 'Entire Order'}`;
+                return `${percentDiscountValue}% Off ${percentDiscountAppliesTo === PercentDiscountAppliesTo.CATEGORY ? percentDiscountCategory.replace("_", " ") : "Entire Order"}`;
             case DealType.FIXED_DISCOUNT:
                 return `CHF ${fixedDiscountAmount} Off (Min Spend CHF ${fixedDiscountMinSpend})`;
             default:
@@ -126,7 +126,7 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
             payload.percentDiscount = {
                 percentage: percentDiscountValue,
                 appliesTo: percentDiscountAppliesTo,
-                category: percentDiscountAppliesTo === PercentDiscountAppliesTo.CATEGORY ? percentDiscountCategory : undefined
+                category: percentDiscountAppliesTo === PercentDiscountAppliesTo.CATEGORY ? percentDiscountCategory : undefined,
             };
         } else if (dealType === DealType.FIXED_DISCOUNT) {
             if (fixedDiscountMinSpend < 0 || fixedDiscountMinSpend > 100) {
@@ -145,14 +145,17 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
             const response = await createDeal(payload).unwrap();
             toast.success("Deal created successfully!");
             onSuccess(response.data);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Deal creation failed:", error);
-            toast.error("Failed to create deal.");
+            toast.error(error?.data?.message || "Failed to create deal.");
         }
     };
 
     const formatEnumLabel = (str: string) => {
-        return str.split('_').map(word => word.charAt(0) + word.slice(1).toLowerCase()).join(' ');
+        return str
+            .split("_")
+            .map((word) => word.charAt(0) + word.slice(1).toLowerCase())
+            .join(" ");
     };
 
     return (
@@ -167,12 +170,8 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                             </button>
                         )}
                         <div>
-                            <h2 className="text-lg font-bold text-zinc-900">
-                                {step === 1 ? 'Step 1: Select Deal Type' : step === 2 ? 'Step 2: Deal Parameters' : 'Step 3: Schedule & Limits'}
-                            </h2>
-                            <p className="text-xs font-medium text-zinc-500">
-                                {step === 1 ? 'Choose the core mechanic' : step === 2 ? 'Configure rules' : 'Set availability'}
-                            </p>
+                            <h2 className="text-lg font-bold text-zinc-900">{step === 1 ? "Step 1: Select Deal Type" : step === 2 ? "Step 2: Deal Parameters" : "Step 3: Schedule & Limits"}</h2>
+                            <p className="text-xs font-medium text-zinc-500">{step === 1 ? "Choose the core mechanic" : step === 2 ? "Configure rules" : "Set availability"}</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 bg-zinc-100 hover:bg-zinc-200 p-2 rounded-full transition-colors">
@@ -185,20 +184,18 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                     {step === 1 && (
                         <div className="grid grid-cols-1 gap-3">
                             {[
-                                { type: DealType.TWO_FOR_ONE, icon: '🥇', label: '2 for 1 Deal' },
-                                { type: DealType.FREE_ITEM, icon: '🎁', label: 'Free Item Deal' },
-                                { type: DealType.PERCENT_DISCOUNT, icon: '💸', label: 'Percentage Discount' },
-                                { type: DealType.FIXED_DISCOUNT, icon: '💰', label: 'Fixed Discount' },
-                            ].map(opt => (
+                                { type: DealType.TWO_FOR_ONE, icon: "🥇", label: "2 for 1 Deal" },
+                                { type: DealType.FREE_ITEM, icon: "🎁", label: "Free Item Deal" },
+                                { type: DealType.PERCENT_DISCOUNT, icon: "💸", label: "Percentage Discount" },
+                                { type: DealType.FIXED_DISCOUNT, icon: "💰", label: "Fixed Discount" },
+                            ].map((opt) => (
                                 <button
                                     key={opt.type}
                                     onClick={() => {
                                         setDealType(opt.type);
                                         setStep(2);
                                     }}
-                                    className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${
-                                        dealType === opt.type ? 'border-[#013622] bg-[#013622]/5' : 'border-zinc-100 hover:border-zinc-200 hover:bg-zinc-50'
-                                    }`}
+                                    className={`flex items-center gap-4 p-4 rounded-xl border-2 transition-all ${dealType === opt.type ? "border-[#013622] bg-[#013622]/5" : "border-zinc-100 hover:border-zinc-200 hover:bg-zinc-50"}`}
                                 >
                                     <span className="text-3xl">{opt.icon}</span>
                                     <span className="font-bold text-zinc-800 text-left">{opt.label}</span>
@@ -213,14 +210,8 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                                 <div className="space-y-3">
                                     <label className="block text-sm font-bold text-zinc-800">What does the deal apply to?</label>
                                     <div className="grid grid-cols-2 gap-2">
-                                        {Object.values(TwoForOneCategory).map(cat => (
-                                            <button
-                                                key={cat}
-                                                onClick={() => setTwoForOneAppliesTo(cat)}
-                                                className={`py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-all ${
-                                                    twoForOneAppliesTo === cat ? 'border-[#013622] bg-[#013622]/5 text-[#013622]' : 'border-zinc-100 text-zinc-600 hover:bg-zinc-50'
-                                                }`}
-                                            >
+                                        {Object.values(TwoForOneCategory).map((cat) => (
+                                            <button key={cat} onClick={() => setTwoForOneAppliesTo(cat)} className={`py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-all ${twoForOneAppliesTo === cat ? "border-[#013622] bg-[#013622]/5 text-[#013622]" : "border-zinc-100 text-zinc-600 hover:bg-zinc-50"}`}>
                                                 {formatEnumLabel(cat)}
                                             </button>
                                         ))}
@@ -233,14 +224,8 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                                     <div className="space-y-3">
                                         <label className="block text-sm font-bold text-zinc-800">What does the customer need to buy?</label>
                                         <div className="grid grid-cols-1 gap-2">
-                                            {Object.values(FreeItemBuy).map(cat => (
-                                                <button
-                                                    key={cat}
-                                                    onClick={() => setFreeItemBuy(cat)}
-                                                    className={`py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-all ${
-                                                        freeItemBuy === cat ? 'border-[#013622] bg-[#013622]/5 text-[#013622]' : 'border-zinc-100 text-zinc-600 hover:bg-zinc-50'
-                                                    }`}
-                                                >
+                                            {Object.values(FreeItemBuy).map((cat) => (
+                                                <button key={cat} onClick={() => setFreeItemBuy(cat)} className={`py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-all ${freeItemBuy === cat ? "border-[#013622] bg-[#013622]/5 text-[#013622]" : "border-zinc-100 text-zinc-600 hover:bg-zinc-50"}`}>
                                                     {formatEnumLabel(cat)}
                                                 </button>
                                             ))}
@@ -249,14 +234,8 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                                     <div className="space-y-3">
                                         <label className="block text-sm font-bold text-zinc-800">What does the customer get for free?</label>
                                         <div className="grid grid-cols-2 gap-2">
-                                            {Object.values(FreeItemGet).map(cat => (
-                                                <button
-                                                    key={cat}
-                                                    onClick={() => setFreeItemGet(cat)}
-                                                    className={`py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-all ${
-                                                        freeItemGet === cat ? 'border-[#013622] bg-[#013622]/5 text-[#013622]' : 'border-zinc-100 text-zinc-600 hover:bg-zinc-50'
-                                                    }`}
-                                                >
+                                            {Object.values(FreeItemGet).map((cat) => (
+                                                <button key={cat} onClick={() => setFreeItemGet(cat)} className={`py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-all ${freeItemGet === cat ? "border-[#013622] bg-[#013622]/5 text-[#013622]" : "border-zinc-100 text-zinc-600 hover:bg-zinc-50"}`}>
                                                     {formatEnumLabel(cat)}
                                                 </button>
                                             ))}
@@ -270,14 +249,8 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                                     <div className="space-y-3">
                                         <label className="block text-sm font-bold text-zinc-800">Discount Percentage</label>
                                         <div className="grid grid-cols-4 gap-2">
-                                            {[10, 15, 20, 30].map(val => (
-                                                <button
-                                                    key={val}
-                                                    onClick={() => setPercentDiscountValue(val as any)}
-                                                    className={`py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
-                                                        percentDiscountValue === val ? 'border-[#013622] bg-[#013622]/5 text-[#013622]' : 'border-zinc-100 text-zinc-600 hover:bg-zinc-50'
-                                                    }`}
-                                                >
+                                            {[10, 15, 20, 30].map((val) => (
+                                                <button key={val} onClick={() => setPercentDiscountValue(val as any)} className={`py-3 rounded-xl text-sm font-semibold border-2 transition-all ${percentDiscountValue === val ? "border-[#013622] bg-[#013622]/5 text-[#013622]" : "border-zinc-100 text-zinc-600 hover:bg-zinc-50"}`}>
                                                     {val}%
                                                 </button>
                                             ))}
@@ -286,14 +259,8 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                                     <div className="space-y-3">
                                         <label className="block text-sm font-bold text-zinc-800">Applies to:</label>
                                         <div className="grid grid-cols-2 gap-2">
-                                            {Object.values(PercentDiscountAppliesTo).map(cat => (
-                                                <button
-                                                    key={cat}
-                                                    onClick={() => setPercentDiscountAppliesTo(cat)}
-                                                    className={`py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-all ${
-                                                        percentDiscountAppliesTo === cat ? 'border-[#013622] bg-[#013622]/5 text-[#013622]' : 'border-zinc-100 text-zinc-600 hover:bg-zinc-50'
-                                                    }`}
-                                                >
+                                            {Object.values(PercentDiscountAppliesTo).map((cat) => (
+                                                <button key={cat} onClick={() => setPercentDiscountAppliesTo(cat)} className={`py-3 px-4 rounded-xl text-sm font-semibold border-2 transition-all ${percentDiscountAppliesTo === cat ? "border-[#013622] bg-[#013622]/5 text-[#013622]" : "border-zinc-100 text-zinc-600 hover:bg-zinc-50"}`}>
                                                     {formatEnumLabel(cat)}
                                                 </button>
                                             ))}
@@ -303,14 +270,8 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                                         <div className="space-y-3">
                                             <label className="block text-sm font-bold text-zinc-800">Select Category:</label>
                                             <div className="grid grid-cols-3 gap-2">
-                                                {Object.values(PercentDiscountCategory).map(cat => (
-                                                    <button
-                                                        key={cat}
-                                                        onClick={() => setPercentDiscountCategory(cat)}
-                                                        className={`py-2 px-3 rounded-xl text-xs font-semibold border-2 transition-all ${
-                                                            percentDiscountCategory === cat ? 'border-[#013622] bg-[#013622]/5 text-[#013622]' : 'border-zinc-100 text-zinc-600 hover:bg-zinc-50'
-                                                        }`}
-                                                    >
+                                                {Object.values(PercentDiscountCategory).map((cat) => (
+                                                    <button key={cat} onClick={() => setPercentDiscountCategory(cat)} className={`py-2 px-3 rounded-xl text-xs font-semibold border-2 transition-all ${percentDiscountCategory === cat ? "border-[#013622] bg-[#013622]/5 text-[#013622]" : "border-zinc-100 text-zinc-600 hover:bg-zinc-50"}`}>
                                                         {formatEnumLabel(cat)}
                                                     </button>
                                                 ))}
@@ -324,28 +285,13 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                                 <div className="space-y-4">
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-zinc-800">Minimum Spending Amount (CHF)</label>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="100"
-                                            value={fixedDiscountMinSpend}
-                                            onChange={(e) => setFixedDiscountMinSpend(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
-                                            className="w-full py-3 px-4 rounded-xl border border-zinc-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#013622]"
-                                            placeholder="Enter minimum spending (0 to 100)"
-                                        />
+                                        <input type="number" min="0" max="100" value={fixedDiscountMinSpend} onChange={(e) => setFixedDiscountMinSpend(Math.max(0, Math.min(100, Number(e.target.value) || 0)))} className="w-full py-3 px-4 rounded-xl border border-zinc-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#013622]" placeholder="Enter minimum spending (0 to 100)" />
                                         <p className="text-xs text-zinc-500">Allowed range: CHF 0 to CHF 100</p>
                                     </div>
 
                                     <div className="space-y-2">
                                         <label className="block text-sm font-bold text-zinc-800">Fixed Discount Amount (CHF)</label>
-                                        <input
-                                            type="number"
-                                            min="10"
-                                            value={fixedDiscountAmount}
-                                            onChange={(e) => setFixedDiscountAmount(Math.max(10, Number(e.target.value) || 10))}
-                                            className="w-full py-3 px-4 rounded-xl border border-zinc-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#013622]"
-                                            placeholder="Minimum CHF 10"
-                                        />
+                                        <input type="number" min="10" value={fixedDiscountAmount} onChange={(e) => setFixedDiscountAmount(Math.max(10, Number(e.target.value) || 10))} className="w-full py-3 px-4 rounded-xl border border-zinc-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#013622]" placeholder="Minimum CHF 10" />
                                         <p className="text-xs text-zinc-500">Must be CHF 10 or more</p>
                                     </div>
                                 </div>
@@ -362,7 +308,7 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                             <div className="space-y-3">
                                 <label className="block text-sm font-bold text-zinc-800">Days of Week</label>
                                 <div className="grid grid-cols-4 gap-2">
-                                    {Object.values(DayOfWeek).map(d => {
+                                    {Object.values(DayOfWeek).map((d) => {
                                         const isSelected = selectedDays.includes(d);
                                         return (
                                             <button
@@ -371,7 +317,7 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                                                 onClick={() => {
                                                     if (isSelected) {
                                                         if (selectedDays.length > 1) {
-                                                            setSelectedDays(selectedDays.filter(day => day !== d));
+                                                            setSelectedDays(selectedDays.filter((day) => day !== d));
                                                         } else {
                                                             toast.error("Please select at least one day.");
                                                         }
@@ -379,11 +325,7 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                                                         setSelectedDays([...selectedDays, d]);
                                                     }
                                                 }}
-                                                className={`py-2 px-3 rounded-xl text-xs font-bold border-2 transition-all ${
-                                                    isSelected
-                                                        ? 'border-[#013622] bg-[#013622]/5 text-[#013622]'
-                                                        : 'border-zinc-100 text-zinc-600 hover:bg-zinc-50 bg-white'
-                                                }`}
+                                                className={`py-2 px-3 rounded-xl text-xs font-bold border-2 transition-all ${isSelected ? "border-[#013622] bg-[#013622]/5 text-[#013622]" : "border-zinc-100 text-zinc-600 hover:bg-zinc-50 bg-white"}`}
                                             >
                                                 {formatEnumLabel(d)}
                                             </button>
@@ -394,13 +336,17 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <label className="block text-sm font-bold text-zinc-800">Meal Time</label>
-                                    <select value={mealTime} onChange={e => setMealTime(e.target.value as MealTimeType)} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#013622]">
-                                        {Object.values(MealTimeType).map(m => <option key={m} value={m}>{formatEnumLabel(m)}</option>)}
+                                    <select value={mealTime} onChange={(e) => setMealTime(e.target.value as MealTimeType)} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#013622]">
+                                        {Object.values(MealTimeType).map((m) => (
+                                            <option key={m} value={m}>
+                                                {formatEnumLabel(m)}
+                                            </option>
+                                        ))}
                                     </select>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="block text-sm font-bold text-zinc-800">Max Claims Per Day</label>
-                                    <input type="number" min={1} value={maxClaims} onChange={e => setMaxClaims(parseInt(e.target.value))} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#013622]" />
+                                    <input type="number" min={1} value={maxClaims} onChange={(e) => setMaxClaims(parseInt(e.target.value))} className="w-full bg-zinc-50 border-2 border-zinc-100 rounded-xl px-4 py-3 text-sm font-semibold focus:outline-none focus:border-[#013622]" />
                                 </div>
                             </div>
                         </div>
@@ -410,20 +356,12 @@ export default function CreateDealModal({ onClose, onSuccess }: Props) {
                 {/* Footer */}
                 <div className="p-4 border-t border-zinc-100 bg-white">
                     {step < 3 ? (
-                        <button
-                            onClick={handleNext}
-                            disabled={step === 1 && !dealType}
-                            className="w-full bg-[#013622] text-white font-bold rounded-xl py-4 shadow-lg hover:bg-[#012a1a] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
+                        <button onClick={handleNext} disabled={step === 1 && !dealType} className="w-full bg-[#013622] text-white font-bold rounded-xl py-4 shadow-lg hover:bg-[#012a1a] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                             Next Step
                         </button>
                     ) : (
-                        <button
-                            onClick={handleSubmit}
-                            disabled={isLoading}
-                            className="w-full bg-[#013622] text-white font-bold rounded-xl py-4 shadow-lg hover:bg-[#012a1a] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? 'Creating Deal...' : 'Publish Deal'}
+                        <button onClick={handleSubmit} disabled={isLoading} className="w-full bg-[#013622] text-white font-bold rounded-xl py-4 shadow-lg hover:bg-[#012a1a] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            {isLoading ? "Creating Deal..." : "Publish Deal"}
                         </button>
                     )}
                 </div>
