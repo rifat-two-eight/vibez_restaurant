@@ -55,7 +55,6 @@ export enum DayOfWeek {
 export enum MealTimeType {
     LUNCH = "LUNCH",
     DINNER = "DINNER",
-    ALL_DAY = "ALL_DAY",
 }
 
 type Props = {
