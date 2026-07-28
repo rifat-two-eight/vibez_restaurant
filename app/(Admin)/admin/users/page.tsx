@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useGetUserStatsQuery, useGetAllUsersQuery, useToggleUserStatusMutation, useUpdateUserMutation } from "../../../../redux/features/user/userApi";
 
-
 export default function UserManagement() {
     const router = useRouter();
     const [page, setPage] = useState(1);
@@ -143,16 +142,29 @@ export default function UserManagement() {
                                         </div>
                                     </td>
                                     <td className="px-8 py-5">
-                                        <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${user.isInfluencer ? "bg-[#10B981]/10 text-[#10B981]" : user.role === "ADMIN" ? "bg-purple-500/10 text-purple-500" : "bg-[#1447E6]/10 text-[#1447E6]"}`}>
-                                            {user.isInfluencer ? "Influencer" : user.role === "ADMIN" ? "Admin" : "Regular User"}
-                                        </span>
+                                        {user.role === "ADMIN" ? (
+                                            <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-500">Admin</span>
+                                        ) : user.role === "RESTAURANT_OWNER" ? (
+                                            <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-500">Restaurant Owner</span>
+                                        ) : user.isInfluencer && user.subscriptionPlanId ? (
+                                            <span className="inline-flex flex-col items-start px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#10B981]/10 text-[#10B981] leading-tight">
+                                                <span>Influencer &</span>
+                                                <span>Premium User</span>
+                                            </span>
+                                        ) : user.isInfluencer ? (
+                                            <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#10B981]/10 text-[#10B981]">Influencer</span>
+                                        ) : user.subscriptionPlanId ? (
+                                            <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#10B981]/10 text-[#10B981]">Premium User</span>
+                                        ) : (
+                                            <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#1447E6]/10 text-[#1447E6]">Regular User</span>
+                                        )}
                                     </td>
                                     <td className="px-8 py-5">
                                         <span className="bg-white/5 border border-white/5 px-2.5 py-1 rounded text-[10px] font-mono text-zinc-400 uppercase tracking-widest font-bold">{user.referralCode || user.code || "-"}</span>
                                     </td>
                                     <td className="px-8 py-5 text-sm font-bold text-white text-center">{user.referralsTotalCount ?? user.referrals ?? 0}</td>
                                     <td className="px-8 py-5 text-sm text-zinc-400 text-center">{user.activeSubscriptionFromHimTotal ?? user.subs ?? 0}</td>
-                                    <td className="px-8 py-5 text-sm font-bold text-white">{typeof user.balance === "number" ? `CHF${user.balance}` : user.earnings || "CHF 0"}</td>
+                                    <td className="px-8 py-5 text-sm font-bold text-white">{typeof user.balance === "number" ? `CHF ${user.balance}` : user.earnings || "CHF 0"}</td>
                                     <td className="px-8 py-5 text-sm font-bold text-[#10B981]">{user.commissionPercentage ?? user.percentage ?? (user.commission ? parseInt(user.commission) : 0)}%</td>
                                     <td className="px-8 py-5 text-sm text-zinc-500 font-medium capitalize">{user.subscriptionPlanId?.duration?.toLowerCase().replace("_", " ") || user.plan || "N/A"}</td>
                                     <td className="px-8 py-5">
