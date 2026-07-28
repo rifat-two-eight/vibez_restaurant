@@ -6,18 +6,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useGetUserStatsQuery, useGetAllUsersQuery, useToggleUserStatusMutation, useUpdateUserMutation } from "../../../../redux/features/user/userApi";
 
-const userData = [
-    { name: "Sarah Johnson", email: "sarah.j@email.com", type: "Influencer", code: "SARAH2024", referrals: 142, subs: 98, earnings: "CHF 4,260", commission: "15%", plan: "Annual" },
-    { name: "Michael Chen", email: "m.chen@email.com", type: "Influencer", code: "MIKE15", referrals: 128, subs: 84, earnings: "CHF 3,840", commission: "12%", plan: "Monthly" },
-    { name: "Jennifer Davis", email: "jdavis@email.com", type: "Regular User", code: "JENDAVIS", referrals: 12, subs: 8, earnings: "CHF 240", commission: "10%", plan: "Monthly" },
-    { name: "Robert Taylor", email: "rtaylor@email.com", type: "Regular User", code: "ROBTAY", referrals: 8, subs: 5, earnings: "CHF 150", commission: "10%", plan: "Annual" },
-    { name: "Emma Wilson", email: "ewilson@email.com", type: "Influencer", code: "EMMA18", referrals: 95, subs: 67, earnings: "CHF 2,850", commission: "10%", plan: "Monthly" },
-    { name: "Amanda White", email: "awhite@email.com", type: "Regular User", code: "AMANDA24", referrals: 15, subs: 11, earnings: "CHF 330", commission: "10%", plan: "Monthly" },
-    { name: "David Martinez", email: "dmartinez@email.com", type: "Influencer", code: "DAVID20", referrals: 87, subs: 61, earnings: "CHF 2,610", commission: "20%", plan: "Annual" },
-    { name: "Kevin Brown", email: "kbrown@email.com", type: "Regular User", code: "KEVIN8", referrals: 6, subs: 4, earnings: "CHF 120", commission: "10%", plan: "Day Pass" },
-    { name: "Lisa Anderson", email: "landerson@email.com", type: "Influencer", code: "LISA12", referrals: 73, subs: 52, earnings: "CHF 2,190", commission: "12%", plan: "Annual" },
-    { name: "Michelle Green", email: "mgreen@email.com", type: "Regular User", code: "MICH10", referrals: 19, subs: 13, earnings: "CHF 390", commission: "10%", plan: "Monthly" },
-];
 
 export default function UserManagement() {
     const router = useRouter();
@@ -56,8 +44,8 @@ export default function UserManagement() {
         );
     }
 
-    const stats = userStatsRes?.data || { totalUser: 10, regularCustomer: 5, influencer: 5, premiumUser: 4 };
-    const dynamicUsers = usersRes?.data || userData;
+    const stats = userStatsRes?.data || { totalUser: 0, regularCustomer: 0, influencer: 0, premiumUser: 0 };
+    const dynamicUsers = usersRes?.data || [];
     const meta = usersRes?.meta || { page: 1, limit: 10, total: dynamicUsers.length, totalPages: 1, hasNext: false, hasPrev: false };
 
     return (
