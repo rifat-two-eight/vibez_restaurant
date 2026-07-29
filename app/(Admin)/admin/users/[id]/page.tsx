@@ -1,22 +1,22 @@
-'use client';
+"use client";
 
-import React, { use } from 'react';
-import { useRouter } from 'next/navigation';
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, CreditCard, ArrowUpRight, ArrowDownRight, UserCheck } from 'lucide-react';
-import { 
-    useGetUserActivityQuery,
-    useGetUserActivitySummaryQuery,
-    useGetUserReferralsQuery,
-    useGetUserCommissionsQuery,
-    useGetUserWithdrawalsQuery,
-    useGetUserSubscriptionsQuery
-} from '../../../../../redux/features/user/userApi';
-import { getImageUrl } from '@/lib/utils';
-import Image from 'next/image';
+import React, { use } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, Mail, Phone, MapPin, Calendar, CreditCard, ArrowUpRight, ArrowDownRight, UserCheck, ChevronDown } from "lucide-react";
+import { useGetUserActivityQuery, useGetUserActivitySummaryQuery, useGetUserReferralsQuery, useGetUserCommissionsQuery, useGetUserWithdrawalsQuery, useGetUserSubscriptionsQuery } from "../../../../../redux/features/user/userApi";
+import { getImageUrl } from "@/lib/utils";
+import Image from "next/image";
 
 export default function UserActivityPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
     const { id } = use(params);
+
+    // Expanded commission rows state
+    const [expandedCommissions, setExpandedCommissions] = React.useState<Record<string, boolean>>({});
+
+    const toggleCommissionExpand = (id: string) => {
+        setExpandedCommissions((prev) => ({ ...prev, [id]: !prev[id] }));
+    };
 
     // Pagination states
     const [referralsPage, setReferralsPage] = React.useState(1);
@@ -27,7 +27,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
     // Queries
     const { data: activityRes, isLoading: isUserLoading } = useGetUserActivityQuery(id);
     const { data: summaryRes, isLoading: isSummaryLoading } = useGetUserActivitySummaryQuery(id);
-    
+
     const { data: referralsRes, isLoading: isReferralsLoading } = useGetUserReferralsQuery({ id, page: referralsPage, limit: 5 });
     const { data: commissionsRes, isLoading: isCommissionsLoading } = useGetUserCommissionsQuery({ id, page: commissionsPage, limit: 5 });
     const { data: withdrawalsRes, isLoading: isWithdrawalsLoading } = useGetUserWithdrawalsQuery({ id, page: withdrawalsPage, limit: 5 });
@@ -48,7 +48,9 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
         return (
             <div className="flex flex-col h-[400px] items-center justify-center gap-4">
                 <p className="text-zinc-400">User not found.</p>
-                <button onClick={() => router.back()} className="text-[#10B981] hover:underline">Go Back</button>
+                <button onClick={() => router.back()} className="text-[#10B981] hover:underline">
+                    Go Back
+                </button>
             </div>
         );
     }
@@ -69,10 +71,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
         <div className="space-y-8 pb-12">
             {/* Header */}
             <div className="flex items-center gap-4">
-                <button
-                    onClick={() => router.back()}
-                    className="p-2 hover:bg-white/5 rounded-xl transition-all"
-                >
+                <button onClick={() => router.back()} className="p-2 hover:bg-white/5 rounded-xl transition-all">
                     <ArrowLeft className="w-5 h-5 text-zinc-400" />
                 </button>
                 <div>
@@ -87,18 +86,11 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                     <div className="bg-[#171717] border border-white/5 rounded-2xl p-6">
                         <div className="flex items-center gap-4 border-b border-white/5 pb-6 mb-6">
                             <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center justify-center overflow-hidden">
-                                {user.profileImage ? (
-                                    <Image src={getImageUrl(user.profileImage)} alt={user.name} width={64} height={64} className="w-full h-full object-cover" />
-                                ) : (
-                                    <span className="text-2xl font-bold text-zinc-500">{user.name?.charAt(0)}</span>
-                                )}
+                                {user.profileImage ? <Image src={getImageUrl(user.profileImage)} alt={user.name} width={64} height={64} className="w-full h-full object-cover" /> : <span className="text-2xl font-bold text-zinc-500">{user.name?.charAt(0)}</span>}
                             </div>
                             <div>
                                 <h3 className="text-lg font-bold text-white">{user.name}</h3>
-                                <span className={`inline-flex px-2 py-0.5 mt-1 rounded text-[10px] font-bold uppercase tracking-wider ${user.isInfluencer ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-[#1447E6]/10 text-[#1447E6]'
-                                    }`}>
-                                    {user.isInfluencer ? 'Influencer' : 'User'}
-                                </span>
+                                <span className={`inline-flex px-2 py-0.5 mt-1 rounded text-[10px] font-bold uppercase tracking-wider ${user.isInfluencer ? "bg-[#10B981]/10 text-[#10B981]" : "bg-[#1447E6]/10 text-[#1447E6]"}`}>{user.isInfluencer ? "Influencer" : "User"}</span>
                             </div>
                         </div>
 
@@ -109,15 +101,13 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                             </div>
                             <div className="flex items-center gap-3 text-sm">
                                 <Phone className="w-4 h-4 text-zinc-500" />
-                                <span className="text-zinc-300">{user.phone || 'N/A'}</span>
+                                <span className="text-zinc-300">{user.phone || "N/A"}</span>
                             </div>
                             <div className="flex flex-col gap-1 text-sm border-t border-white/5 pt-4 mt-2">
                                 <span className="text-zinc-500 text-xs uppercase font-bold tracking-wider mb-2">Location</span>
                                 <div className="flex items-start gap-3">
                                     <MapPin className="w-4 h-4 text-zinc-500 shrink-0" />
-                                    <span className="text-zinc-300 text-xs">
-                                        {user.address ? `${user.address.street || ''}, ${user.address.city || ''}, ${user.address.country || ''}` : 'No address provided'}
-                                    </span>
+                                    <span className="text-zinc-300 text-xs">{user.address ? `${user.address.street || ""}, ${user.address.city || ""}, ${user.address.country || ""}` : "No address provided"}</span>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 text-sm border-t border-white/5 pt-4">
@@ -132,7 +122,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                         <div className="space-y-4">
                             <div className="flex justify-between items-center">
                                 <span className="text-xs text-zinc-500">Referral Code</span>
-                                <span className="text-xs font-mono font-bold bg-white/5 px-2 py-1 rounded text-zinc-300">{user.referralCode || 'N/A'}</span>
+                                <span className="text-xs font-mono font-bold bg-white/5 px-2 py-1 rounded text-zinc-300">{user.referralCode || "N/A"}</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-xs text-zinc-500">Commission Rate</span>
@@ -298,7 +288,7 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
 
                     {/* Commissions */}
                     <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden relative">
-                        <div className="p-6 border-b border-white/5 flex gap-4">
+                        <div className="p-6 border-b border-white/5">
                             <h3 className="text-sm font-bold text-white flex items-center gap-2"><ArrowDownRight className="w-4 h-4 text-[#10B981]" /> Commission History</h3>
                         </div>
                         <div className="overflow-x-auto min-h-[120px]">
@@ -310,24 +300,70 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                 <table className="w-full text-left">
                                     <thead className="bg-white/2">
                                         <tr>
-                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
                                             <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Source User</th>
-                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Date</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Rate</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Max Payout</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider">Paid Duration</th>
+                                            <th className="px-6 py-3 text-[10px] font-bold text-zinc-500 uppercase tracking-wider text-right">History</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
                                         {commissions.length > 0 ? commissions.map((c: any, i: number) => (
-                                            <tr key={i} className="hover:bg-white/2">
-                                                <td className="px-6 py-4 text-sm font-bold text-[#10B981]">CHF {c.amount}</td>
-                                                <td className="px-6 py-4 text-sm text-zinc-300">{c.commissionFrom?.name || c.sourceUser?.name || 'Unknown'}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${c.status === 'COMPLETED' ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-orange-500/10 text-orange-500'}`}>{c.status || 'COMPLETED'}</span>
-                                                </td>
-                                                <td className="px-6 py-4 text-xs text-zinc-500">{new Date(c.createdAt).toLocaleDateString()}</td>
-                                            </tr>
+                                            <React.Fragment key={c._id || i}>
+                                                <tr className="hover:bg-white/2 transition-colors">
+                                                    <td className="px-6 py-4">
+                                                        <div className="text-sm font-bold text-white">{c.commissionFrom?.name || 'Unknown'}</div>
+                                                        <div className="text-[11px] text-zinc-500">{c.commissionFrom?.email || ''}</div>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-zinc-300 font-medium">{c.commissionPercentage}%</td>
+                                                    <td className="px-6 py-4 text-sm text-zinc-300 font-bold">CHF {c.maxPayout}</td>
+                                                    <td className="px-6 py-4 text-sm text-zinc-400">{c.commissionPaidCount} / {c.commissionDuration} Months</td>
+                                                    <td className="px-6 py-4 text-right">
+                                                        <button
+                                                            onClick={() => toggleCommissionExpand(c._id)}
+                                                            disabled={!c.history || c.history.length === 0}
+                                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                                                                c.history && c.history.length > 0
+                                                                    ? 'bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white'
+                                                                    : 'text-zinc-600 cursor-not-allowed'
+                                                            }`}
+                                                        >
+                                                            <span>{c.history?.length || 0} Payouts</span>
+                                                            {c.history && c.history.length > 0 && (
+                                                                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${expandedCommissions[c._id] ? 'rotate-180' : ''}`} />
+                                                            )}
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                                {expandedCommissions[c._id] && c.history && c.history.length > 0 && (
+                                                    <tr>
+                                                        <td colSpan={5} className="bg-white/[0.01] px-8 py-4 border-b border-white/5">
+                                                            <div className="rounded-xl border border-white/5 overflow-hidden">
+                                                                <table className="w-full text-left">
+                                                                    <thead className="bg-white/2 border-b border-white/5">
+                                                                        <tr>
+                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Invoice ID</th>
+                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
+                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider text-right">Payout Date</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody className="divide-y divide-white/5">
+                                                                        {c.history.map((h: any, idx: number) => (
+                                                                            <tr key={idx} className="hover:bg-white/2">
+                                                                                <td className="px-4 py-2 text-xs font-mono text-zinc-400">{h.invoiceId}</td>
+                                                                                <td className="px-4 py-2 text-xs font-bold text-[#10B981]">CHF {h.amount}</td>
+                                                                                <td className="px-4 py-2 text-xs text-zinc-500 text-right">{new Date(h.createdAt).toLocaleDateString()}</td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                )}
+                                            </React.Fragment>
                                         )) : (
-                                            <tr><td colSpan={4} className="px-6 py-8 text-center text-zinc-500 text-sm">No commissions found</td></tr>
+                                            <tr><td colSpan={5} className="px-6 py-8 text-center text-zinc-500 text-sm">No commissions found</td></tr>
                                         )}
                                     </tbody>
                                 </table>
