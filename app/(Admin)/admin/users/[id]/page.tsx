@@ -7,6 +7,8 @@ import { useGetUserActivityQuery, useGetUserActivitySummaryQuery, useGetUserRefe
 import { getImageUrl } from "@/lib/utils";
 import Image from "next/image";
 
+// updated
+
 export default function UserActivityPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
     const { id } = use(params);
@@ -165,7 +167,9 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                     {/* Subscriptions */}
                     <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden relative">
                         <div className="p-6 border-b border-white/5">
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><CreditCard className="w-4 h-4 text-purple-500" /> Subscription History</h3>
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                <CreditCard className="w-4 h-4 text-purple-500" /> Subscription History
+                            </h3>
                         </div>
                         <div className="overflow-x-auto min-h-[120px]">
                             {isSubscriptionsLoading ? (
@@ -184,18 +188,24 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
-                                        {subscriptions.length > 0 ? subscriptions.map((sub: any, i: number) => (
-                                            <tr key={i} className="hover:bg-white/2">
-                                                <td className="px-6 py-4 text-sm font-bold text-white">{sub.subscriptionPlanId?.name}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${sub.status === 'ACTIVE' ? 'bg-[#10B981]/10 text-[#10B981]' : 'bg-red-500/10 text-red-500'}`}>{sub.status}</span>
+                                        {subscriptions.length > 0 ? (
+                                            subscriptions.map((sub: any, i: number) => (
+                                                <tr key={i} className="hover:bg-white/2">
+                                                    <td className="px-6 py-4 text-sm font-bold text-white">{sub.subscriptionPlanId?.name}</td>
+                                                    <td className="px-6 py-4">
+                                                        <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${sub.status === "ACTIVE" ? "bg-[#10B981]/10 text-[#10B981]" : "bg-red-500/10 text-red-500"}`}>{sub.status}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-zinc-300">CHF {sub.subscriptionPlanId?.price}</td>
+                                                    <td className="px-6 py-4 text-xs text-zinc-500">{new Date(sub.startDate).toLocaleDateString()}</td>
+                                                    <td className="px-6 py-4 text-xs text-zinc-500">{new Date(sub.endDate).toLocaleDateString()}</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={5} className="px-6 py-8 text-center text-zinc-500 text-sm">
+                                                    No subscriptions found
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-zinc-300">CHF {sub.subscriptionPlanId?.price}</td>
-                                                <td className="px-6 py-4 text-xs text-zinc-500">{new Date(sub.startDate).toLocaleDateString()}</td>
-                                                <td className="px-6 py-4 text-xs text-zinc-500">{new Date(sub.endDate).toLocaleDateString()}</td>
                                             </tr>
-                                        )) : (
-                                            <tr><td colSpan={5} className="px-6 py-8 text-center text-zinc-500 text-sm">No subscriptions found</td></tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -229,7 +239,9 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                     {/* Referrals */}
                     <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden relative">
                         <div className="p-6 border-b border-white/5">
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><UserCheck className="w-4 h-4 text-[#10B981]" /> Recent Referrals</h3>
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                <UserCheck className="w-4 h-4 text-[#10B981]" /> Recent Referrals
+                            </h3>
                         </div>
                         <div className="overflow-x-auto min-h-[120px]">
                             {isReferralsLoading ? (
@@ -247,15 +259,21 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
-                                        {referrals.length > 0 ? referrals.map((ref: any, i: number) => (
-                                            <tr key={i} className="hover:bg-white/2">
-                                                <td className="px-6 py-4 text-sm font-bold text-white">{ref.name}</td>
-                                                <td className="px-6 py-4 text-sm text-zinc-300">{ref.planName || 'N/A'}</td>
-                                                <td className="px-6 py-4 text-sm text-zinc-300">{ref.status || 'Active'}</td>
-                                                <td className="px-6 py-4 text-xs text-zinc-500">{new Date(ref.createdAt).toLocaleDateString()}</td>
+                                        {referrals.length > 0 ? (
+                                            referrals.map((ref: any, i: number) => (
+                                                <tr key={i} className="hover:bg-white/2">
+                                                    <td className="px-6 py-4 text-sm font-bold text-white">{ref.name}</td>
+                                                    <td className="px-6 py-4 text-sm text-zinc-300">{ref.planName || "N/A"}</td>
+                                                    <td className="px-6 py-4 text-sm text-zinc-300">{ref.status || "Active"}</td>
+                                                    <td className="px-6 py-4 text-xs text-zinc-500">{new Date(ref.createdAt).toLocaleDateString()}</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={4} className="px-6 py-8 text-center text-zinc-500 text-sm">
+                                                    No referrals found
+                                                </td>
                                             </tr>
-                                        )) : (
-                                            <tr><td colSpan={4} className="px-6 py-8 text-center text-zinc-500 text-sm">No referrals found</td></tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -289,7 +307,9 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                     {/* Commissions */}
                     <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden relative">
                         <div className="p-6 border-b border-white/5">
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><ArrowDownRight className="w-4 h-4 text-[#10B981]" /> Commission History</h3>
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                <ArrowDownRight className="w-4 h-4 text-[#10B981]" /> Commission History
+                            </h3>
                         </div>
                         <div className="overflow-x-auto min-h-[120px]">
                             {isCommissionsLoading ? (
@@ -308,80 +328,78 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
-                                        {commissions.length > 0 ? commissions.map((c: any, i: number) => (
-                                            <React.Fragment key={c._id || i}>
-                                                <tr className="hover:bg-white/2 transition-colors">
-                                                    <td className="px-6 py-4">
-                                                        <div className="text-sm font-bold text-white">{c.commissionFrom?.name || 'Unknown'}</div>
-                                                        <div className="text-[11px] text-zinc-500">{c.commissionFrom?.email || ''}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-sm text-zinc-300 font-medium">{c.commissionPercentage}%</td>
-                                                    <td className="px-6 py-4 text-sm text-zinc-300 font-bold">CHF {c.maxPayout}</td>
-                                                    <td className="px-6 py-4 text-sm text-zinc-400">{c.commissionPaidCount} / {c.commissionDuration} Months</td>
-                                                    <td className="px-6 py-4 text-right">
-                                                        <button
-                                                            onClick={() => toggleCommissionExpand(c._id)}
-                                                            disabled={!c.history || c.history.length === 0}
-                                                            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
-                                                                c.history && c.history.length > 0
-                                                                    ? 'bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white'
-                                                                    : 'text-zinc-600 cursor-not-allowed'
-                                                            }`}
-                                                        >
-                                                            <span>{c.history?.length || 0} Payouts</span>
-                                                            {c.history && c.history.length > 0 && (
-                                                                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${expandedCommissions[c._id] ? 'rotate-180' : ''}`} />
-                                                            )}
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                {expandedCommissions[c._id] && c.history && c.history.length > 0 && (
-                                                    <tr>
-                                                        <td colSpan={5} className="bg-white/[0.01] px-8 py-4 border-b border-white/5">
-                                                            <div className="rounded-xl border border-white/5 overflow-hidden">
-                                                                <table className="w-full text-left">
-                                                                    <thead className="bg-white/2 border-b border-white/5">
-                                                                        <tr>
-                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Invoice ID</th>
-                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Plan</th>
-                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Original Price</th>
-                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Discount</th>
-                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Paid Amount</th>
-                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Commission</th>
-                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider text-right">Payout Date</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody className="divide-y divide-white/5">
-                                                                        {c.history.map((h: any, idx: number) => {
-                                                                            const sub = h.userSubscriptionId;
-                                                                            const discountDisplay = sub
-                                                                                ? sub.percentOff
-                                                                                    ? `${sub.percentOff}% Off`
-                                                                                    : sub.amountOff
-                                                                                    ? `CHF ${sub.amountOff} Off`
-                                                                                    : 'None'
-                                                                                : '-';
-                                                                            return (
-                                                                                <tr key={idx} className="hover:bg-white/2">
-                                                                                    <td className="px-4 py-2 text-xs font-mono text-zinc-400">{h.invoiceId}</td>
-                                                                                    <td className="px-4 py-2 text-xs font-bold text-white">{sub?.subscriptionPlanId?.name || '-'}</td>
-                                                                                    <td className="px-4 py-2 text-xs text-zinc-400">{sub?.actualPrice ? `CHF ${sub.actualPrice}` : '-'}</td>
-                                                                                    <td className="px-4 py-2 text-xs text-zinc-400">{discountDisplay}</td>
-                                                                                    <td className="px-4 py-2 text-xs font-bold text-white">{sub?.paidPrice ? `CHF ${sub.paidPrice}` : '-'}</td>
-                                                                                    <td className="px-4 py-2 text-xs font-bold text-[#10B981]">CHF {h.amount}</td>
-                                                                                    <td className="px-4 py-2 text-xs text-zinc-500 text-right">{new Date(h.createdAt).toLocaleDateString()}</td>
-                                                                                </tr>
-                                                                            );
-                                                                        })}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
+                                        {commissions.length > 0 ? (
+                                            commissions.map((c: any, i: number) => (
+                                                <React.Fragment key={c._id || i}>
+                                                    <tr className="hover:bg-white/2 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <div className="text-sm font-bold text-white">{c.commissionFrom?.name || "Unknown"}</div>
+                                                            <div className="text-[11px] text-zinc-500">{c.commissionFrom?.email || ""}</div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm text-zinc-300 font-medium">{c.commissionPercentage}%</td>
+                                                        <td className="px-6 py-4 text-sm text-zinc-300 font-bold">CHF {c.maxPayout}</td>
+                                                        <td className="px-6 py-4 text-sm text-zinc-400">
+                                                            {c.commissionPaidCount} / {c.commissionDuration} Months
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <button
+                                                                onClick={() => toggleCommissionExpand(c._id)}
+                                                                disabled={!c.history || c.history.length === 0}
+                                                                className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                                                                    c.history && c.history.length > 0 ? "bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white" : "text-zinc-600 cursor-not-allowed"
+                                                                }`}
+                                                            >
+                                                                <span>{c.history?.length || 0} Payouts</span>
+                                                                {c.history && c.history.length > 0 && <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${expandedCommissions[c._id] ? "rotate-180" : ""}`} />}
+                                                            </button>
                                                         </td>
                                                     </tr>
-                                                )}
-                                            </React.Fragment>
-                                        )) : (
-                                            <tr><td colSpan={5} className="px-6 py-8 text-center text-zinc-500 text-sm">No commissions found</td></tr>
+                                                    {expandedCommissions[c._id] && c.history && c.history.length > 0 && (
+                                                        <tr>
+                                                            <td colSpan={5} className="bg-white/[0.01] px-8 py-4 border-b border-white/5">
+                                                                <div className="rounded-xl border border-white/5 overflow-hidden">
+                                                                    <table className="w-full text-left">
+                                                                        <thead className="bg-white/2 border-b border-white/5">
+                                                                            <tr>
+                                                                                <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Invoice ID</th>
+                                                                                <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Plan</th>
+                                                                                <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Original Price</th>
+                                                                                <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Discount</th>
+                                                                                <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Paid Amount</th>
+                                                                                <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Commission</th>
+                                                                                <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider text-right">Payout Date</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody className="divide-y divide-white/5">
+                                                                            {c.history.map((h: any, idx: number) => {
+                                                                                const sub = h.userSubscriptionId;
+                                                                                const discountDisplay = sub ? (sub.percentOff ? `${sub.percentOff}% Off` : sub.amountOff ? `CHF ${sub.amountOff} Off` : "None") : "-";
+                                                                                return (
+                                                                                    <tr key={idx} className="hover:bg-white/2">
+                                                                                        <td className="px-4 py-2 text-xs font-mono text-zinc-400">{h.invoiceId}</td>
+                                                                                        <td className="px-4 py-2 text-xs font-bold text-white">{sub?.subscriptionPlanId?.name || "-"}</td>
+                                                                                        <td className="px-4 py-2 text-xs text-zinc-400">{sub?.actualPrice ? `CHF ${sub.actualPrice}` : "-"}</td>
+                                                                                        <td className="px-4 py-2 text-xs text-zinc-400">{discountDisplay}</td>
+                                                                                        <td className="px-4 py-2 text-xs font-bold text-white">{sub?.paidPrice ? `CHF ${sub.paidPrice}` : "-"}</td>
+                                                                                        <td className="px-4 py-2 text-xs font-bold text-[#10B981]">CHF {h.amount}</td>
+                                                                                        <td className="px-4 py-2 text-xs text-zinc-500 text-right">{new Date(h.createdAt).toLocaleDateString()}</td>
+                                                                                    </tr>
+                                                                                );
+                                                                            })}
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    )}
+                                                </React.Fragment>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={5} className="px-6 py-8 text-center text-zinc-500 text-sm">
+                                                    No commissions found
+                                                </td>
+                                            </tr>
                                         )}
                                     </tbody>
                                 </table>
@@ -415,7 +433,9 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                     {/* Withdrawals */}
                     <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden relative">
                         <div className="p-6 border-b border-white/5">
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2"><ArrowUpRight className="w-4 h-4 text-orange-500" /> Withdrawal History</h3>
+                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                                <ArrowUpRight className="w-4 h-4 text-orange-500" /> Withdrawal History
+                            </h3>
                         </div>
                         <div className="overflow-x-auto min-h-[120px]">
                             {isWithdrawalsLoading ? (
@@ -433,17 +453,27 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
-                                        {withdrawals.length > 0 ? withdrawals.map((w: any, i: number) => (
-                                            <tr key={i} className="hover:bg-white/2">
-                                                <td className="px-6 py-4 text-sm font-bold text-white">CHF {w.amount}</td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${w.status === 'APPROVED' ? 'bg-[#10B981]/10 text-[#10B981]' : w.status === 'PENDING' ? 'bg-orange-500/10 text-orange-500' : 'bg-red-500/10 text-red-500'}`}>{w.status}</span>
+                                        {withdrawals.length > 0 ? (
+                                            withdrawals.map((w: any, i: number) => (
+                                                <tr key={i} className="hover:bg-white/2">
+                                                    <td className="px-6 py-4 text-sm font-bold text-white">CHF {w.amount}</td>
+                                                    <td className="px-6 py-4">
+                                                        <span
+                                                            className={`inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${w.status === "APPROVED" ? "bg-[#10B981]/10 text-[#10B981]" : w.status === "PENDING" ? "bg-orange-500/10 text-orange-500" : "bg-red-500/10 text-red-500"}`}
+                                                        >
+                                                            {w.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-sm text-zinc-300">{w.paymentMethod}</td>
+                                                    <td className="px-6 py-4 text-xs text-zinc-500">{new Date(w.createdAt).toLocaleDateString()}</td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan={4} className="px-6 py-8 text-center text-zinc-500 text-sm">
+                                                    No withdrawals found
                                                 </td>
-                                                <td className="px-6 py-4 text-sm text-zinc-300">{w.paymentMethod}</td>
-                                                <td className="px-6 py-4 text-xs text-zinc-500">{new Date(w.createdAt).toLocaleDateString()}</td>
                                             </tr>
-                                        )) : (
-                                            <tr><td colSpan={4} className="px-6 py-8 text-center text-zinc-500 text-sm">No withdrawals found</td></tr>
                                         )}
                                     </tbody>
                                 </table>
