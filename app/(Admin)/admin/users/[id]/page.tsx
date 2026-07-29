@@ -343,18 +343,36 @@ export default function UserActivityPage({ params }: { params: Promise<{ id: str
                                                                     <thead className="bg-white/2 border-b border-white/5">
                                                                         <tr>
                                                                             <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Invoice ID</th>
-                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Amount</th>
+                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Plan</th>
+                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Original Price</th>
+                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Discount</th>
+                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Paid Amount</th>
+                                                                            <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider">Commission</th>
                                                                             <th className="px-4 py-2 text-[9px] font-bold text-zinc-500 uppercase tracking-wider text-right">Payout Date</th>
                                                                         </tr>
                                                                     </thead>
                                                                     <tbody className="divide-y divide-white/5">
-                                                                        {c.history.map((h: any, idx: number) => (
-                                                                            <tr key={idx} className="hover:bg-white/2">
-                                                                                <td className="px-4 py-2 text-xs font-mono text-zinc-400">{h.invoiceId}</td>
-                                                                                <td className="px-4 py-2 text-xs font-bold text-[#10B981]">CHF {h.amount}</td>
-                                                                                <td className="px-4 py-2 text-xs text-zinc-500 text-right">{new Date(h.createdAt).toLocaleDateString()}</td>
-                                                                            </tr>
-                                                                        ))}
+                                                                        {c.history.map((h: any, idx: number) => {
+                                                                            const sub = h.userSubscriptionId;
+                                                                            const discountDisplay = sub
+                                                                                ? sub.percentOff
+                                                                                    ? `${sub.percentOff}% Off`
+                                                                                    : sub.amountOff
+                                                                                    ? `CHF ${sub.amountOff} Off`
+                                                                                    : 'None'
+                                                                                : '-';
+                                                                            return (
+                                                                                <tr key={idx} className="hover:bg-white/2">
+                                                                                    <td className="px-4 py-2 text-xs font-mono text-zinc-400">{h.invoiceId}</td>
+                                                                                    <td className="px-4 py-2 text-xs font-bold text-white">{sub?.subscriptionPlanId?.name || '-'}</td>
+                                                                                    <td className="px-4 py-2 text-xs text-zinc-400">{sub?.actualPrice ? `CHF ${sub.actualPrice}` : '-'}</td>
+                                                                                    <td className="px-4 py-2 text-xs text-zinc-400">{discountDisplay}</td>
+                                                                                    <td className="px-4 py-2 text-xs font-bold text-white">{sub?.paidPrice ? `CHF ${sub.paidPrice}` : '-'}</td>
+                                                                                    <td className="px-4 py-2 text-xs font-bold text-[#10B981]">CHF {h.amount}</td>
+                                                                                    <td className="px-4 py-2 text-xs text-zinc-500 text-right">{new Date(h.createdAt).toLocaleDateString()}</td>
+                                                                                </tr>
+                                                                            );
+                                                                        })}
                                                                     </tbody>
                                                                 </table>
                                                             </div>
