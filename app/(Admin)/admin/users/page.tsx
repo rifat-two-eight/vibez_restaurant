@@ -6,19 +6,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useGetUserStatsQuery, useGetAllUsersQuery, useToggleUserStatusMutation, useUpdateUserMutation } from "../../../../redux/features/user/userApi";
 
-const userData = [
-    { name: "Sarah Johnson", email: "sarah.j@email.com", type: "Influencer", code: "SARAH2024", referrals: 142, subs: 98, earnings: "CHF 4,260", commission: "15%", plan: "Annual" },
-    { name: "Michael Chen", email: "m.chen@email.com", type: "Influencer", code: "MIKE15", referrals: 128, subs: 84, earnings: "CHF 3,840", commission: "12%", plan: "Monthly" },
-    { name: "Jennifer Davis", email: "jdavis@email.com", type: "Regular User", code: "JENDAVIS", referrals: 12, subs: 8, earnings: "CHF 240", commission: "10%", plan: "Monthly" },
-    { name: "Robert Taylor", email: "rtaylor@email.com", type: "Regular User", code: "ROBTAY", referrals: 8, subs: 5, earnings: "CHF 150", commission: "10%", plan: "Annual" },
-    { name: "Emma Wilson", email: "ewilson@email.com", type: "Influencer", code: "EMMA18", referrals: 95, subs: 67, earnings: "CHF 2,850", commission: "10%", plan: "Monthly" },
-    { name: "Amanda White", email: "awhite@email.com", type: "Regular User", code: "AMANDA24", referrals: 15, subs: 11, earnings: "CHF 330", commission: "10%", plan: "Monthly" },
-    { name: "David Martinez", email: "dmartinez@email.com", type: "Influencer", code: "DAVID20", referrals: 87, subs: 61, earnings: "CHF 2,610", commission: "20%", plan: "Annual" },
-    { name: "Kevin Brown", email: "kbrown@email.com", type: "Regular User", code: "KEVIN8", referrals: 6, subs: 4, earnings: "CHF 120", commission: "10%", plan: "Day Pass" },
-    { name: "Lisa Anderson", email: "landerson@email.com", type: "Influencer", code: "LISA12", referrals: 73, subs: 52, earnings: "CHF 2,190", commission: "12%", plan: "Annual" },
-    { name: "Michelle Green", email: "mgreen@email.com", type: "Regular User", code: "MICH10", referrals: 19, subs: 13, earnings: "CHF 390", commission: "10%", plan: "Monthly" },
-];
-
 export default function UserManagement() {
     const router = useRouter();
     const [page, setPage] = useState(1);
@@ -56,8 +43,8 @@ export default function UserManagement() {
         );
     }
 
-    const stats = userStatsRes?.data || { totalUser: 10, regularCustomer: 5, influencer: 5, premiumUser: 4 };
-    const dynamicUsers = usersRes?.data || userData;
+    const stats = userStatsRes?.data || { totalUser: 0, regularCustomer: 0, influencer: 0, premiumUser: 0 };
+    const dynamicUsers = usersRes?.data || [];
     const meta = usersRes?.meta || { page: 1, limit: 10, total: dynamicUsers.length, totalPages: 1, hasNext: false, hasPrev: false };
 
     return (
@@ -155,16 +142,29 @@ export default function UserManagement() {
                                         </div>
                                     </td>
                                     <td className="px-8 py-5">
-                                        <span className={`inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${user.isInfluencer ? "bg-[#10B981]/10 text-[#10B981]" : user.role === "ADMIN" ? "bg-purple-500/10 text-purple-500" : "bg-[#1447E6]/10 text-[#1447E6]"}`}>
-                                            {user.isInfluencer ? "Influencer" : user.role === "ADMIN" ? "Admin" : "Regular User"}
-                                        </span>
+                                        {user.role === "ADMIN" ? (
+                                            <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-500">Admin</span>
+                                        ) : user.role === "RESTAURANT_OWNER" ? (
+                                            <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-500">Restaurant Owner</span>
+                                        ) : user.isInfluencer && user.subscriptionPlanId ? (
+                                            <span className="inline-flex flex-col items-start px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#10B981]/10 text-[#10B981] leading-tight">
+                                                <span>Influencer &</span>
+                                                <span>Premium User</span>
+                                            </span>
+                                        ) : user.isInfluencer ? (
+                                            <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#10B981]/10 text-[#10B981]">Influencer</span>
+                                        ) : user.subscriptionPlanId ? (
+                                            <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#10B981]/10 text-[#10B981]">Premium User</span>
+                                        ) : (
+                                            <span className="inline-flex px-2.5 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider bg-[#1447E6]/10 text-[#1447E6]">Regular User</span>
+                                        )}
                                     </td>
                                     <td className="px-8 py-5">
                                         <span className="bg-white/5 border border-white/5 px-2.5 py-1 rounded text-[10px] font-mono text-zinc-400 uppercase tracking-widest font-bold">{user.referralCode || user.code || "-"}</span>
                                     </td>
                                     <td className="px-8 py-5 text-sm font-bold text-white text-center">{user.referralsTotalCount ?? user.referrals ?? 0}</td>
                                     <td className="px-8 py-5 text-sm text-zinc-400 text-center">{user.activeSubscriptionFromHimTotal ?? user.subs ?? 0}</td>
-                                    <td className="px-8 py-5 text-sm font-bold text-white">{typeof user.balance === "number" ? `CHF${user.balance}` : user.earnings || "CHF 0"}</td>
+                                    <td className="px-8 py-5 text-sm font-bold text-white">{typeof user.balance === "number" ? `CHF ${user.balance}` : user.earnings || "CHF 0"}</td>
                                     <td className="px-8 py-5 text-sm font-bold text-[#10B981]">{user.commissionPercentage ?? user.percentage ?? (user.commission ? parseInt(user.commission) : 0)}%</td>
                                     <td className="px-8 py-5 text-sm text-zinc-500 font-medium capitalize">{user.subscriptionPlanId?.duration?.toLowerCase().replace("_", " ") || user.plan || "N/A"}</td>
                                     <td className="px-8 py-5">
