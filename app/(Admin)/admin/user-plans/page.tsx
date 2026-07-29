@@ -239,7 +239,7 @@ export default function SubscriptionManagement() {
             {/* User Subscriptions Table */}
             <div className="bg-[#171717] border border-white/5 rounded-2xl overflow-hidden mt-12">
                 <div className="p-8 flex justify-between items-center border-b border-white/5">
-                    <h3 className="text-base font-bold text-white">Active Subscriptions</h3>
+                    <h3 className="text-base font-bold text-white">User Subscriptions</h3>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
