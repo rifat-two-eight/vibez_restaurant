@@ -92,7 +92,10 @@ export default function PlatformSettings() {
                                 max="100" 
                                 value={settings.defaultCommisionPercentage}
                                 onChange={(e) => handleChange('defaultCommisionPercentage', parseInt(e.target.value))}
-                                className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-[#10B981]" 
+                                className="w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-[#10B981]" 
+                                style={{
+                                    background: `linear-gradient(to right, #10B981 ${settings.defaultCommisionPercentage}%, #27272a ${settings.defaultCommisionPercentage}%)`
+                                }}
                             />
                         </div>
 
