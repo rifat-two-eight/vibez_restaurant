@@ -247,19 +247,21 @@ export default function SubscriptionManagement() {
                             <tr className="bg-white/1">
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">User</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Plan</th>
+                                <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Price Details</th>
+                                <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Referral & Commission</th>
+                                <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Stripe Info</th>
                                 <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Status</th>
-                                <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider">Start Date</th>
-                                <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-right">End Date</th>
+                                <th className="px-8 py-4 text-[11px] font-bold text-zinc-500 uppercase tracking-wider text-right">Dates</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {isLoadingSubs ? (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-8 text-center text-sm text-zinc-500">Loading subscriptions...</td>
+                                    <td colSpan={7} className="px-8 py-8 text-center text-sm text-zinc-500">Loading subscriptions...</td>
                                 </tr>
                             ) : subscriptions.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-8 py-8 text-center text-sm text-zinc-500">No active subscriptions found.</td>
+                                    <td colSpan={7} className="px-8 py-8 text-center text-sm text-zinc-500">No active subscriptions found.</td>
                                 </tr>
                             ) : (
                                 subscriptions.map((sub: any, i: number) => (
@@ -281,21 +283,83 @@ export default function SubscriptionManagement() {
                                         </td>
                                         <td className="px-8 py-5">
                                             <p className="text-sm font-bold text-white">{sub.subscriptionPlanId?.name || 'Unknown Plan'}</p>
-                                            <p className="text-[11px] text-zinc-500">CHF {sub.subscriptionPlanId?.price || '0'} / {sub.subscriptionPlanId?.duration}</p>
+                                            <p className="text-[11px] text-zinc-500">{sub.subscriptionPlanId?.duration}</p>
                                         </td>
                                         <td className="px-8 py-5">
-                                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${sub.status === 'ACTIVE' ? 'bg-[#10B981]/10 text-[#10B981]' :
-                                                sub.status === 'CANCELED' ? 'bg-red-500/10 text-red-500' :
-                                                    'bg-zinc-500/10 text-zinc-400'
-                                                }`}>
-                                                {sub.status || 'UNKNOWN'}
-                                            </span>
+                                            <div className="space-y-1">
+                                                <p className="text-sm font-bold text-white">
+                                                    CHF {sub.paidPrice !== undefined ? sub.paidPrice : sub.actualPrice || 0}
+                                                </p>
+                                                {sub.actualPrice !== undefined && sub.actualPrice !== sub.paidPrice && (
+                                                    <p className="text-[11px] text-zinc-500 line-through">
+                                                        CHF {sub.actualPrice}
+                                                    </p>
+                                                )}
+                                                {sub.percentOff ? (
+                                                    <span className="inline-block px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500 text-[10px] font-bold">
+                                                        {sub.percentOff}% off
+                                                    </span>
+                                                ) : null}
+                                            </div>
                                         </td>
-                                        <td className="px-8 py-5 text-sm text-zinc-400">
-                                            {sub.startDate ? new Date(sub.startDate).toLocaleDateString() : 'N/A'}
+                                        <td className="px-8 py-5">
+                                            {sub.commissionUser ? (
+                                                <div className="space-y-1">
+                                                    <p className="text-xs font-bold text-white">{sub.commissionUser.name}</p>
+                                                    <p className="text-[11px] text-zinc-500">{sub.commissionUser.email}</p>
+                                                    {sub.commissionAmount !== undefined && (
+                                                        <p className="text-[11px] text-amber-500 font-semibold">
+                                                            Comm: CHF {sub.commissionAmount}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-zinc-600">—</span>
+                                            )}
                                         </td>
-                                        <td className="px-8 py-5 text-sm font-medium text-white text-right">
-                                            {sub.endDate ? new Date(sub.endDate).toLocaleDateString() : 'N/A'}
+                                        <td className="px-8 py-5">
+                                            <div className="space-y-1 font-mono text-[10px] text-zinc-500">
+                                                {sub.stripeSubscriptionId && (
+                                                    <p>
+                                                        <span className="text-zinc-600">Sub:</span> {sub.stripeSubscriptionId}
+                                                    </p>
+                                                )}
+                                                {sub.stripeCustomerId && (
+                                                    <p>
+                                                        <span className="text-zinc-600">Cust:</span> {sub.stripeCustomerId}
+                                                    </p>
+                                                )}
+                                                {!sub.stripeSubscriptionId && !sub.stripeCustomerId && (
+                                                    <span className="text-xs text-zinc-600">—</span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <div className="flex flex-col gap-1.5 items-start">
+                                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${sub.status === 'ACTIVE' ? 'bg-[#10B981]/10 text-[#10B981]' :
+                                                    sub.status === 'CANCELLED' || sub.status === 'CANCELED' ? 'bg-red-500/10 text-red-500' :
+                                                        'bg-zinc-500/10 text-zinc-400'
+                                                    }`}>
+                                                    {sub.status || 'UNKNOWN'}
+                                                </span>
+                                                {sub.isTrial && (
+                                                    <span className="px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 text-[10px] font-bold uppercase tracking-wider">
+                                                        Trial
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-5 text-right">
+                                            <div className="space-y-1 text-xs inline-block text-left">
+                                                <p className="text-zinc-400">
+                                                    <span className="text-zinc-600 font-medium text-[10px] uppercase">Start:</span>{' '}
+                                                    {sub.startDate ? new Date(sub.startDate).toLocaleDateString() : 'N/A'}
+                                                </p>
+                                                <p className="text-white font-medium">
+                                                    <span className="text-zinc-600 font-medium text-[10px] uppercase">End:</span>{' '}
+                                                    {sub.endDate ? new Date(sub.endDate).toLocaleDateString() : 'N/A'}
+                                                </p>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
