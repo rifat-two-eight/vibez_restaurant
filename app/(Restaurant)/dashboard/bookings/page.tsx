@@ -96,14 +96,14 @@ export default function BookingsPage() {
                 })}
             </div>
 
-            {/* Live Deal Queue */}
+            {/* Upcoming Guests Queue */}
             <div className="bg-white rounded-[10px] border border-zinc-100 overflow-hidden">
                 <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 bg-zinc-50">
                     <div className="w-7 h-7 rounded-full bg-emerald-50 flex items-center justify-center">
                         <Activity className="w-4 h-4 text-emerald-600" />
                     </div>
                     <div>
-                        <h2 className="text-sm font-bold text-zinc-900">Live Deal Queue</h2>
+                        <h2 className="text-sm font-bold text-zinc-900">Upcoming Guests Queue</h2>
                         <p className="text-xs text-zinc-400">Upcoming customers arriving soon</p>
                     </div>
                 </div>
