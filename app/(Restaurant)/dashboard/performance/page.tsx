@@ -70,7 +70,8 @@ export default function PerformancePage() {
 
     const topDealsRaw = insightsData.topPerformingDeals || [];
     const maxClaims = Math.max(...topDealsRaw.map((d: any) => d.claims), 1);
-    const topDeals = topDealsRaw.map((d: any) => ({
+    const topDeals = topDealsRaw.map((d: any, index: number) => ({
+        id: d._id || d.id || `deal-${index}`,
         name: d.title || 'Unknown',
         claims: d.claims || 0,
         max: maxClaims,
@@ -134,10 +135,10 @@ export default function PerformancePage() {
                 <div className="bg-white rounded-[10px] border border-zinc-100 p-6 space-y-6">
                     <h2 className="text-base font-bold text-zinc-900">Top Performing Deals</h2>
                     <div className="space-y-5">
-                        {topDeals.length > 0 ? topDeals.map((deal: any) => {
+                        {topDeals.length > 0 ? topDeals.map((deal: any, index: number) => {
                             const pct = Math.round((deal.claims / deal.max) * 100);
                             return (
-                                <div key={deal.name} className="space-y-2">
+                                <div key={deal.id || `${deal.name}-${index}`} className="space-y-2">
                                     <div className="flex items-center justify-between text-sm">
                                         <span className="font-medium text-zinc-800">{deal.name}</span>
                                         <span className="text-zinc-400 text-xs">{deal.claims} claims</span>
