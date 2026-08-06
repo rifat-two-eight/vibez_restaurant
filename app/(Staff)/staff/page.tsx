@@ -120,7 +120,14 @@ export default function StaffPanel() {
                         {liveQueue.map((b: any) => (
                             <div key={b._id} className="bg-amber-50/40 border border-amber-100 rounded-[10px] p-4">
                                 <div className="flex items-start justify-between mb-2">
-                                    <p className="text-base font-bold text-zinc-900">{b.reservationTime}</p>
+                                    <div>
+                                        <p className="text-base font-bold text-zinc-900">{b.reservationTime}</p>
+                                        {b.reservationDate && (
+                                            <p className="text-xs text-zinc-500 font-medium mt-0.5">
+                                                {new Date(b.reservationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                            </p>
+                                        )}
+                                    </div>
                                     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${b.status === 'ARRIVED' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'
                                         }`}>
                                         {formatStatus(b.status)}
@@ -169,7 +176,7 @@ export default function StaffPanel() {
                             <tr className="border-b border-zinc-100 bg-zinc-50">
                                 <th className="text-left px-6 py-3 text-xs font-semibold text-zinc-500">Customer Name</th>
                                 <th className="text-left px-6 py-3 text-xs font-semibold text-zinc-500">Deal</th>
-                                <th className="text-left px-6 py-3 text-xs font-semibold text-zinc-500">Time</th>
+                                <th className="text-left px-6 py-3 text-xs font-semibold text-zinc-500">Date & Time</th>
                                 <th className="text-left px-6 py-3 text-xs font-semibold text-zinc-500">Guests</th>
                                 <th className="text-left px-6 py-3 text-xs font-semibold text-zinc-500">Status</th>
                             </tr>
@@ -181,7 +188,14 @@ export default function StaffPanel() {
                                     <tr key={b._id} className="hover:bg-zinc-50 transition-colors">
                                         <td className="px-6 py-3 font-medium text-zinc-800">{b.userId?.name || 'Unknown'}</td>
                                         <td className="px-6 py-3 text-zinc-500">{b.dealId?.title || 'N/A'}</td>
-                                        <td className="px-6 py-3 text-zinc-500">{b.reservationTime}</td>
+                                        <td className="px-6 py-3 text-zinc-500">
+                                            <div>{b.reservationTime}</div>
+                                            {b.reservationDate && (
+                                                <div className="text-[11px] text-zinc-400">
+                                                    {new Date(b.reservationDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-3 text-zinc-500">{b.partySize} Guests</td>
                                         <td className="px-6 py-3">
                                             <span className={`inline-flex px-2.5 py-1 rounded-full text-xs font-semibold ${statusStyle[statusStr] || statusStyle.Upcoming}`}>
