@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Calendar, Users, CheckCircle, Activity, Loader2 } from 'lucide-react';
+import { Calendar, Users, CheckCircle, Activity, Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { 
     useGetOwnerReservationStatsQuery, 
     useGetReservationsQuery 
 } from '@/redux/features/reservations/reservationApi';
 
-type BookingTab = 'Upcoming' | 'Completed' | 'Cancelled';
+type BookingTab = 'Upcoming' | 'Completed';
 
 const queueStatusStyle: Record<string, string> = {
     ARRIVED: 'bg-emerald-50 text-emerald-700',
@@ -24,14 +24,17 @@ const formatStatus = (status: string) => {
 
 export default function BookingsPage() {
     const [activeTab, setActiveTab] = useState<BookingTab>('Upcoming');
+    const [currentPage, setCurrentPage] = useState(1);
+    const limit = 10;
 
     const { data: statsRes, isLoading: isStatsLoading } = useGetOwnerReservationStatsQuery({});
     // We fetch UPCOMING status for the Live Deal Queue
     const { data: liveRes, isLoading: isLiveLoading } = useGetReservationsQuery({ status: 'UPCOMING', limit: 50 });
-    // We fetch the active tab's status for the Bookings list
+    // We fetch the active tab's status for the Bookings list with pagination
     const { data: tabRes, isLoading: isTabLoading } = useGetReservationsQuery({ 
         status: activeTab.toUpperCase(), 
-        limit: 100 // Temporarily fetching a large chunk to avoid manual pagination UI implementation
+        page: currentPage,
+        limit 
     });
 
     const statsData = statsRes?.data || {
@@ -42,6 +45,16 @@ export default function BookingsPage() {
 
     const liveQueue = liveRes?.data || [];
     const filteredBookings = tabRes?.data || [];
+    const meta = tabRes?.meta || { total: filteredBookings.length, page: currentPage, limit };
+
+    const totalPages = meta.total ? Math.ceil(meta.total / limit) : 1;
+    const hasNext = meta.hasNextPage ?? (currentPage < totalPages);
+    const hasPrev = meta.hasPrevPage ?? (currentPage > 1);
+
+    const handleTabChange = (tab: BookingTab) => {
+        setActiveTab(tab);
+        setCurrentPage(1);
+    };
 
     const stats = [
         { label: 'Total Bookings Today', value: statsData.totalBookingsToday, icon: Calendar, iconBg: 'bg-blue-50',    iconColor: 'text-blue-600' },
@@ -83,14 +96,14 @@ export default function BookingsPage() {
                 })}
             </div>
 
-            {/* Live Deal Queue */}
+            {/* Upcoming Guests Queue */}
             <div className="bg-white rounded-[10px] border border-zinc-100 overflow-hidden">
                 <div className="flex items-center gap-3 px-6 py-5 border-b border-zinc-100 bg-zinc-50">
                     <div className="w-7 h-7 rounded-full bg-emerald-50 flex items-center justify-center">
                         <Activity className="w-4 h-4 text-emerald-600" />
                     </div>
                     <div>
-                        <h2 className="text-sm font-bold text-zinc-900">Live Deal Queue</h2>
+                        <h2 className="text-sm font-bold text-zinc-900">Upcoming Guests Queue</h2>
                         <p className="text-xs text-zinc-400">Upcoming customers arriving soon</p>
                     </div>
                 </div>
@@ -140,10 +153,10 @@ export default function BookingsPage() {
                 {/* Tab Bar */}
                 <div className="px-6 py-4 border-b border-zinc-100">
                     <div className="inline-flex gap-1 bg-zinc-100 p-1 rounded-[10px]">
-                        {(['Upcoming', 'Completed', 'Cancelled'] as BookingTab[]).map(tab => (
+                        {(['Upcoming', 'Completed'] as BookingTab[]).map(tab => (
                             <button
                                 key={tab}
-                                onClick={() => setActiveTab(tab)}
+                                onClick={() => handleTabChange(tab)}
                                 className={`px-5 py-2 text-sm font-semibold rounded-[8px] transition-all ${
                                     activeTab === tab
                                         ? 'bg-[#013622] text-white shadow-sm'
@@ -194,6 +207,36 @@ export default function BookingsPage() {
                         ))
                     )}
                 </div>
+
+                {/* Pagination Controls */}
+                {meta && meta.total > 0 && (
+                    <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between">
+                        <p className="text-xs text-zinc-500 font-medium">
+                            Showing {((currentPage - 1) * limit) + 1} - {Math.min(currentPage * limit, meta.total)} of {meta.total} bookings
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                disabled={!hasPrev || isTabLoading}
+                                className="p-2 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                title="Previous Page"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <span className="text-xs font-semibold text-zinc-700 px-2">
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                disabled={!hasNext || isTabLoading}
+                                className="p-2 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                title="Next Page"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
