@@ -96,15 +96,23 @@ export default function AdminCouponsPage() {
                                                 {c.isDefault && (
                                                     <span className="w-fit bg-[#1447E6]/10 text-[#1447E6] border border-[#1447E6]/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">Default Referral</span>
                                                 )}
+                                                {c.isDirectUse ? (
+                                                    <span className="w-fit bg-purple-500/10 text-purple-400 border border-purple-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">Direct Use: Yes</span>
+                                                ) : (
+                                                    <span className="w-fit bg-zinc-500/10 text-zinc-400 border border-zinc-500/20 px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider">Direct Use: No</span>
+                                                )}
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4 text-right space-x-3">
-                                            <button onClick={() => openEditModal(c)} className="text-zinc-400 hover:text-white transition-colors">
-                                                <Edit2 className="w-4 h-4" />
-                                            </button>
-                                            <button onClick={() => setDeletingCoupon(c)} className="text-zinc-400 hover:text-red-500 transition-colors">
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                        <td className="px-6 py-4 text-right">
+                                            <div className="flex items-center justify-end gap-3">
+                                                <ToggleDirectUseButton coupon={c} />
+                                                <button onClick={() => openEditModal(c)} className="text-zinc-400 hover:text-white transition-colors" title="Edit Coupon">
+                                                    <Edit2 className="w-4 h-4" />
+                                                </button>
+                                                <button onClick={() => setDeletingCoupon(c)} className="text-zinc-400 hover:text-red-500 transition-colors" title="Delete Coupon">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -129,6 +137,45 @@ export default function AdminCouponsPage() {
                 />
             )}
         </div>
+    );
+}
+
+function ToggleDirectUseButton({ coupon }: { coupon: any }) {
+    const [updateCoupon, { isLoading }] = useUpdateCouponMutation();
+
+    const handleToggle = async () => {
+        try {
+            await updateCoupon({
+                id: coupon._id,
+                data: { isDirectUse: !coupon.isDirectUse }
+            }).unwrap();
+            toast.success(`Coupon marked as ${!coupon.isDirectUse ? 'Direct Use' : 'Standard'}`);
+        } catch (error: any) {
+            console.error("Failed to update direct use status:", error);
+            toast.error(error?.data?.message || "Failed to update direct use status");
+        }
+    };
+
+    return (
+        <button
+            onClick={handleToggle}
+            disabled={isLoading}
+            className={`px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all flex items-center gap-1.5 ${
+                coupon.isDirectUse
+                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/40 hover:bg-purple-500/30'
+                    : 'bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10 hover:text-zinc-200'
+            }`}
+            title="Toggle Direct Use Status"
+        >
+            {isLoading ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+                <>
+                    <span className={`w-2 h-2 rounded-full ${coupon.isDirectUse ? 'bg-purple-400' : 'bg-zinc-500'}`} />
+                    <span>{coupon.isDirectUse ? 'Direct' : 'Set Direct'}</span>
+                </>
+            )}
+        </button>
     );
 }
 
@@ -196,6 +243,7 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
         durationInMonths: editingCoupon?.durationInMonths || '',
         maxRedemptions: editingCoupon?.maxRedemptions || '',
         isDefault: editingCoupon?.isDefault || false,
+        isDirectUse: editingCoupon?.isDirectUse || false,
     });
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -211,10 +259,11 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
 
         try {
             if (isEditing) {
-                // Edit mode: Stripe only allows updating name & metadata, plus local isDefault.
+                // Edit mode: Stripe only allows updating name & metadata, plus local boolean options.
                 const updatePayload = {
                     name: formData.name,
-                    isDefault: formData.isDefault
+                    isDefault: formData.isDefault,
+                    isDirectUse: formData.isDirectUse,
                 };
                 await updateCoupon({ id: editingCoupon._id, data: updatePayload }).unwrap();
                 toast.success("Coupon updated successfully");
@@ -225,6 +274,7 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
                     name: formData.name,
                     duration: formData.duration,
                     isDefault: formData.isDefault,
+                    isDirectUse: formData.isDirectUse,
                 };
 
                 if (formData.discountType === 'percent') {
@@ -364,7 +414,7 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
                             </div>
                         )}
 
-                        <div className="border-t border-white/5 pt-4 mt-2">
+                        <div className="border-t border-white/5 pt-4 mt-2 space-y-4">
                             <label className="flex items-center gap-3 cursor-pointer group">
                                 <input
                                     type="checkbox"
@@ -376,6 +426,20 @@ function CouponModal({ isOpen, onClose, editingCoupon }: { isOpen: boolean, onCl
                                 <div>
                                     <div className="text-sm font-bold text-white group-hover:text-[#1447E6] transition-colors">Default Referral Coupon</div>
                                     <div className="text-xs text-zinc-500">Automatically apply this to users signing up via referrals.</div>
+                                </div>
+                            </label>
+
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <input
+                                    type="checkbox"
+                                    name="isDirectUse"
+                                    checked={formData.isDirectUse}
+                                    onChange={handleChange}
+                                    className="w-5 h-5 rounded bg-[#0A0A0A] border border-white/20 text-purple-500 focus:ring-purple-500 focus:ring-offset-[#171717]"
+                                />
+                                <div>
+                                    <div className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors">Direct Use Coupon</div>
+                                    <div className="text-xs text-zinc-500">Allow this coupon to be used directly without referral restrictions.</div>
                                 </div>
                             </label>
                         </div>

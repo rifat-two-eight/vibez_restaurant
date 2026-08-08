@@ -25,11 +25,17 @@ const formatStatus = (status: string) => {
 export default function BookingsPage() {
     const [activeTab, setActiveTab] = useState<BookingTab>('Upcoming');
     const [currentPage, setCurrentPage] = useState(1);
+    const [liveQueuePage, setLiveQueuePage] = useState(1);
     const limit = 10;
+    const liveQueueLimit = 5;
 
     const { data: statsRes, isLoading: isStatsLoading } = useGetOwnerReservationStatsQuery({});
-    // We fetch UPCOMING status for the Live Deal Queue
-    const { data: liveRes, isLoading: isLiveLoading } = useGetReservationsQuery({ status: 'UPCOMING', limit: 50 });
+    // We fetch UPCOMING status for the Live Deal Queue with pagination
+    const { data: liveRes, isLoading: isLiveLoading } = useGetReservationsQuery({ 
+        status: 'UPCOMING', 
+        page: liveQueuePage, 
+        limit: liveQueueLimit 
+    });
     // We fetch the active tab's status for the Bookings list with pagination
     const { data: tabRes, isLoading: isTabLoading } = useGetReservationsQuery({ 
         status: activeTab.toUpperCase(), 
@@ -44,6 +50,10 @@ export default function BookingsPage() {
     };
 
     const liveQueue = liveRes?.data || [];
+    const liveMeta = liveRes?.meta || { total: liveQueue.length, page: liveQueuePage, limit: liveQueueLimit };
+    const totalLiveQueuePages = liveMeta.total ? Math.ceil(liveMeta.total / liveQueueLimit) : 1;
+    const hasLiveNext = liveMeta.hasNextPage ?? (liveQueuePage < totalLiveQueuePages);
+    const hasLivePrev = liveMeta.hasPrevPage ?? (liveQueuePage > 1);
     const filteredBookings = tabRes?.data || [];
     const meta = tabRes?.meta || { total: filteredBookings.length, page: currentPage, limit };
 
@@ -146,6 +156,36 @@ export default function BookingsPage() {
                         ))
                     )}
                 </div>
+
+                {/* Upcoming Guests Queue Pagination */}
+                {liveMeta && liveMeta.total > 0 && (
+                    <div className="px-6 py-4 border-t border-zinc-100 flex items-center justify-between">
+                        <p className="text-xs text-zinc-500 font-medium">
+                            Showing {((liveQueuePage - 1) * liveQueueLimit) + 1} - {Math.min(liveQueuePage * liveQueueLimit, liveMeta.total)} of {liveMeta.total} upcoming guests
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={() => setLiveQueuePage(p => Math.max(1, p - 1))}
+                                disabled={!hasLivePrev || isLiveLoading}
+                                className="p-2 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                title="Previous Page"
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </button>
+                            <span className="text-xs font-semibold text-zinc-700 px-2">
+                                Page {liveQueuePage} of {totalLiveQueuePages}
+                            </span>
+                            <button
+                                onClick={() => setLiveQueuePage(p => Math.min(totalLiveQueuePages, p + 1))}
+                                disabled={!hasLiveNext || isLiveLoading}
+                                className="p-2 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                title="Next Page"
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Tabs + Booking List */}

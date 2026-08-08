@@ -207,23 +207,28 @@ export default function StaffPage() {
                 </table>
 
                 {/* Pagination */}
-                {meta && meta.totalPages > 1 && (
+                {meta && meta.total > 0 && (
                     <div className="border-t border-zinc-100 px-6 py-4 flex items-center justify-between">
-                        <span className="text-sm text-zinc-500">
-                            Page {meta.page} of {meta.totalPages}
-                        </span>
+                        <p className="text-xs text-zinc-500 font-medium">
+                            Showing {((page - 1) * 10) + 1} - {Math.min(page * 10, meta.total)} of {meta.total} staff members
+                        </p>
                         <div className="flex items-center gap-2">
                             <button
-                                disabled={!meta.hasPrev}
-                                onClick={() => setPage(p => p - 1)}
-                                className="p-2 rounded-lg border border-zinc-200 text-zinc-500 disabled:opacity-50 hover:bg-zinc-50 transition-colors"
+                                disabled={!meta.hasPrev || isFetching}
+                                onClick={() => setPage(p => Math.max(1, p - 1))}
+                                className="p-2 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                title="Previous Page"
                             >
                                 <ChevronLeft className="w-4 h-4" />
                             </button>
+                            <span className="text-xs font-semibold text-zinc-700 px-2">
+                                Page {meta.page} of {meta.totalPages || 1}
+                            </span>
                             <button
-                                disabled={!meta.hasNext}
+                                disabled={!meta.hasNext || isFetching}
                                 onClick={() => setPage(p => p + 1)}
-                                className="p-2 rounded-lg border border-zinc-200 text-zinc-500 disabled:opacity-50 hover:bg-zinc-50 transition-colors"
+                                className="p-2 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                                title="Next Page"
                             >
                                 <ChevronRight className="w-4 h-4" />
                             </button>
